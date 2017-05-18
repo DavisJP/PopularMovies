@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_movies"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.exercise.davismiyashiro.popularmovies.movies.MoviesActivity">
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_movie_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"></android.support.v7.widget.RecyclerView>
+
+    <TextView
+        android:id="@+id/tv_error_message_display"
+        android:textSize="22sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:text="Please check your network status or try again later."
+        android:visibility="invisible" />
+</FrameLayout>
