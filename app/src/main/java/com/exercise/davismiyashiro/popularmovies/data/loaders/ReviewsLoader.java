@@ -6,6 +6,7 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v4.content.AsyncTaskLoader;
 
+import com.exercise.davismiyashiro.popularmovies.BuildConfig;
 import com.exercise.davismiyashiro.popularmovies.data.Response;
 import com.exercise.davismiyashiro.popularmovies.data.Review;
 import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient;
@@ -16,13 +17,15 @@ import java.util.List;
 import retrofit2.Call;
 
 /**
+ * AsyncLoader for Reviews
+ *
  * Created by Davis Miyashiro on 26/02/2017.
  */
 
 public class ReviewsLoader extends AsyncTaskLoader<Response> {
 
     public static final int ID_LOADER_REVIEWS = 81;
-    int movieId;
+    private int movieId;
 
     public ReviewsLoader(Context context, Bundle args) {
         super(context);
@@ -47,18 +50,18 @@ public class ReviewsLoader extends AsyncTaskLoader<Response> {
     public Response loadInBackground() {
         Response<Review> response = new Response();
 
-        //Call<Response<Review>> call = MovieDbApiClient.createTheMovieDbRequest().getReviews(String.valueOf(movieId), API_KEY_PROP);
-        Call<Response<Review>> call = MovieDbApiClient.getInstance().getMovieReviews(String.valueOf(movieId));
+        Call<Response<Review>> call = MovieDbApiClient.getService().getReviews(String.valueOf(movieId), BuildConfig.API_KEY);
         try {
+            //TODO: Save it to DB so that it can be retrieved as a Cursor
             List<Review> reviews = call.execute().body().getResults();
             response.setResults(reviews);
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
         return response;
     }
 
-    public boolean isConnected() {
+    private boolean isConnected() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
 

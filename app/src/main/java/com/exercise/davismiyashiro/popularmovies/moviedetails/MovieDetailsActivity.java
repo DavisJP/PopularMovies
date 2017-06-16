@@ -24,20 +24,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.exercise.davismiyashiro.popularmovies.R;
-import com.exercise.davismiyashiro.popularmovies.data.Trailer;
-import com.exercise.davismiyashiro.popularmovies.data.Response;
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
+import com.exercise.davismiyashiro.popularmovies.data.Response;
 import com.exercise.davismiyashiro.popularmovies.data.Review;
+import com.exercise.davismiyashiro.popularmovies.data.Trailer;
 import com.exercise.davismiyashiro.popularmovies.data.loaders.FavoritesLoader;
 import com.exercise.davismiyashiro.popularmovies.data.loaders.ReviewsLoader;
 import com.exercise.davismiyashiro.popularmovies.data.loaders.TrailersLoader;
-import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract.*;
+import static com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract.MoviesEntry;
 
 public class MovieDetailsActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Response>,
@@ -144,6 +143,8 @@ public class MovieDetailsActivity extends AppCompatActivity implements
                 }
             });
         }
+
+        mFavoriteMovies = new ArrayList<>();
 
         Bundle movieId = new Bundle();
         movieId.putInt("MOVIEID", mMovieDetails.getId());

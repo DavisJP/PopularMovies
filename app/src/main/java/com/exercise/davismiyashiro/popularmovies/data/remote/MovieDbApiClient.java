@@ -1,60 +1,83 @@
 package com.exercise.davismiyashiro.popularmovies.data.remote;
 
 import com.exercise.davismiyashiro.popularmovies.BuildConfig;
-import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
-import com.exercise.davismiyashiro.popularmovies.data.Response;
-import com.exercise.davismiyashiro.popularmovies.data.Review;
-import com.exercise.davismiyashiro.popularmovies.data.Trailer;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
+ * Retrofit client
+ *
  * Created by Davis Miyashiro on 20/02/2017.
  */
 
 public class MovieDbApiClient {
 
-    public static final String THEMOVIEDB_API = "https://api.themoviedb.org";
+    private static final String THEMOVIEDB_API = "https://api.themoviedb.org";
 
-    //Singleton
-    private static MovieDbApiClient instance;
-    private TheMovieDb service;
+    private static TheMovieDb service;
 
-    public static MovieDbApiClient getInstance() {
-        if (instance == null) {
-            instance = new MovieDbApiClient();
+    public static TheMovieDb getService() {
+        if (service == null) {
+            HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+            if (BuildConfig.DEBUG) {
+                logging.setLevel(HttpLoggingInterceptor.Level.BODY); //debug mode
+            } else {
+                logging.setLevel(HttpLoggingInterceptor.Level.NONE);
+            }
+            OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
+            httpClient.addInterceptor(logging);
+
+            Retrofit retrofitSingle = new Retrofit.Builder()
+                    .baseUrl(THEMOVIEDB_API)
+                    .client(httpClient.build())
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+            service = retrofitSingle.create(TheMovieDb.class);
         }
-        return instance;
+        return service;
     }
 
-    private MovieDbApiClient() {
-        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-        //logging.setLevel(HttpLoggingInterceptor.Level.BODY); //debug mode
-        logging.setLevel(HttpLoggingInterceptor.Level.NONE);
-        OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
-        httpClient.addInterceptor(logging);
+    /**
+     * Asynchronous Retrofit call
+     *
+     * @param call
+     * @param listener
+     */
+    public static void enqueue(Call call, final RequestListener listener) {
 
-        Retrofit retrofitSingle = new Retrofit.Builder()
-                .baseUrl(THEMOVIEDB_API)
-                .addConverterFactory(GsonConverterFactory.create())
-                .client(httpClient.build())
-                .build();
-        service = retrofitSingle.create(TheMovieDb.class);
+        if (call == null) {
+            return;
+        }
+
+        call.enqueue(new Callback() {
+            @Override
+            public void onResponse(Call call, retrofit2.Response response) {
+                if (response.isSuccessful()) {
+                    if (listener != null) {
+                        listener.onRequestSuccess(response.body());
+                    }
+                } else {
+                    onFailure(call, new UnknownError(response.code() + " " + response.message()));
+                }
+            }
+
+            @Override
+            public void onFailure(Call call, Throwable throwable) {
+                if (listener != null) {
+                    listener.onRequestFailure(throwable);
+                }
+            }
+        });
     }
 
-    public Call<Response<MovieDetails>> getPopularMovies(String sort) {
-        return service.getPopular(sort, BuildConfig.API_KEY);
-    }
+    interface RequestListener<T> {
+        void onRequestFailure(Throwable throwable);
 
-    public Call<Response<Review>> getMovieReviews(String movieId) {
-        return service.getReviews(movieId, BuildConfig.API_KEY);
-    }
-
-    public Call<Response<Trailer>> getMovieTrailers(String movieId) {
-        return service.getTrailers(movieId, BuildConfig.API_KEY);
+        void onRequestSuccess(T result);
     }
 }
