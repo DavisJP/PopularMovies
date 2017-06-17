@@ -23,18 +23,20 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.exercise.davismiyashiro.popularmovies.BuildConfig;
 import com.exercise.davismiyashiro.popularmovies.R;
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
 import com.exercise.davismiyashiro.popularmovies.data.Response;
 import com.exercise.davismiyashiro.popularmovies.data.Review;
 import com.exercise.davismiyashiro.popularmovies.data.Trailer;
 import com.exercise.davismiyashiro.popularmovies.data.loaders.FavoritesLoader;
-import com.exercise.davismiyashiro.popularmovies.data.loaders.ReviewsLoader;
-import com.exercise.davismiyashiro.popularmovies.data.loaders.TrailersLoader;
+import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
 
 import static com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract.MoviesEntry;
 
@@ -45,8 +47,6 @@ public class MovieDetailsActivity extends AppCompatActivity implements
 
     public static String MOVIE_DETAILS = "THEMOVIEDBDETAILS";
     public final String IMG_BASE_URL = "https://image.tmdb.org/t/p/w500";
-    private static final int ID_LOADER_DETAIL = 15;
-    public final static String QUERY_BUNDLE_ID_DETAIL = "Retrieve detail in the Loader";
     private MovieDetails mMovieDetails;
     private TextView mMovieTitle;
     private TextView mMovieReleaseDate;
@@ -148,9 +148,51 @@ public class MovieDetailsActivity extends AppCompatActivity implements
 
         Bundle movieId = new Bundle();
         movieId.putInt("MOVIEID", mMovieDetails.getId());
-        getSupportLoaderManager().initLoader(TrailersLoader.ID_LOADER_TRAILERS, movieId, this);
-        getSupportLoaderManager().initLoader(ReviewsLoader.ID_LOADER_REVIEWS, movieId, this);
+        loadTrailers();
+        loadReviews();
         getSupportLoaderManager().initLoader(FavoritesLoader.ID_LOADER_FAVORITES, movieId, this);
+    }
+
+    private void loadTrailers() {
+        Call call = MovieDbApiClient.getService().getTrailers(String.valueOf(mMovieDetails.getId()), BuildConfig.API_KEY);
+
+        MovieDbApiClient.enqueue(call, new MovieDbApiClient.RequestListener<Response<Trailer>>() {
+            @Override
+            public void onRequestFailure(Throwable throwable) {
+                Log.d("DAVISLOG", "FAIL! = " + throwable.getLocalizedMessage());
+                throwable.printStackTrace();
+                //TODO: Add exception handling
+            }
+
+            @Override
+            public void onRequestSuccess(Response<Trailer> result) {
+                List<Trailer> trailers = result.getResults();
+                if (trailers != null && !trailers.isEmpty()) {
+                    mTrailersAdapter.replaceData(trailers);
+                }
+            }
+        });
+    }
+
+    private void loadReviews() {
+        Call call = MovieDbApiClient.getService().getReviews(String.valueOf(mMovieDetails.getId()), BuildConfig.API_KEY);
+
+        MovieDbApiClient.enqueue(call, new MovieDbApiClient.RequestListener<Response<Review>>() {
+            @Override
+            public void onRequestFailure(Throwable throwable) {
+                Log.d("DAVISLOG", "FAIL! = " + throwable.getLocalizedMessage());
+                throwable.printStackTrace();
+                //TODO: Add exception handling
+            }
+
+            @Override
+            public void onRequestSuccess(Response<Review> result) {
+                List<Review> reviews = result.getResults();
+                if (reviews != null && !reviews.isEmpty()) {
+                    mReviewAdapter.replaceData(reviews);
+                }
+            }
+        });
     }
 
     private void refreshFavoriteMoviesList() {
@@ -178,10 +220,6 @@ public class MovieDetailsActivity extends AppCompatActivity implements
         }
 
         switch (id) {
-            case TrailersLoader.ID_LOADER_TRAILERS:
-                return new TrailersLoader(getApplicationContext(), args);
-            case ReviewsLoader.ID_LOADER_REVIEWS:
-                return new ReviewsLoader(getApplicationContext(), args);
             case FavoritesLoader.ID_LOADER_FAVORITES:
                 return new FavoritesLoader(getApplicationContext());
             default:
@@ -195,24 +233,6 @@ public class MovieDetailsActivity extends AppCompatActivity implements
         if (data != null) {
 
             switch (loader.getId()) {
-                case TrailersLoader.ID_LOADER_TRAILERS:
-                    List<Trailer> trailers = data.getResults();
-                    if (trailers != null && !trailers.isEmpty()) {
-                        mTrailersAdapter.replaceData(trailers);
-                        for (Trailer trailer : trailers) {
-                            Log.d("TRAILERS", trailer.getKey());
-                        }
-                    }
-                    break;
-                case ReviewsLoader.ID_LOADER_REVIEWS:
-                    List<Review> reviews = data.getResults();
-                    if (reviews != null && !reviews.isEmpty()) {
-                        mReviewAdapter.replaceData(reviews);
-                        for (Review review : reviews) {
-                            Log.d("Reviews", review.getAuthor());
-                        }
-                    }
-                    break;
                 case FavoritesLoader.ID_LOADER_FAVORITES:
                     List<MovieDetails> movieDetails = data.getResults();
                     if (movieDetails != null && !movieDetails.isEmpty()) {

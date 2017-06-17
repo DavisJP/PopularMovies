@@ -75,7 +75,7 @@ public class MovieDbApiClient {
         });
     }
 
-    interface RequestListener<T> {
+    public interface RequestListener<T> {
         void onRequestFailure(Throwable throwable);
 
         void onRequestSuccess(T result);

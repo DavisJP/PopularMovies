@@ -3,6 +3,7 @@ package com.exercise.davismiyashiro.popularmovies.data.local;
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -11,7 +12,9 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import static com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract.*;
+import static com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract.CONTENT_AUTHORITY;
+import static com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract.MoviesEntry;
+import static com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract.PATH_MOVIES;
 
 /**
  * Created by Davis Miyashiro on 16/03/2017.
@@ -173,5 +176,38 @@ public class MoviesProvider extends ContentProvider {
         }
 
         return moviesUpdated;
+    }
+
+    @Override
+    public int bulkInsert(@NonNull Uri uri, @NonNull ContentValues[] values) {
+
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+
+        switch (sUriMatcher.match(uri)) {
+            case CODE_MOVIES:
+                db.beginTransaction();
+                int returnCount = 0;
+                try {
+                    for (ContentValues value : values) {
+                        db.insert(
+                                MoviesEntry.TABLE_NAME,
+                                null,
+                                value
+                        );
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+
+                Context context = getContext();
+                if (context != null) {
+                    context.getContentResolver().notifyChange(uri, null);
+                }
+
+                return returnCount;
+            default:
+                return super.bulkInsert(uri, values);
+        }
     }
 }
