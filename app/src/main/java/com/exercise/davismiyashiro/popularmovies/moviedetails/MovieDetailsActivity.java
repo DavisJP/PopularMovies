@@ -4,11 +4,13 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.ContentObserver;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
@@ -29,7 +31,7 @@ import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
 import com.exercise.davismiyashiro.popularmovies.data.Response;
 import com.exercise.davismiyashiro.popularmovies.data.Review;
 import com.exercise.davismiyashiro.popularmovies.data.Trailer;
-import com.exercise.davismiyashiro.popularmovies.data.loaders.FavoritesLoader;
+import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract;
 import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient;
 import com.squareup.picasso.Picasso;
 
@@ -41,10 +43,11 @@ import retrofit2.Call;
 import static com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract.MoviesEntry;
 
 public class MovieDetailsActivity extends AppCompatActivity implements
-        LoaderManager.LoaderCallbacks<Response>,
+        LoaderManager.LoaderCallbacks<Cursor>,
         TrailerListAdapter.OnTrailerClickListener,
         ReviewListAdapter.OnReviewClickListener {
 
+    public static final int ID_LOADER_FAVORITES = 91;
     public static String MOVIE_DETAILS = "THEMOVIEDBDETAILS";
     public final String IMG_BASE_URL = "https://image.tmdb.org/t/p/w500";
     private MovieDetails mMovieDetails;
@@ -150,7 +153,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements
         movieId.putInt("MOVIEID", mMovieDetails.getId());
         loadTrailers();
         loadReviews();
-        getSupportLoaderManager().initLoader(FavoritesLoader.ID_LOADER_FAVORITES, movieId, this);
+        getSupportLoaderManager().initLoader(ID_LOADER_FAVORITES, movieId, this);
     }
 
     private void loadTrailers() {
@@ -196,7 +199,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements
     }
 
     private void refreshFavoriteMoviesList() {
-        getSupportLoaderManager().restartLoader(FavoritesLoader.ID_LOADER_FAVORITES, null, this);
+        getSupportLoaderManager().restartLoader(ID_LOADER_FAVORITES, null, this);
     }
 
     @Override
@@ -213,15 +216,16 @@ public class MovieDetailsActivity extends AppCompatActivity implements
     }
 
     @Override
-    public Loader<Response> onCreateLoader(int id, Bundle args) {
-        if (args != null) {
-            Log.d("BundleTEST", args.get("MOVIEID").toString());
-            Log.d("BundleTEST", "id = " + id);
-        }
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
         switch (id) {
-            case FavoritesLoader.ID_LOADER_FAVORITES:
-                return new FavoritesLoader(getApplicationContext());
+            case ID_LOADER_FAVORITES:
+                return new CursorLoader(this,
+                        MoviesDbContract.MoviesEntry.CONTENT_URI,
+                        null,
+                        null,
+                        null,
+                        null);
             default:
                 return null;
         }
@@ -229,30 +233,42 @@ public class MovieDetailsActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onLoadFinished(Loader<Response> loader, Response data) {
-        if (data != null) {
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
 
-            switch (loader.getId()) {
-                case FavoritesLoader.ID_LOADER_FAVORITES:
-                    List<MovieDetails> movieDetails = data.getResults();
-                    if (movieDetails != null && !movieDetails.isEmpty()) {
-                        mFavoriteMovies = movieDetails;
-                        Log.d("Favorites retrieved: ", String.valueOf(mFavoriteMovies.size()));
-                        if (mFavoriteMovies.contains(mMovieDetails)) {
-                            mFavoritesStar.setChecked(true);
-                        } else {
-                            mFavoritesStar.setChecked(false);
-                        }
-                    }
-                    break;
-                default:
-                    break;
+        if (cursor != null) {
+            List<MovieDetails> listFavoriteMovies = new ArrayList<>();
+
+            while (cursor.moveToNext()) {
+                String columnMovieId = MoviesDbContract.MoviesEntry.COLUMN_MOVIE_ID;
+                String columnMovieTitle = MoviesDbContract.MoviesEntry.COLUMN_MOVIE_TITLE;
+                String columnMoviePoster = MoviesDbContract.MoviesEntry.COLUMN_MOVIE_POSTER;
+                String columnSynopsis = MoviesDbContract.MoviesEntry.COLUMN_MOVIE_SYNOPSIS;
+                String columnUserRatings = MoviesDbContract.MoviesEntry.COLUMN_USER_RATINGS;
+                String columnReleaseDate = MoviesDbContract.MoviesEntry.COLUMN_RELEASE_DATE;
+
+                Integer movieId = cursor.getInt(cursor.getColumnIndex(columnMovieId));
+                String title = cursor.getString(cursor.getColumnIndex(columnMovieTitle));
+                String posterPath = cursor.getString(cursor.getColumnIndex(columnMoviePoster));
+                String synopsis = cursor.getString(cursor.getColumnIndex(columnSynopsis));
+                Double userRatings = cursor.getDouble(cursor.getColumnIndex(columnUserRatings));
+                String releaseDate = cursor.getString(cursor.getColumnIndex(columnReleaseDate));
+
+                MovieDetails movieDetails = new MovieDetails(movieId, title, posterPath, synopsis, userRatings, releaseDate);
+                listFavoriteMovies.add(movieDetails);
+
+                mFavoriteMovies = listFavoriteMovies;
+                Log.d("Favorites retrieved: ", String.valueOf(mFavoriteMovies.size()));
+                if (mFavoriteMovies.contains(mMovieDetails)) {
+                    mFavoritesStar.setChecked(true);
+                } else {
+                    mFavoritesStar.setChecked(false);
+                }
             }
         }
     }
 
     @Override
-    public void onLoaderReset(Loader<Response> loader) {
+    public void onLoaderReset(Loader<Cursor> loader) {
 
     }
 

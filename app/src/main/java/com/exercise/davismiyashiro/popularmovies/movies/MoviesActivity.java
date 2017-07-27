@@ -2,46 +2,51 @@ package com.exercise.davismiyashiro.popularmovies.movies;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.exercise.davismiyashiro.popularmovies.BuildConfig;
+import com.exercise.davismiyashiro.popularmovies.R;
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
 import com.exercise.davismiyashiro.popularmovies.data.Response;
-import com.exercise.davismiyashiro.popularmovies.R;
-import com.exercise.davismiyashiro.popularmovies.data.loaders.FavoritesLoader;
-import com.exercise.davismiyashiro.popularmovies.data.loaders.MoviesLoader;
+import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract;
+import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient;
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsActivity;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.exercise.davismiyashiro.popularmovies.data.loaders.FavoritesLoader.ID_LOADER_FAVORITES;
+import retrofit2.Call;
 
 public class MoviesActivity extends AppCompatActivity implements
-        LoaderManager.LoaderCallbacks<Response>,
+        LoaderManager.LoaderCallbacks<Cursor>,
         MovieListAdapter.OnMovieClickListener {
+
+    public static final String POPULARITY_DESC_PARAM = "popular";
+    public static final String HIGHEST_RATED_PARAM = "top_rated";
+    public static final String FAVORITES_PARAM = "favorites";
+    public static final int ID_LOADER_FAVORITES = 91;
 
     private RecyclerView mRecyclerView;
     private TextView mErrorMsg;
 
     private MovieListAdapter mMovieListAdapter;
 
-    private static final String LOADER_TYPE = "savedInstance";
-
-    private static final int ID_LOADER = 51;
-
-    private Bundle queryBundle = new Bundle();
-    private Bundle loaderBundle = new Bundle();
-    public final static String QUERY_BUNDLE_ID = "Retrieve this in the Loader";
+    private String mSortOpt = POPULARITY_DESC_PARAM;
+    private String mSortKey = "SORT_KEY";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,12 +54,18 @@ public class MoviesActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_movies);
 
         if (savedInstanceState != null) {
-            if (savedInstanceState.containsKey(LOADER_TYPE)) {
-                int loaderType = savedInstanceState.getInt(LOADER_TYPE);
-                setSortOptionToAPICall(loaderType);
+
+//            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+//            String option = sharedPref.getString(mSortKey, MoviesLoader.POPULARITY_DESC_PARAM);
+
+            String option = savedInstanceState.getString(mSortKey);
+
+            if (option.equals(FAVORITES_PARAM)) {
+//                setSortOptionToAPICall(ID_LOADER_FAVORITES);
+                setSortOptionToAPICall();
+            } else {
+                loadMovies(option);
             }
-        } else {
-            queryBundle.putString(QUERY_BUNDLE_ID, MoviesLoader.POPULARITY_DESC_PARAM);
         }
 
         mRecyclerView = (RecyclerView) findViewById(R.id.rv_movie_list);
@@ -68,25 +79,21 @@ public class MoviesActivity extends AppCompatActivity implements
         mMovieListAdapter = new MovieListAdapter(new LinkedList<MovieDetails>(), this, this);
         mRecyclerView.setAdapter(mMovieListAdapter);
 
-        getSupportLoaderManager().initLoader(ID_LOADER, queryBundle, this);
-
+        loadMovies(mSortOpt);
 
         getSupportLoaderManager().initLoader(ID_LOADER_FAVORITES, null, this);
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+        outState.putString(mSortKey, mSortOpt);
         super.onSaveInstanceState(outState);
-
-        int loaderType = loaderBundle.getInt(LOADER_TYPE);
-        outState.putInt(LOADER_TYPE, loaderType);
-        outState.putString(QUERY_BUNDLE_ID, queryBundle.getString(QUERY_BUNDLE_ID));
     }
 
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-    }
+//    @Override
+//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+//        super.onRestoreInstanceState(savedInstanceState);
+//    }
 
     public static int calculateNoOfColumns(Context context) {
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
@@ -101,25 +108,50 @@ public class MoviesActivity extends AppCompatActivity implements
     }
 
     @Override
-    public Loader<Response> onCreateLoader(int id, Bundle args) {
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         switch (id) {
-            case ID_LOADER:
-                return new MoviesLoader(getApplicationContext(), queryBundle);
             case ID_LOADER_FAVORITES:
-                return new FavoritesLoader(getApplicationContext());
+                return new CursorLoader(this,
+                        MoviesDbContract.MoviesEntry.CONTENT_URI,
+                        null,
+                        null,
+                        null,
+                        null);
             default:
-                return null;
+                throw new RuntimeException("Loader Not Implemented: " + id);
         }
     }
 
     @Override
-    public void onLoadFinished(Loader<Response> loader, Response data) {
-        if (data != null && data.getResults() != null) {
-            List<MovieDetails> movieDetails = data.getResults();
-            mMovieListAdapter.replaceData(movieDetails);
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+
+        if (cursor != null) {
+            List<MovieDetails> listFavoriteMovies = new ArrayList<>();
+
+            while (cursor.moveToNext()) {
+                String columnMovieId = MoviesDbContract.MoviesEntry.COLUMN_MOVIE_ID;
+                String columnMovieTitle = MoviesDbContract.MoviesEntry.COLUMN_MOVIE_TITLE;
+                String columnMoviePoster = MoviesDbContract.MoviesEntry.COLUMN_MOVIE_POSTER;
+                String columnSynopsis = MoviesDbContract.MoviesEntry.COLUMN_MOVIE_SYNOPSIS;
+                String columnUserRatings = MoviesDbContract.MoviesEntry.COLUMN_USER_RATINGS;
+                String columnReleaseDate = MoviesDbContract.MoviesEntry.COLUMN_RELEASE_DATE;
+
+                Integer movieId = cursor.getInt(cursor.getColumnIndex(columnMovieId));
+                String title = cursor.getString(cursor.getColumnIndex(columnMovieTitle));
+                String posterPath = cursor.getString(cursor.getColumnIndex(columnMoviePoster));
+                String synopsis = cursor.getString(cursor.getColumnIndex(columnSynopsis));
+                Double userRatings = cursor.getDouble(cursor.getColumnIndex(columnUserRatings));
+                String releaseDate = cursor.getString(cursor.getColumnIndex(columnReleaseDate));
+
+                MovieDetails movieDetails = new MovieDetails(movieId, title, posterPath, synopsis, userRatings, releaseDate);
+                listFavoriteMovies.add(movieDetails);
+            }
+
+            mMovieListAdapter.replaceData(listFavoriteMovies);
             showMoviewList();
-        } else
+        } else {
             showErrorMsg();
+        }
     }
 
     private void showErrorMsg() {
@@ -133,7 +165,7 @@ public class MoviesActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onLoaderReset(Loader<Response> loader) {
+    public void onLoaderReset(Loader<Cursor> loader) {
         mMovieListAdapter.replaceData(null);
     }
 
@@ -149,18 +181,25 @@ public class MoviesActivity extends AppCompatActivity implements
 
         switch (menuSelected) {
             case R.id.action_search:
-                queryBundle.putString(QUERY_BUNDLE_ID, MoviesLoader.POPULARITY_DESC_PARAM);
-                setSortOptionToAPICall(ID_LOADER);
+
+                mSortOpt = POPULARITY_DESC_PARAM;
+                loadMovies(mSortOpt);
+
                 getSupportActionBar().setTitle("Popular Movies");
                 return true;
 
             case R.id.action_highest_rated:
-                queryBundle.putString(QUERY_BUNDLE_ID, MoviesLoader.HIGHEST_RATED_PARAM);
-                setSortOptionToAPICall(ID_LOADER);
+
+                mSortOpt = HIGHEST_RATED_PARAM;
+                loadMovies(mSortOpt);
+
                 getSupportActionBar().setTitle("Highest Rated Movies");
                 return true;
             case R.id.action_favorites:
-                setSortOptionToAPICall(ID_LOADER_FAVORITES);
+
+                mSortOpt = FAVORITES_PARAM;
+
+                setSortOptionToAPICall();
                 getSupportActionBar().setTitle("Favorite Movies");
                 return true;
             default:
@@ -168,30 +207,11 @@ public class MoviesActivity extends AppCompatActivity implements
         }
     }
 
-    private void setSortOptionToAPICall(int loaderType) {
-        LoaderManager loaderManager = getSupportLoaderManager();
-        Loader loader = loaderManager.getLoader(loaderType);
-
-        switch (loaderType) {
-            case ID_LOADER:
-                if (loader == null) {
-                    loaderManager.initLoader(ID_LOADER, queryBundle, this);
-                } else {
-                    loaderManager.restartLoader(ID_LOADER, queryBundle, this);
-                }
-                loaderBundle.putInt(LOADER_TYPE, ID_LOADER);
-                break;
-            case ID_LOADER_FAVORITES:
-                if (loader == null) {
-                    loaderManager.initLoader(ID_LOADER_FAVORITES, null, this);
-                } else {
-                    loaderManager.restartLoader(ID_LOADER_FAVORITES, null, this);
-                }
-                loaderBundle.putInt(LOADER_TYPE, ID_LOADER_FAVORITES);
-                break;
-
-            default:
-                break;
+    private void setSortOptionToAPICall() {
+        if (getSupportLoaderManager() == null) {
+            getSupportLoaderManager().initLoader(ID_LOADER_FAVORITES, null, this);
+        } else {
+            getSupportLoaderManager().restartLoader(ID_LOADER_FAVORITES, null, this);
         }
     }
 
@@ -200,5 +220,29 @@ public class MoviesActivity extends AppCompatActivity implements
         Intent intent = new Intent(this, MovieDetailsActivity.class);
         intent.putExtra(MovieDetailsActivity.MOVIE_DETAILS, movieDetails);
         startActivity(intent);
+    }
+
+    private void loadMovies(String sorting) {
+        Call call = MovieDbApiClient.getService().getPopular(sorting, BuildConfig.API_KEY);
+
+        MovieDbApiClient.enqueue(call, new MovieDbApiClient.RequestListener<Response<MovieDetails>>() {
+            @Override
+            public void onRequestFailure(Throwable throwable) {
+                Log.d("DAVISLOG", "FAIL! = " + throwable.getLocalizedMessage());
+                throwable.printStackTrace();
+                //TODO: Add exception handling
+            }
+
+            @Override
+            public void onRequestSuccess(Response<MovieDetails> result) {
+                List<MovieDetails> movies = result.getResults();
+                if (movies != null && !movies.isEmpty()) {
+                    mMovieListAdapter.replaceData(movies);
+                    showMoviewList();
+                } else {
+                    showErrorMsg();
+                }
+            }
+        });
     }
 }
