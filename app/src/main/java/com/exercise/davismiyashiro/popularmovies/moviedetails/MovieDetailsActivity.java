@@ -1,14 +1,18 @@
 package com.exercise.davismiyashiro.popularmovies.moviedetails;
 
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.support.annotation.StringRes;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -17,32 +21,32 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.exercise.davismiyashiro.popularmovies.BuildConfig;
+import com.exercise.davismiyashiro.popularmovies.App;
 import com.exercise.davismiyashiro.popularmovies.R;
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
-import com.exercise.davismiyashiro.popularmovies.data.Response;
 import com.exercise.davismiyashiro.popularmovies.data.Review;
 import com.exercise.davismiyashiro.popularmovies.data.Trailer;
+import com.exercise.davismiyashiro.popularmovies.data.local.MovieDataService;
 import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract;
-import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient;
+import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import retrofit2.Call;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 import static com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract.MoviesEntry;
 
-public class MovieDetailsActivity extends AppCompatActivity implements
+public class MovieDetailsActivity extends AppCompatActivity implements MovieDetailsInterfaces.View,
         LoaderManager.LoaderCallbacks<Cursor>,
         TrailerListAdapter.OnTrailerClickListener,
         ReviewListAdapter.OnReviewClickListener {
@@ -51,19 +55,22 @@ public class MovieDetailsActivity extends AppCompatActivity implements
     public static String MOVIE_DETAILS = "THEMOVIEDBDETAILS";
     public final String IMG_BASE_URL = "https://image.tmdb.org/t/p/w500";
     private MovieDetails mMovieDetails;
-    private TextView mMovieTitle;
-    private TextView mMovieReleaseDate;
-    private TextView mMovieVoteAverage;
-    private TextView mMovieSinopsis;
-    private ImageView mMoviePoster;
-    private Button mFavoriteBtn;
-    private RecyclerView mTrailersList;
-    private RecyclerView mRecyclerReviews;
-    private CheckBox mFavoritesStar;
+
+    @BindView(R.id.movie_title) TextView mMovieTitle;
+    @BindView(R.id.movie_release_date) TextView mMovieReleaseDate;
+    @BindView(R.id.movie_vote_average) TextView mMovieVoteAverage;
+    @BindView(R.id.movie_sinopsis) TextView mMovieSinopsis;
+    @BindView(R.id.movie_poster) ImageView mMoviePoster;
+    @BindView(R.id.mark_favorite) Button mFavoriteBtn;
+    @BindView(R.id.rv_trailers_list) RecyclerView mTrailersList;
+    @BindView(R.id.rv_reviews_list) RecyclerView mRecyclerReviews;
+    @BindView(R.id.favourite_star) CheckBox mFavoritesStar;
+    @BindView(R.id.toolbar) Toolbar toolbar;
 
     private TrailerListAdapter mTrailersAdapter;
     private ReviewListAdapter mReviewAdapter;
-    private List<MovieDetails> mFavoriteMovies;
+
+    private MovieDetailsPresenter presenter;
 
     private ContentResolver mContentResolver;
     private MovieContentObserver mMovieContentObserver = MovieContentObserver.getTestContentObserver();
@@ -72,22 +79,16 @@ public class MovieDetailsActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_details);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        ButterKnife.bind(this);
+
+        presenter = new MovieDetailsPresenter(getTheMovieDbClient());
+        presenter.attachView(this);
 
         if (getIntent().hasExtra(MOVIE_DETAILS)) {
             mMovieDetails = getIntent().getParcelableExtra(MOVIE_DETAILS);
         }
-
-        mMovieTitle = (TextView) findViewById(R.id.movie_title);
-        mMovieReleaseDate = (TextView) findViewById(R.id.movie_release_date);
-        mMovieVoteAverage = (TextView) findViewById(R.id.movie_vote_average);
-        mMovieSinopsis = (TextView) findViewById(R.id.movie_sinopsis);
-        mMoviePoster = (ImageView) findViewById(R.id.movie_poster);
-        mFavoriteBtn = (Button) findViewById(R.id.mark_favorite);
-        mTrailersList = (RecyclerView) findViewById(R.id.rv_trailers_list);
-        mRecyclerReviews = (RecyclerView) findViewById(R.id.rv_reviews_list);
-        mFavoritesStar = (CheckBox) findViewById(R.id.favourite_star);
 
         mTrailersAdapter = new TrailerListAdapter(new ArrayList<Trailer>(), this);
         LinearLayoutManager layout = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
@@ -110,95 +111,62 @@ public class MovieDetailsActivity extends AppCompatActivity implements
             mMovieVoteAverage.setText((mMovieDetails.getVoteAverage() != null) ? mMovieDetails.getVoteAverage().toString() : "0");
             mMovieSinopsis.setText(mMovieDetails.getOverview());
             Picasso.with(this).load(IMG_BASE_URL + mMovieDetails.getPosterPath()).into(mMoviePoster);
-
-            mFavoriteBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (!mFavoriteMovies.contains(mMovieDetails)) {
-                        ContentValues contentValues = new ContentValues();
-                        contentValues.put(MoviesEntry.COLUMN_MOVIE_ID, mMovieDetails.getId());
-                        contentValues.put(MoviesEntry.COLUMN_MOVIE_TITLE, mMovieDetails.getTitle());
-                        contentValues.put(MoviesEntry.COLUMN_MOVIE_POSTER, mMovieDetails.getPosterPath());
-                        contentValues.put(MoviesEntry.COLUMN_MOVIE_SYNOPSIS, mMovieDetails.getOverview());
-                        contentValues.put(MoviesEntry.COLUMN_RELEASE_DATE, mMovieDetails.getReleaseDate());
-                        contentValues.put(MoviesEntry.COLUMN_USER_RATINGS, mMovieDetails.getVoteAverage());
-
-                        //TODO: move to a thread, suggestion: IntentService and BroadcastReceiver
-                        //https://code.tutsplus.com/tutorials/android-fundamentals-intentservice-basics--mobile-6183
-                        //Uri uri = getContentResolver().insert(MoviesEntry.CONTENT_URI, contentValues);
-                        Uri uri = mContentResolver.insert(MoviesEntry.CONTENT_URI, contentValues);
-                        Log.d(MovieDetailsActivity.class.getSimpleName(), "ContentProvider url: " + uri.toString());
-                        Toast.makeText(getBaseContext(), "Movie added to Favorites", Toast.LENGTH_SHORT).show();
-
-                        mFavoritesStar.setChecked(true);
-                    } else {
-                        //delete
-                        Uri uri = MoviesEntry.CONTENT_URI;
-                        uri = uri.buildUpon().appendPath(mMovieDetails.getId().toString()).build();
-
-                        //getContentResolver().delete(uri, null, null);
-                        mContentResolver.delete(uri, null, null);
-                        Toast.makeText(getBaseContext(), "Movie deleted from Favorites", Toast.LENGTH_SHORT).show();
-
-                        mFavoritesStar.setChecked(false);
-                    }
-                    refreshFavoriteMoviesList();
-                }
-            });
         }
 
-        mFavoriteMovies = new ArrayList<>();
+        presenter.loadTrailers(mMovieDetails.getId());
+        presenter.loadReviews(mMovieDetails.getId());
 
         Bundle movieId = new Bundle();
         movieId.putInt("MOVIEID", mMovieDetails.getId());
-        loadTrailers();
-        loadReviews();
         getSupportLoaderManager().initLoader(ID_LOADER_FAVORITES, movieId, this);
     }
 
-    private void loadTrailers() {
-        Call call = MovieDbApiClient.getService().getTrailers(String.valueOf(mMovieDetails.getId()), BuildConfig.API_KEY);
-
-        MovieDbApiClient.enqueue(call, new MovieDbApiClient.RequestListener<Response<Trailer>>() {
-            @Override
-            public void onRequestFailure(Throwable throwable) {
-                Log.d("DAVISLOG", "FAIL! = " + throwable.getLocalizedMessage());
-                throwable.printStackTrace();
-                //TODO: Add exception handling
-            }
-
-            @Override
-            public void onRequestSuccess(Response<Trailer> result) {
-                List<Trailer> trailers = result.getResults();
-                if (trailers != null && !trailers.isEmpty()) {
-                    mTrailersAdapter.replaceData(trailers);
-                }
-            }
-        });
+    private TheMovieDb getTheMovieDbClient () {
+        return ((App)getApplication()).getMovieDbApi();
     }
 
-    private void loadReviews() {
-        Call call = MovieDbApiClient.getService().getReviews(String.valueOf(mMovieDetails.getId()), BuildConfig.API_KEY);
+    @OnClick(R.id.mark_favorite)
+    void toggleFavoriteMovieBtn() {
+        if (!presenter.hasFavoriteMovie(mMovieDetails)) {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(MoviesEntry.COLUMN_MOVIE_ID, mMovieDetails.getId());
+            contentValues.put(MoviesEntry.COLUMN_MOVIE_TITLE, mMovieDetails.getTitle());
+            contentValues.put(MoviesEntry.COLUMN_MOVIE_POSTER, mMovieDetails.getPosterPath());
+            contentValues.put(MoviesEntry.COLUMN_MOVIE_SYNOPSIS, mMovieDetails.getOverview());
+            contentValues.put(MoviesEntry.COLUMN_RELEASE_DATE, mMovieDetails.getReleaseDate());
+            contentValues.put(MoviesEntry.COLUMN_USER_RATINGS, mMovieDetails.getVoteAverage());
 
-        MovieDbApiClient.enqueue(call, new MovieDbApiClient.RequestListener<Response<Review>>() {
-            @Override
-            public void onRequestFailure(Throwable throwable) {
-                Log.d("DAVISLOG", "FAIL! = " + throwable.getLocalizedMessage());
-                throwable.printStackTrace();
-                //TODO: Add exception handling
-            }
+            MovieDataService.insertNewMovie(this, contentValues);
 
-            @Override
-            public void onRequestSuccess(Response<Review> result) {
-                List<Review> reviews = result.getResults();
-                if (reviews != null && !reviews.isEmpty()) {
-                    mReviewAdapter.replaceData(reviews);
-                }
-            }
-        });
+            toggleFavoriteStar(true);
+        } else {
+            //delete
+            Uri uri = MoviesEntry.CONTENT_URI.buildUpon().appendPath(mMovieDetails.getId().toString()).build();
+
+            MovieDataService.deleteMovie(this, uri);
+
+            toggleFavoriteStar(false);
+        }
+        refreshFavoriteMoviesList();
     }
 
-    private void refreshFavoriteMoviesList() {
+    @Override
+    public void toggleFavoriteStar(boolean value) {
+        mFavoritesStar.setChecked(value);
+    }
+
+    @Override
+    public void replaceTrailersData(List<Trailer> trailers) {
+        mTrailersAdapter.replaceData(trailers);
+    }
+
+    @Override
+    public void replaceReviewsData(List<Review> reviews) {
+        mReviewAdapter.replaceData(reviews);
+    }
+
+    @Override
+    public void refreshFavoriteMoviesList() {
         getSupportLoaderManager().restartLoader(ID_LOADER_FAVORITES, null, this);
     }
 
@@ -207,12 +175,34 @@ public class MovieDetailsActivity extends AppCompatActivity implements
         super.onResume();
         mContentResolver = getContentResolver();
         mContentResolver.registerContentObserver(MoviesEntry.CONTENT_URI, true, mMovieContentObserver);
+
+        IntentFilter mIntentFilter = new IntentFilter();
+        mIntentFilter.addAction(MovieDataService.ACTION_INSERT);
+        mIntentFilter.addAction(MovieDataService.ACTION_DELETE);
+        registerReceiver(mReceiver, mIntentFilter);
+    }
+
+    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(MovieDataService.ACTION_INSERT)) {
+                showDbResultMessage(R.string.movie_added_msg);
+            } else if (intent.getAction().equals(MovieDataService.ACTION_DELETE)) {
+                showDbResultMessage(R.string.movie_deleted_msg);
+            }
+        }
+    };
+
+    @Override
+    public void showDbResultMessage (@StringRes int msg) {
+        Toast.makeText(getBaseContext(), msg, Toast.LENGTH_SHORT).show();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         mContentResolver.unregisterContentObserver(mMovieContentObserver);
+        unregisterReceiver(mReceiver);
     }
 
     @Override
@@ -256,13 +246,9 @@ public class MovieDetailsActivity extends AppCompatActivity implements
                 MovieDetails movieDetails = new MovieDetails(movieId, title, posterPath, synopsis, userRatings, releaseDate);
                 listFavoriteMovies.add(movieDetails);
 
-                mFavoriteMovies = listFavoriteMovies;
-                Log.d("Favorites retrieved: ", String.valueOf(mFavoriteMovies.size()));
-                if (mFavoriteMovies.contains(mMovieDetails)) {
-                    mFavoritesStar.setChecked(true);
-                } else {
-                    mFavoritesStar.setChecked(false);
-                }
+                presenter.setFavoriteMovies(listFavoriteMovies);
+
+                toggleFavoriteStar(presenter.hasFavoriteMovie(mMovieDetails));
             }
         }
     }
@@ -312,5 +298,11 @@ public class MovieDetailsActivity extends AppCompatActivity implements
         public void onChange(boolean selfChange, Uri uri) {
             super.onChange(selfChange, uri);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        presenter.dettachView();
     }
 }

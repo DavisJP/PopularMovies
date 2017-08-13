@@ -14,7 +14,7 @@ public final class MoviesDbContract {
     public static final String PATH_MOVIES = "movies";
 
     private MoviesDbContract() {
-        //Avoid instantiation
+        //Prevent instantiation
     }
 
     public static final class MoviesEntry implements BaseColumns {
