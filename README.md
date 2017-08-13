@@ -4,7 +4,5 @@ This is the project 2 for Udacity's Associate Android Developer Fast Track Nanod
 
 # Final Results
 
-![Main](https://github.com/DavisJP/PopularMovies/blob/master/device-2017-05-19-002937.png){ width=50% }
-![Details](https://github.com/DavisJP/PopularMovies/blob/master/device-2017-05-19-003004.png){:height="50%" width="50%"}
-<img src="https://github.com/DavisJP/PopularMovies/blob/master/device-2017-05-19-002937.png" width="50%" height="50%">
-<img src="https://github.com/DavisJP/PopularMovies/blob/master/device-2017-05-19-003004.png" width="100" height="100">
+<img src="https://github.com/DavisJP/PopularMovies/blob/master/device-2017-05-19-002937.png" width="25%" height="25%">
+<img src="https://github.com/DavisJP/PopularMovies/blob/master/device-2017-05-19-003004.png" width="25%" height="25%">
