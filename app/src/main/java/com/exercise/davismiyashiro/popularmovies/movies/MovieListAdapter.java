@@ -7,12 +7,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
 import com.exercise.davismiyashiro.popularmovies.R;
+import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
 import com.squareup.picasso.Picasso;
 
 import java.util.LinkedList;
 import java.util.List;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 /**
  * Created by Davis Miyashiro on 27/01/2017.
@@ -57,18 +60,23 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.Movi
     }
 
     public class MovieListHolder extends RecyclerView.ViewHolder {
-        private ImageView mImageView;
+
+        @BindView(R.id.iv_poster)
+        ImageView mImageView;
+
         private MovieDetails mMovieDetails;
 
         public MovieListHolder(View itemView) {
             super(itemView);
+
+            ButterKnife.bind(this, itemView);
+
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     mClickListener.getMovieClicked(mMovieDetails);
                 }
             });
-            mImageView = (ImageView) itemView.findViewById(R.id.iv_poster);
         }
 
         public void bindView(MovieDetails movieDetails) {

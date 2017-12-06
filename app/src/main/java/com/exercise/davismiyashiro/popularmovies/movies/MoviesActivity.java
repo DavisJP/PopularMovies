@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import retrofit2.Call;
 
 public class MoviesActivity extends AppCompatActivity implements
@@ -40,8 +42,10 @@ public class MoviesActivity extends AppCompatActivity implements
     public static final String FAVORITES_PARAM = "favorites";
     public static final int ID_LOADER_FAVORITES = 91;
 
-    private RecyclerView mRecyclerView;
-    private TextView mErrorMsg;
+    @BindView(R.id.rv_movie_list)
+    RecyclerView mRecyclerView;
+    @BindView(R.id.tv_error_message_display)
+    TextView mErrorMsg;
 
     private MovieListAdapter mMovieListAdapter;
 
@@ -52,6 +56,8 @@ public class MoviesActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movies);
+
+        ButterKnife.bind(this);
 
         if (savedInstanceState != null) {
 
@@ -67,10 +73,6 @@ public class MoviesActivity extends AppCompatActivity implements
                 loadMovies(option);
             }
         }
-
-        mRecyclerView = (RecyclerView) findViewById(R.id.rv_movie_list);
-
-        mErrorMsg = (TextView) findViewById(R.id.tv_error_message_display);
 
         GridLayoutManager layout = new GridLayoutManager(this, calculateNoOfColumns(this));
         mRecyclerView.setLayoutManager(layout);

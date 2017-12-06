@@ -11,6 +11,9 @@ import com.exercise.davismiyashiro.popularmovies.data.Review;
 
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * Created by Davis Miyashiro on 01/03/2017.
  */
@@ -51,20 +54,25 @@ public class ReviewListAdapter extends RecyclerView.Adapter<ReviewListAdapter.Re
     }
 
     public class ReviewHolder extends RecyclerView.ViewHolder {
-        private TextView reviewName;
-        private TextView reviewContent;
+
+        @BindView(R.id.review_name)
+        TextView reviewName;
+        @BindView(R.id.review_content)
+        TextView reviewContent;
+
         private Review review;
 
         public ReviewHolder(View itemView) {
             super(itemView);
+
+            ButterKnife.bind(this, itemView);
+
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     listener.onReviewClick(review);
                 }
             });
-            reviewName = (TextView) itemView.findViewById(R.id.review_name);
-            reviewContent = (TextView) itemView.findViewById(R.id.review_content);
         }
 
         void bindView(Review review) {
