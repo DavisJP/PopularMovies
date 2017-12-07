@@ -11,18 +11,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import com.exercise.davismiyashiro.popularmovies.BuildConfig;
 import com.exercise.davismiyashiro.popularmovies.R;
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
-import com.exercise.davismiyashiro.popularmovies.data.Response;
 import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract;
-import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient;
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsActivity;
 
 import java.util.ArrayList;
@@ -31,9 +27,8 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit2.Call;
 
-public class MoviesActivity extends AppCompatActivity implements
+public class MoviesActivity extends AppCompatActivity implements MoviesInterfaces.View,
         LoaderManager.LoaderCallbacks<Cursor>,
         MovieListAdapter.OnMovieClickListener {
 
@@ -49,6 +44,8 @@ public class MoviesActivity extends AppCompatActivity implements
 
     private MovieListAdapter mMovieListAdapter;
 
+    private MoviesPresenter presenter = new MoviesPresenter();
+
     private String mSortOpt = POPULARITY_DESC_PARAM;
     private String mSortKey = "SORT_KEY";
 
@@ -58,6 +55,8 @@ public class MoviesActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_movies);
 
         ButterKnife.bind(this);
+
+        presenter.attachView(this);
 
         if (savedInstanceState != null) {
 
@@ -70,7 +69,7 @@ public class MoviesActivity extends AppCompatActivity implements
 //                setSortOptionToAPICall(ID_LOADER_FAVORITES);
                 setSortOptionToAPICall();
             } else {
-                loadMovies(option);
+                presenter.loadMovies(option);
             }
         }
 
@@ -81,7 +80,7 @@ public class MoviesActivity extends AppCompatActivity implements
         mMovieListAdapter = new MovieListAdapter(new LinkedList<MovieDetails>(), this, this);
         mRecyclerView.setAdapter(mMovieListAdapter);
 
-        loadMovies(mSortOpt);
+        presenter.loadMovies(mSortOpt);
 
         getSupportLoaderManager().initLoader(ID_LOADER_FAVORITES, null, this);
     }
@@ -149,26 +148,33 @@ public class MoviesActivity extends AppCompatActivity implements
                 listFavoriteMovies.add(movieDetails);
             }
 
-            mMovieListAdapter.replaceData(listFavoriteMovies);
-            showMoviewList();
+            updateMovieData(listFavoriteMovies);
+            showMovieList();
         } else {
             showErrorMsg();
         }
     }
 
-    private void showErrorMsg() {
+    @Override
+    public void showErrorMsg() {
         mErrorMsg.setVisibility(View.VISIBLE);
         mRecyclerView.setVisibility(View.INVISIBLE);
     }
 
-    private void showMoviewList() {
+    @Override
+    public void showMovieList() {
         mErrorMsg.setVisibility(View.INVISIBLE);
         mRecyclerView.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        mMovieListAdapter.replaceData(null);
+        updateMovieData(new ArrayList<MovieDetails>());
+    }
+
+    @Override
+    public void updateMovieData(List<MovieDetails> listMovies) {
+        mMovieListAdapter.replaceData(listMovies);
     }
 
     @Override
@@ -185,7 +191,7 @@ public class MoviesActivity extends AppCompatActivity implements
             case R.id.action_search:
 
                 mSortOpt = POPULARITY_DESC_PARAM;
-                loadMovies(mSortOpt);
+                presenter.loadMovies(mSortOpt);
 
                 getSupportActionBar().setTitle("Popular Movies");
                 return true;
@@ -193,7 +199,7 @@ public class MoviesActivity extends AppCompatActivity implements
             case R.id.action_highest_rated:
 
                 mSortOpt = HIGHEST_RATED_PARAM;
-                loadMovies(mSortOpt);
+                presenter.loadMovies(mSortOpt);
 
                 getSupportActionBar().setTitle("Highest Rated Movies");
                 return true;
@@ -224,27 +230,9 @@ public class MoviesActivity extends AppCompatActivity implements
         startActivity(intent);
     }
 
-    private void loadMovies(String sorting) {
-        Call call = MovieDbApiClient.getService().getPopular(sorting, BuildConfig.API_KEY);
-
-        MovieDbApiClient.enqueue(call, new MovieDbApiClient.RequestListener<Response<MovieDetails>>() {
-            @Override
-            public void onRequestFailure(Throwable throwable) {
-                Log.d("DAVISLOG", "FAIL! = " + throwable.getLocalizedMessage());
-                throwable.printStackTrace();
-                //TODO: Add exception handling
-            }
-
-            @Override
-            public void onRequestSuccess(Response<MovieDetails> result) {
-                List<MovieDetails> movies = result.getResults();
-                if (movies != null && !movies.isEmpty()) {
-                    mMovieListAdapter.replaceData(movies);
-                    showMoviewList();
-                } else {
-                    showErrorMsg();
-                }
-            }
-        });
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        presenter.dettachView();
     }
 }
