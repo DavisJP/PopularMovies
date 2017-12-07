@@ -11,6 +11,9 @@ import com.exercise.davismiyashiro.popularmovies.data.Trailer;
 
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * Created by Davis Miyashiro on 26/02/2017.
  */
@@ -52,18 +55,23 @@ public class TrailerListAdapter extends RecyclerView.Adapter<TrailerListAdapter.
     }
 
     public class TrailerHolder extends RecyclerView.ViewHolder {
-        private TextView trailerName;
+
+        @BindView(R.id.trailer_name)
+        TextView trailerName;
+
         private Trailer trailer;
 
         public TrailerHolder(View itemView) {
             super(itemView);
+
+            ButterKnife.bind(this, itemView);
+
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     listener.onTrailerClick(trailer);
                 }
             });
-            trailerName = (TextView) itemView.findViewById(R.id.trailer_name);
         }
 
         public void bindView(Trailer trailer) {
