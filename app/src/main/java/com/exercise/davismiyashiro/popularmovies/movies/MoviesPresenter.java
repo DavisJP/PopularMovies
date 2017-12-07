@@ -34,7 +34,7 @@ public class MoviesPresenter implements MoviesInterfaces.Presenter {
     }
 
     public void loadMovies(String sorting) {
-        Call call = MovieDbApiClient.getService().getPopular(sorting, BuildConfig.API_KEY);
+        final Call call = MovieDbApiClient.getService().getPopular(sorting, BuildConfig.API_KEY);
 
         MovieDbApiClient.enqueue(call, new MovieDbApiClient.RequestListener<Response<MovieDetails>>() {
             @Override
@@ -47,11 +47,15 @@ public class MoviesPresenter implements MoviesInterfaces.Presenter {
             @Override
             public void onRequestSuccess(Response<MovieDetails> result) {
                 List<MovieDetails> movies = result.getResults();
-                if (movies != null && !movies.isEmpty()) {
-                    view.updateMovieData(movies);
-                    view.showMovieList();
+                if (view!= null) {
+                    if (movies != null && !movies.isEmpty()) {
+                        view.updateMovieData(movies);
+                        view.showMovieList();
+                    } else {
+                        view.showErrorMsg();
+                    }
                 } else {
-                    view.showErrorMsg();
+                    call.cancel();
                 }
             }
         });
