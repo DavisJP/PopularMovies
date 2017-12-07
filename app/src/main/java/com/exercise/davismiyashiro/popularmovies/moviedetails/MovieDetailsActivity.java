@@ -1,14 +1,18 @@
 package com.exercise.davismiyashiro.popularmovies.moviedetails;
 
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.support.annotation.StringRes;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -17,7 +21,6 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
@@ -29,6 +32,7 @@ import com.exercise.davismiyashiro.popularmovies.R;
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
 import com.exercise.davismiyashiro.popularmovies.data.Review;
 import com.exercise.davismiyashiro.popularmovies.data.Trailer;
+import com.exercise.davismiyashiro.popularmovies.data.local.MovieDataService;
 import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract;
 import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb;
 import com.squareup.picasso.Picasso;
@@ -52,26 +56,16 @@ public class MovieDetailsActivity extends AppCompatActivity implements MovieDeta
     public final String IMG_BASE_URL = "https://image.tmdb.org/t/p/w500";
     private MovieDetails mMovieDetails;
 
-    @BindView(R.id.movie_title)
-    TextView mMovieTitle;
-    @BindView(R.id.movie_release_date)
-    TextView mMovieReleaseDate;
-    @BindView(R.id.movie_vote_average)
-    TextView mMovieVoteAverage;
-    @BindView(R.id.movie_sinopsis)
-    TextView mMovieSinopsis;
-    @BindView(R.id.movie_poster)
-    ImageView mMoviePoster;
-    @BindView(R.id.mark_favorite)
-    Button mFavoriteBtn;
-    @BindView(R.id.rv_trailers_list)
-    RecyclerView mTrailersList;
-    @BindView(R.id.rv_reviews_list)
-    RecyclerView mRecyclerReviews;
-    @BindView(R.id.favourite_star)
-    CheckBox mFavoritesStar;
-    @BindView(R.id.toolbar)
-    Toolbar toolbar;
+    @BindView(R.id.movie_title) TextView mMovieTitle;
+    @BindView(R.id.movie_release_date) TextView mMovieReleaseDate;
+    @BindView(R.id.movie_vote_average) TextView mMovieVoteAverage;
+    @BindView(R.id.movie_sinopsis) TextView mMovieSinopsis;
+    @BindView(R.id.movie_poster) ImageView mMoviePoster;
+    @BindView(R.id.mark_favorite) Button mFavoriteBtn;
+    @BindView(R.id.rv_trailers_list) RecyclerView mTrailersList;
+    @BindView(R.id.rv_reviews_list) RecyclerView mRecyclerReviews;
+    @BindView(R.id.favourite_star) CheckBox mFavoritesStar;
+    @BindView(R.id.toolbar) Toolbar toolbar;
 
     private TrailerListAdapter mTrailersAdapter;
     private ReviewListAdapter mReviewAdapter;
@@ -142,22 +136,14 @@ public class MovieDetailsActivity extends AppCompatActivity implements MovieDeta
             contentValues.put(MoviesEntry.COLUMN_RELEASE_DATE, mMovieDetails.getReleaseDate());
             contentValues.put(MoviesEntry.COLUMN_USER_RATINGS, mMovieDetails.getVoteAverage());
 
-            //TODO: move to a thread, suggestion: IntentService and BroadcastReceiver
-            //https://code.tutsplus.com/tutorials/android-fundamentals-intentservice-basics--mobile-6183
-            //Uri uri = getContentResolver().insert(MoviesEntry.CONTENT_URI, contentValues);
-            Uri uri = mContentResolver.insert(MoviesEntry.CONTENT_URI, contentValues);
-            Log.d(MovieDetailsActivity.class.getSimpleName(), "ContentProvider url: " + uri.toString());
-            Toast.makeText(getBaseContext(), "Movie added to Favorites", Toast.LENGTH_SHORT).show();
+            MovieDataService.insertNewMovie(this, contentValues);
 
             toggleFavoriteStar(true);
         } else {
             //delete
-            Uri uri = MoviesEntry.CONTENT_URI;
-            uri = uri.buildUpon().appendPath(mMovieDetails.getId().toString()).build();
+            Uri uri = MoviesEntry.CONTENT_URI.buildUpon().appendPath(mMovieDetails.getId().toString()).build();
 
-            //getContentResolver().delete(uri, null, null);
-            mContentResolver.delete(uri, null, null);
-            Toast.makeText(getBaseContext(), "Movie deleted from Favorites", Toast.LENGTH_SHORT).show();
+            MovieDataService.deleteMovie(this, uri);
 
             toggleFavoriteStar(false);
         }
@@ -189,12 +175,34 @@ public class MovieDetailsActivity extends AppCompatActivity implements MovieDeta
         super.onResume();
         mContentResolver = getContentResolver();
         mContentResolver.registerContentObserver(MoviesEntry.CONTENT_URI, true, mMovieContentObserver);
+
+        IntentFilter mIntentFilter = new IntentFilter();
+        mIntentFilter.addAction(MovieDataService.ACTION_INSERT);
+        mIntentFilter.addAction(MovieDataService.ACTION_DELETE);
+        registerReceiver(mReceiver, mIntentFilter);
+    }
+
+    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(MovieDataService.ACTION_INSERT)) {
+                showDbResultMessage(R.string.movie_added_msg);
+            } else if (intent.getAction().equals(MovieDataService.ACTION_DELETE)) {
+                showDbResultMessage(R.string.movie_deleted_msg);
+            }
+        }
+    };
+
+    @Override
+    public void showDbResultMessage (@StringRes int msg) {
+        Toast.makeText(getBaseContext(), msg, Toast.LENGTH_SHORT).show();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         mContentResolver.unregisterContentObserver(mMovieContentObserver);
+        unregisterReceiver(mReceiver);
     }
 
     @Override

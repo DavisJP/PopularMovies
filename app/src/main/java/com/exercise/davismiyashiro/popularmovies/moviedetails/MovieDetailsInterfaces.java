@@ -1,5 +1,7 @@
 package com.exercise.davismiyashiro.popularmovies.moviedetails;
 
+import android.support.annotation.StringRes;
+
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
 import com.exercise.davismiyashiro.popularmovies.data.Review;
 import com.exercise.davismiyashiro.popularmovies.data.Trailer;
@@ -20,6 +22,8 @@ public interface MovieDetailsInterfaces {
         void replaceReviewsData(List<Review> reviews);
 
         void toggleFavoriteStar(boolean value);
+
+        void showDbResultMessage (@StringRes int msg);
     }
 
     interface Presenter {

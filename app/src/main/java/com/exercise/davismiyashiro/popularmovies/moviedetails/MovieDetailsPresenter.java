@@ -11,6 +11,7 @@ import com.exercise.davismiyashiro.popularmovies.data.Trailer;
 import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient;
 import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -24,7 +25,7 @@ public class MovieDetailsPresenter implements MovieDetailsInterfaces.Presenter {
     MovieDetailsInterfaces.View view;
     private TheMovieDb serviceApi;
 
-    private List<MovieDetails> mFavoriteMovies;
+    private List<MovieDetails> mFavoriteMovies = new ArrayList<>();
 
     public List<MovieDetails> getFavoriteMovies() {
         return mFavoriteMovies;

@@ -11,4 +11,6 @@
     <string name="mark_as_favorite">MARK AS FAVORITE</string>
     <string name="trailers">Trailers:</string>
     <string name="reviews">Reviews:</string>
+    <string name="movie_added_msg">Movie added to Favorites</string>
+    <string name="movie_deleted_msg">Movie deleted from Favorites</string>
 </resources>
