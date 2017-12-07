@@ -16,9 +16,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.exercise.davismiyashiro.popularmovies.App;
 import com.exercise.davismiyashiro.popularmovies.R;
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
 import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract;
+import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb;
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsActivity;
 
 import java.util.ArrayList;
@@ -44,7 +46,7 @@ public class MoviesActivity extends AppCompatActivity implements MoviesInterface
 
     private MovieListAdapter mMovieListAdapter;
 
-    private MoviesPresenter presenter = new MoviesPresenter();
+    private MoviesPresenter presenter;
 
     private String mSortOpt = POPULARITY_DESC_PARAM;
     private String mSortKey = "SORT_KEY";
@@ -55,6 +57,8 @@ public class MoviesActivity extends AppCompatActivity implements MoviesInterface
         setContentView(R.layout.activity_movies);
 
         ButterKnife.bind(this);
+
+        presenter = new MoviesPresenter(getTheMovieDbClient());
 
         presenter.attachView(this);
 
@@ -83,6 +87,10 @@ public class MoviesActivity extends AppCompatActivity implements MoviesInterface
         presenter.loadMovies(mSortOpt);
 
         getSupportLoaderManager().initLoader(ID_LOADER_FAVORITES, null, this);
+    }
+
+    private TheMovieDb getTheMovieDbClient () {
+        return ((App)getApplication()).getMovieDbApi();
     }
 
     @Override

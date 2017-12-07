@@ -7,6 +7,7 @@ import com.exercise.davismiyashiro.popularmovies.BuildConfig;
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
 import com.exercise.davismiyashiro.popularmovies.data.Response;
 import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient;
+import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb;
 
 import java.util.List;
 
@@ -20,9 +21,10 @@ public class MoviesPresenter implements MoviesInterfaces.Presenter {
 
     @NonNull
     private MoviesInterfaces.View view;
+    private TheMovieDb serviceApi;
 
-    public MoviesPresenter() {
-
+    public MoviesPresenter(@NonNull TheMovieDb apiClient) {
+        serviceApi = apiClient;
     }
 
     public void attachView(@NonNull MoviesInterfaces.View mainView) {
@@ -34,7 +36,7 @@ public class MoviesPresenter implements MoviesInterfaces.Presenter {
     }
 
     public void loadMovies(String sorting) {
-        final Call call = MovieDbApiClient.getService().getPopular(sorting, BuildConfig.API_KEY);
+        final Call call  = serviceApi.getPopular(sorting, BuildConfig.API_KEY);
 
         MovieDbApiClient.enqueue(call, new MovieDbApiClient.RequestListener<Response<MovieDetails>>() {
             @Override

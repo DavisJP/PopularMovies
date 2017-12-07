@@ -19,27 +19,31 @@ public class MovieDbApiClient {
 
     private static final String THEMOVIEDB_API = "https://api.themoviedb.org";
 
-    private static TheMovieDb service;
+    private TheMovieDb service;
 
-    public static TheMovieDb getService() {
+    public TheMovieDb getService() {
         if (service == null) {
-            HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-            if (BuildConfig.DEBUG) {
-                logging.setLevel(HttpLoggingInterceptor.Level.BODY); //debug mode
-            } else {
-                logging.setLevel(HttpLoggingInterceptor.Level.NONE);
-            }
-            OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
-            httpClient.addInterceptor(logging);
-
             Retrofit retrofitSingle = new Retrofit.Builder()
                     .baseUrl(THEMOVIEDB_API)
-                    .client(httpClient.build())
+                    .client(getOkHttp())
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
             service = retrofitSingle.create(TheMovieDb.class);
         }
         return service;
+    }
+
+    private OkHttpClient getOkHttp () {
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        if (BuildConfig.DEBUG) {
+            logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+        } else {
+            logging.setLevel(HttpLoggingInterceptor.Level.NONE);
+        }
+
+        OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
+
+        return httpClient.addInterceptor(logging).build();
     }
 
     /**

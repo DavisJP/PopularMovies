@@ -24,11 +24,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.exercise.davismiyashiro.popularmovies.App;
 import com.exercise.davismiyashiro.popularmovies.R;
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
 import com.exercise.davismiyashiro.popularmovies.data.Review;
 import com.exercise.davismiyashiro.popularmovies.data.Trailer;
 import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract;
+import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -74,7 +76,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements MovieDeta
     private TrailerListAdapter mTrailersAdapter;
     private ReviewListAdapter mReviewAdapter;
 
-    private MovieDetailsPresenter presenter = new MovieDetailsPresenter();
+    private MovieDetailsPresenter presenter;
 
     private ContentResolver mContentResolver;
     private MovieContentObserver mMovieContentObserver = MovieContentObserver.getTestContentObserver();
@@ -87,6 +89,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements MovieDeta
 
         ButterKnife.bind(this);
 
+        presenter = new MovieDetailsPresenter(getTheMovieDbClient());
         presenter.attachView(this);
 
         if (getIntent().hasExtra(MOVIE_DETAILS)) {
@@ -122,6 +125,10 @@ public class MovieDetailsActivity extends AppCompatActivity implements MovieDeta
         Bundle movieId = new Bundle();
         movieId.putInt("MOVIEID", mMovieDetails.getId());
         getSupportLoaderManager().initLoader(ID_LOADER_FAVORITES, movieId, this);
+    }
+
+    private TheMovieDb getTheMovieDbClient () {
+        return ((App)getApplication()).getMovieDbApi();
     }
 
     @OnClick(R.id.mark_favorite)

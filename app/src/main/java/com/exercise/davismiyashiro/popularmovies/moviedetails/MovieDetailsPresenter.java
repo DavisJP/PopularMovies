@@ -9,6 +9,7 @@ import com.exercise.davismiyashiro.popularmovies.data.Response;
 import com.exercise.davismiyashiro.popularmovies.data.Review;
 import com.exercise.davismiyashiro.popularmovies.data.Trailer;
 import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient;
+import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb;
 
 import java.util.List;
 
@@ -21,6 +22,7 @@ import retrofit2.Call;
 public class MovieDetailsPresenter implements MovieDetailsInterfaces.Presenter {
 
     MovieDetailsInterfaces.View view;
+    private TheMovieDb serviceApi;
 
     private List<MovieDetails> mFavoriteMovies;
 
@@ -36,8 +38,8 @@ public class MovieDetailsPresenter implements MovieDetailsInterfaces.Presenter {
         return mFavoriteMovies.contains(movie);
     }
 
-    public MovieDetailsPresenter() {
-
+    public MovieDetailsPresenter(@NonNull TheMovieDb apiClient) {
+        serviceApi = apiClient;
     }
 
     public void attachView(@NonNull MovieDetailsInterfaces.View detailsView) {
@@ -50,7 +52,8 @@ public class MovieDetailsPresenter implements MovieDetailsInterfaces.Presenter {
 
     @Override
     public void loadTrailers(Integer movieId) {
-        final Call call = MovieDbApiClient.getService().getTrailers(String.valueOf(movieId), BuildConfig.API_KEY);
+
+        final Call call  = serviceApi.getTrailers(String.valueOf(movieId), BuildConfig.API_KEY);
 
         MovieDbApiClient.enqueue(call, new MovieDbApiClient.RequestListener<Response<Trailer>>() {
             @Override
@@ -77,7 +80,8 @@ public class MovieDetailsPresenter implements MovieDetailsInterfaces.Presenter {
 
     @Override
     public void loadReviews(Integer movieId) {
-        final Call call = MovieDbApiClient.getService().getReviews(String.valueOf(movieId), BuildConfig.API_KEY);
+
+        final Call call  = serviceApi.getReviews(String.valueOf(movieId), BuildConfig.API_KEY);
 
         MovieDbApiClient.enqueue(call, new MovieDbApiClient.RequestListener<Response<Review>>() {
             @Override
