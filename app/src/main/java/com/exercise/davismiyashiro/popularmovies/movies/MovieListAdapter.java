@@ -83,6 +83,7 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.Movi
             mMovieDetails = movieDetails;
             Picasso.with(mContext)
                     .load(IMG_BASE_URL + mMovieDetails.getPosterPath())
+                    .placeholder(android.R.drawable.progress_indeterminate_horizontal)
                     .into(mImageView);
         }
     }

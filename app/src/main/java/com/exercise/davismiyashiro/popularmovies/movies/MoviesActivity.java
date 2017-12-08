@@ -141,8 +141,7 @@ public class MoviesActivity extends AppCompatActivity implements MoviesInterface
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-
-        if (cursor != null) {
+        if (cursor != null && mSortOpt.equals(FAVORITES_PARAM)) {
             List<MovieDetails> listFavoriteMovies = new ArrayList<>();
 
             while (cursor.moveToNext()) {
@@ -166,8 +165,6 @@ public class MoviesActivity extends AppCompatActivity implements MoviesInterface
 
             updateMovieData(listFavoriteMovies);
             showMovieList();
-        } else {
-            showErrorMsg();
         }
     }
 
