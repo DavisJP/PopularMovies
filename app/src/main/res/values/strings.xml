@@ -13,4 +13,7 @@
     <string name="reviews">Reviews:</string>
     <string name="movie_added_msg">Movie added to Favorites</string>
     <string name="movie_deleted_msg">Movie deleted from Favorites</string>
+    <string name="popular_movies">Popular Movies</string>
+    <string name="highest_rated_movies">Highest Rated Movies</string>
+    <string name="favorite_movies">Favorite Movies</string>
 </resources>

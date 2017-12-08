@@ -4,7 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import static com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract.*;
+import static com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract.MoviesEntry;
 
 /**
  * Created by Davis Miyashiro on 16/03/2017.
@@ -49,7 +49,6 @@ public class MoviesDbHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + MoviesEntry.TABLE_NAME);
         onCreate(sqLiteDatabase);
 
-        //TODO: Avoid dropping when on production, check suggestion:
-        //https://thebhwgroup.com/blog/how-android-sqlite-onupgrade
+        //TODO: Avoid dropping when on production
     }
 }

@@ -39,17 +39,15 @@ public class MoviesActivity extends AppCompatActivity implements MoviesInterface
     public static final String FAVORITES_PARAM = "favorites";
     public static final int ID_LOADER_FAVORITES = 91;
 
-    @BindView(R.id.rv_movie_list)
-    RecyclerView mRecyclerView;
-    @BindView(R.id.tv_error_message_display)
-    TextView mErrorMsg;
+    @BindView(R.id.rv_movie_list) RecyclerView mRecyclerView;
+    @BindView(R.id.tv_error_message_display) TextView mErrorMsg;
 
     private MovieListAdapter mMovieListAdapter;
 
     private MoviesPresenter presenter;
 
     private String mSortOpt = POPULARITY_DESC_PARAM;
-    private String mSortKey = "SORT_KEY";
+    private String SORT_KEY = "SORT_KEY";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,18 +61,7 @@ public class MoviesActivity extends AppCompatActivity implements MoviesInterface
         presenter.attachView(this);
 
         if (savedInstanceState != null) {
-
-//            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-//            String option = sharedPref.getString(mSortKey, MoviesLoader.POPULARITY_DESC_PARAM);
-
-            String option = savedInstanceState.getString(mSortKey);
-
-            if (option.equals(FAVORITES_PARAM)) {
-//                setSortOptionToAPICall(ID_LOADER_FAVORITES);
-                setSortOptionToAPICall();
-            } else {
-                presenter.loadMovies(option);
-            }
+            mSortOpt = savedInstanceState.getString(SORT_KEY);
         }
 
         GridLayoutManager layout = new GridLayoutManager(this, calculateNoOfColumns(this));
@@ -84,9 +71,35 @@ public class MoviesActivity extends AppCompatActivity implements MoviesInterface
         mMovieListAdapter = new MovieListAdapter(new LinkedList<MovieDetails>(), this, this);
         mRecyclerView.setAdapter(mMovieListAdapter);
 
-        presenter.loadMovies(mSortOpt);
+        if (mSortOpt.equals(FAVORITES_PARAM)) {
+            refreshFavoriteMovies();
+        } else {
+            presenter.loadMovies(mSortOpt);
+        }
+
+        setTitleBar (mSortOpt);
 
         getSupportLoaderManager().initLoader(ID_LOADER_FAVORITES, null, this);
+    }
+
+    private void setTitleBar (String favoritesParam) {
+        switch (favoritesParam) {
+            case FAVORITES_PARAM:
+                getSupportActionBar().setTitle(R.string.favorites);
+                break;
+
+            case HIGHEST_RATED_PARAM:
+                getSupportActionBar().setTitle(R.string.highest_rated_movies);
+                break;
+
+            case POPULARITY_DESC_PARAM:
+                getSupportActionBar().setTitle(R.string.popular_movies);
+                break;
+
+            default:
+                getSupportActionBar().setTitle(R.string.popular_movies);
+                break;
+        }
     }
 
     private TheMovieDb getTheMovieDbClient () {
@@ -95,14 +108,9 @@ public class MoviesActivity extends AppCompatActivity implements MoviesInterface
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putString(mSortKey, mSortOpt);
+        outState.putString(SORT_KEY, mSortOpt);
         super.onSaveInstanceState(outState);
     }
-
-//    @Override
-//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-//        super.onRestoreInstanceState(savedInstanceState);
-//    }
 
     public static int calculateNoOfColumns(Context context) {
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
@@ -196,34 +204,39 @@ public class MoviesActivity extends AppCompatActivity implements MoviesInterface
         int menuSelected = item.getItemId();
 
         switch (menuSelected) {
-            case R.id.action_search:
+            case R.id.action_popular:
 
                 mSortOpt = POPULARITY_DESC_PARAM;
-                presenter.loadMovies(mSortOpt);
 
-                getSupportActionBar().setTitle("Popular Movies");
+                presenter.loadMovies(mSortOpt);
+                setTitleBar(mSortOpt);
+
                 return true;
 
             case R.id.action_highest_rated:
 
                 mSortOpt = HIGHEST_RATED_PARAM;
-                presenter.loadMovies(mSortOpt);
 
-                getSupportActionBar().setTitle("Highest Rated Movies");
+                presenter.loadMovies(mSortOpt);
+                setTitleBar(mSortOpt);
+
                 return true;
+
             case R.id.action_favorites:
 
                 mSortOpt = FAVORITES_PARAM;
 
-                setSortOptionToAPICall();
-                getSupportActionBar().setTitle("Favorite Movies");
+                refreshFavoriteMovies();
+                setTitleBar(mSortOpt);
+
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+
     }
 
-    private void setSortOptionToAPICall() {
+    private void refreshFavoriteMovies() {
         if (getSupportLoaderManager() == null) {
             getSupportLoaderManager().initLoader(ID_LOADER_FAVORITES, null, this);
         } else {
