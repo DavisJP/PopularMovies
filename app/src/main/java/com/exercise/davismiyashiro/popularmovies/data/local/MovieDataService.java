@@ -6,7 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.Nullable;
-import android.util.Log;
+
+import timber.log.Timber;
 
 import static com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract.MoviesEntry;
 
@@ -41,21 +42,21 @@ public class MovieDataService extends IntentService {
         int rows = getContentResolver().delete(uri, null, null);
 
         if (rows > 0) {
-            Log.d(TAG, "Delete Movie ok");
+            Timber.d(TAG, "Delete Movie ok");
             Intent deleteOk = new Intent(ACTION_DELETE);
             sendBroadcast(deleteOk);
         } else {
-            Log.e(TAG, "Error deleting Movie");
+            Timber.e(TAG, "Error deleting Movie");
         }
     }
 
     private void insertMovieDb(ContentValues values) {
         if (getContentResolver().insert(MoviesEntry.CONTENT_URI, values) != null) {
-            Log.d(TAG, "Insert Movie ok");
+            Timber.d(TAG, "Insert Movie ok");
             Intent insertOk = new Intent(ACTION_INSERT);
             sendBroadcast(insertOk);
         } else {
-            Log.e(TAG, "Error inserting Movie");
+            Timber.e(TAG, "Error inserting Movie");
         }
     }
 

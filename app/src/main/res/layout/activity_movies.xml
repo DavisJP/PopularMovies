@@ -9,7 +9,7 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv_movie_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"></android.support.v7.widget.RecyclerView>
+        android:layout_height="match_parent"/>
 
     <TextView
         android:id="@+id/tv_error_message_display"
@@ -17,6 +17,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="16dp"
-        android:text="Please check your network status or try again later."
+        android:text="@string/please_check_your_network_status_or_try_again_later"
         android:visibility="invisible" />
 </FrameLayout>

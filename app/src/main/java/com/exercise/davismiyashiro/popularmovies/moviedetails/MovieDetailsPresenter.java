@@ -1,7 +1,6 @@
 package com.exercise.davismiyashiro.popularmovies.moviedetails;
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.exercise.davismiyashiro.popularmovies.BuildConfig;
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
@@ -15,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
+import timber.log.Timber;
 
 /**
  * Created by Davis Miyashiro on 07/12/2017.
@@ -59,7 +59,7 @@ public class MovieDetailsPresenter implements MovieDetailsInterfaces.Presenter {
         MovieDbApiClient.enqueue(call, new MovieDbApiClient.RequestListener<Response<Trailer>>() {
             @Override
             public void onRequestFailure(Throwable throwable) {
-                Log.d("DAVISLOG", "FAIL! = " + throwable.getLocalizedMessage());
+                Timber.d("DAVISLOG", "FAIL! = " + throwable.getLocalizedMessage());
                 throwable.printStackTrace();
                 //TODO: Add exception handling
             }
@@ -88,9 +88,9 @@ public class MovieDetailsPresenter implements MovieDetailsInterfaces.Presenter {
             @Override
             public void onRequestFailure(Throwable throwable) {
                 if (call.isCanceled()) {
-                    Log.e("DAVISLOG", "request was cancelled");
+                    Timber.e("DAVISLOG", "request was cancelled");
                 } else {
-                    Log.d("DAVISLOG", "FAIL! = " + throwable.getLocalizedMessage());
+                    Timber.d("DAVISLOG", "FAIL! = " + throwable.getLocalizedMessage());
                     throwable.printStackTrace();
                     //TODO: Add exception handling
                 }
