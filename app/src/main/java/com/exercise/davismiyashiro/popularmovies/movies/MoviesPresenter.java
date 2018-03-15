@@ -1,7 +1,6 @@
 package com.exercise.davismiyashiro.popularmovies.movies;
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.exercise.davismiyashiro.popularmovies.BuildConfig;
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
@@ -12,6 +11,7 @@ import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb;
 import java.util.List;
 
 import retrofit2.Call;
+import timber.log.Timber;
 
 /**
  * Created by Davis Miyashiro on 06/12/2017.
@@ -41,9 +41,12 @@ public class MoviesPresenter implements MoviesInterfaces.Presenter {
         MovieDbApiClient.enqueue(call, new MovieDbApiClient.RequestListener<Response<MovieDetails>>() {
             @Override
             public void onRequestFailure(Throwable throwable) {
-                Log.d("DAVISLOG", "FAIL! = " + throwable.getLocalizedMessage());
-                throwable.printStackTrace();
-                //TODO: Add exception handling
+                Timber.e("FAIL! = " + throwable.getLocalizedMessage());
+                view.showErrorMsg();
+                if (throwable.getCause() instanceof UnknownError) {
+                    throwable.printStackTrace();
+//                    throw new UnknownError(throwable.getMessage());
+                }
             }
 
             @Override

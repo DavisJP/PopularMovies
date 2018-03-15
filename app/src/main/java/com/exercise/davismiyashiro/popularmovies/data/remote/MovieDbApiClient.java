@@ -8,6 +8,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import timber.log.Timber;
 
 /**
  * Retrofit client
@@ -66,12 +67,23 @@ public class MovieDbApiClient {
                         listener.onRequestSuccess(response.body());
                     }
                 } else {
-                    onFailure(call, new UnknownError(response.code() + " " + response.message()));
+                    int code = response.code();
+
+                    if (code == 401) {
+                        Timber.d("onRequestUnauthenticated" + response.message());
+                    } else if (code >= 400 && code < 500) {
+                        Timber.d("onRequestClientError" + response.message());
+                    } else if (code >= 500 && code < 600){
+                        Timber.d("onRequestServerError" + response.message());
+                    } else {
+                        onFailure(call, new UnknownError(response.code() + " " + response.message()));
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call call, Throwable throwable) {
+
                 if (listener != null) {
                     listener.onRequestFailure(throwable);
                 }
