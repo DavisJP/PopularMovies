@@ -1,10 +1,11 @@
 package com.exercise.davismiyashiro.popularmovies.data;
 
+import android.databinding.BaseObservable;
+import android.databinding.Bindable;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.util.List;
-
+import com.exercise.davismiyashiro.popularmovies.BR;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -12,7 +13,7 @@ import com.google.gson.annotations.SerializedName;
  * Created by Davis Miyashiro on 05/02/2017.
  */
 
-public class MovieDetails implements Parcelable {
+public class MovieDetails extends BaseObservable implements Parcelable {
 
     @SerializedName("poster_path")
     @Expose
@@ -63,52 +64,64 @@ public class MovieDetails implements Parcelable {
         }
     };
 
+    @Bindable
     public String getPosterPath() {
         return posterPath;
     }
 
     public void setPosterPath(String posterPath) {
         this.posterPath = posterPath;
+        notifyPropertyChanged(BR.posterPath);
     }
 
+    @Bindable
     public String getOverview() {
         return overview;
     }
 
     public void setOverview(String overview) {
         this.overview = overview;
+        notifyPropertyChanged(BR.overview);
     }
 
+    @Bindable
     public String getReleaseDate() {
         return releaseDate;
     }
 
     public void setReleaseDate(String releaseDate) {
         this.releaseDate = releaseDate;
+        notifyPropertyChanged(BR.releaseDate);
     }
 
+    @Bindable
     public Integer getId() {
         return id;
     }
 
     public void setId(Integer id) {
         this.id = id;
+        notifyPropertyChanged(BR.id);
     }
 
+    @Bindable
     public String getTitle() {
         return title;
     }
 
     public void setTitle(String title) {
         this.title = title;
+        notifyPropertyChanged(BR.title);
     }
 
+    @Bindable
     public Double getVoteAverage() {
         return voteAverage;
     }
 
     public void setVoteAverage(Double voteAverage) {
         this.voteAverage = voteAverage;
+        notifyPropertyChanged(BR.voteAverage);
     }
 
     @Override

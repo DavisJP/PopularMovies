@@ -3,32 +3,29 @@ package com.exercise.davismiyashiro.popularmovies.movies;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 
 import com.exercise.davismiyashiro.popularmovies.App;
 import com.exercise.davismiyashiro.popularmovies.R;
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
 import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract;
 import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb;
+import com.exercise.davismiyashiro.popularmovies.databinding.ActivityMoviesBinding;
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsActivity;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 public class MoviesActivity extends AppCompatActivity implements MoviesInterfaces.View,
         LoaderManager.LoaderCallbacks<Cursor>,
@@ -39,8 +36,7 @@ public class MoviesActivity extends AppCompatActivity implements MoviesInterface
     public static final String FAVORITES_PARAM = "favorites";
     public static final int ID_LOADER_FAVORITES = 91;
 
-    @BindView(R.id.rv_movie_list) RecyclerView mRecyclerView;
-    @BindView(R.id.tv_error_message_display) TextView mErrorMsg;
+    private ActivityMoviesBinding binding;
 
     private MovieListAdapter mMovieListAdapter;
 
@@ -52,12 +48,10 @@ public class MoviesActivity extends AppCompatActivity implements MoviesInterface
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_movies);
 
-        ButterKnife.bind(this);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_movies);
 
         presenter = new MoviesPresenter(getTheMovieDbClient());
-
         presenter.attachView(this);
 
         if (savedInstanceState != null) {
@@ -65,11 +59,11 @@ public class MoviesActivity extends AppCompatActivity implements MoviesInterface
         }
 
         GridLayoutManager layout = new GridLayoutManager(this, calculateNoOfColumns(this));
-        mRecyclerView.setLayoutManager(layout);
-        mRecyclerView.setHasFixedSize(true);
+        binding.rvMovieList.setLayoutManager(layout);
+        binding.rvMovieList.setHasFixedSize(true);
 
-        mMovieListAdapter = new MovieListAdapter(new LinkedList<MovieDetails>(), this, this);
-        mRecyclerView.setAdapter(mMovieListAdapter);
+        mMovieListAdapter = new MovieListAdapter(new LinkedList<MovieDetails>(),this);
+        binding.rvMovieList.setAdapter(mMovieListAdapter);
 
         if (mSortOpt.equals(FAVORITES_PARAM)) {
             refreshFavoriteMovies();
@@ -170,14 +164,14 @@ public class MoviesActivity extends AppCompatActivity implements MoviesInterface
 
     @Override
     public void showErrorMsg() {
-        mErrorMsg.setVisibility(View.VISIBLE);
-        mRecyclerView.setVisibility(View.INVISIBLE);
+        binding.tvErrorMessageDisplay.setVisibility(View.VISIBLE);
+        binding.rvMovieList.setVisibility(View.INVISIBLE);
     }
 
     @Override
     public void showMovieList() {
-        mErrorMsg.setVisibility(View.INVISIBLE);
-        mRecyclerView.setVisibility(View.VISIBLE);
+        binding.tvErrorMessageDisplay.setVisibility(View.INVISIBLE);
+        binding.rvMovieList.setVisibility(View.VISIBLE);
     }
 
     @Override
