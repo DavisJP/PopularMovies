@@ -17,12 +17,12 @@
         android:layout_height="wrap_content">
 
         <ImageView
-            android:id="@+id/posterPath"
+            android:id="@+id/imgUrl"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:adjustViewBounds="true"
-            app:posterPath="@{movieDetails.posterPath}"
+            app:imgUrl="@{movieDetails.posterPath}"
             android:onClick="@{() -> callback.getMovieClicked(movieDetails)}"
             tools:src="@tools:sample/cities" />
 

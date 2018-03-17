@@ -13,11 +13,11 @@ public class ImageBindingAdapter {
 
     public static final String IMG_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
-    @BindingAdapter({"posterPath"})
-    public static void loadImage(ImageView view, String posterPath) {
-        if (!posterPath.equals("")) {
+    @BindingAdapter({"imgUrl"})
+    public static void loadImage(ImageView view, String url) {
+        if (!url.equals("")) {
             Picasso.with(view.getContext())
-                    .load(IMG_BASE_URL + posterPath)
+                    .load(IMG_BASE_URL + url)
                     .placeholder(android.R.drawable.progress_indeterminate_horizontal)
                     .into(view);
         }

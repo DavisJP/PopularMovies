@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.ContentObserver;
 import android.database.Cursor;
+import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,11 +21,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.view.View;
 import android.widget.Toast;
 
 import com.exercise.davismiyashiro.popularmovies.App;
@@ -35,14 +32,10 @@ import com.exercise.davismiyashiro.popularmovies.data.Trailer;
 import com.exercise.davismiyashiro.popularmovies.data.local.MovieDataService;
 import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract;
 import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb;
-import com.squareup.picasso.Picasso;
+import com.exercise.davismiyashiro.popularmovies.databinding.ActivityMovieDetailsBinding;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 
 import static com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract.MoviesEntry;
 
@@ -53,19 +46,9 @@ public class MovieDetailsActivity extends AppCompatActivity implements MovieDeta
 
     public static final int ID_LOADER_FAVORITES = 91;
     public static String MOVIE_DETAILS = "THEMOVIEDBDETAILS";
-    public final String IMG_BASE_URL = "https://image.tmdb.org/t/p/w500";
     private MovieDetails mMovieDetails;
 
-    @BindView(R.id.movie_title) TextView mMovieTitle;
-    @BindView(R.id.movie_release_date) TextView mMovieReleaseDate;
-    @BindView(R.id.movie_vote_average) TextView mMovieVoteAverage;
-    @BindView(R.id.movie_sinopsis) TextView mMovieSinopsis;
-    @BindView(R.id.movie_poster) ImageView mMoviePoster;
-    @BindView(R.id.mark_favorite) Button mFavoriteBtn;
-    @BindView(R.id.rv_trailers_list) RecyclerView mTrailersList;
-    @BindView(R.id.rv_reviews_list) RecyclerView mRecyclerReviews;
-    @BindView(R.id.favourite_star) CheckBox mFavoritesStar;
-    @BindView(R.id.toolbar) Toolbar toolbar;
+    private ActivityMovieDetailsBinding binding;
 
     private TrailerListAdapter mTrailersAdapter;
     private ReviewListAdapter mReviewAdapter;
@@ -78,10 +61,8 @@ public class MovieDetailsActivity extends AppCompatActivity implements MovieDeta
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_movie_details);
-        setSupportActionBar(toolbar);
-
-        ButterKnife.bind(this);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_movie_details);
+        setSupportActionBar(binding.toolbar);
 
         presenter = new MovieDetailsPresenter(getTheMovieDbClient());
         presenter.attachView(this);
@@ -92,25 +73,21 @@ public class MovieDetailsActivity extends AppCompatActivity implements MovieDeta
 
         mTrailersAdapter = new TrailerListAdapter(new ArrayList<Trailer>(), this);
         LinearLayoutManager layout = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        mTrailersList.setLayoutManager(layout);
+        binding.included.rvTrailersList.setLayoutManager(layout);
         RecyclerView.ItemDecoration itemDecoration = new
                 DividerItemDecoration(this, DividerItemDecoration.VERTICAL);
-        mTrailersList.addItemDecoration(itemDecoration);
-        mTrailersList.setAdapter(mTrailersAdapter);
+        binding.included.rvTrailersList.addItemDecoration(itemDecoration);
+        binding.included.rvTrailersList.setAdapter(mTrailersAdapter);
 
         mReviewAdapter = new ReviewListAdapter(new ArrayList<Review>(), this);
         LinearLayoutManager layoutRev = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        mRecyclerReviews.setLayoutManager(layoutRev);
-        mRecyclerReviews.addItemDecoration(itemDecoration);
-        mRecyclerReviews.setAdapter(mReviewAdapter);
+        binding.included.rvReviewsList.setLayoutManager(layoutRev);
+        binding.included.rvReviewsList.addItemDecoration(itemDecoration);
+        binding.included.rvReviewsList.setAdapter(mReviewAdapter);
 
         if (mMovieDetails != null) {
-            mMovieTitle.setText(mMovieDetails.getTitle());
-            mMovieReleaseDate.setText(mMovieDetails.getReleaseDate());
-
-            mMovieVoteAverage.setText((mMovieDetails.getVoteAverage() != null) ? mMovieDetails.getVoteAverage().toString() : "0");
-            mMovieSinopsis.setText(mMovieDetails.getOverview());
-            Picasso.with(this).load(IMG_BASE_URL + mMovieDetails.getPosterPath()).into(mMoviePoster);
+            binding.included.setMovieDetails(mMovieDetails);
+            binding.included.movieVoteAverage.setText((mMovieDetails.getVoteAverage() != null) ? mMovieDetails.getVoteAverage().toString() : "0");
         }
 
         presenter.loadTrailers(mMovieDetails.getId());
@@ -125,8 +102,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements MovieDeta
         return ((App)getApplication()).getMovieDbApi();
     }
 
-    @OnClick(R.id.mark_favorite)
-    void toggleFavoriteMovieBtn() {
+    public void toggleFavoriteMovieBtn(View view) {
         if (!presenter.hasFavoriteMovie(mMovieDetails)) {
             ContentValues contentValues = new ContentValues();
             contentValues.put(MoviesEntry.COLUMN_MOVIE_ID, mMovieDetails.getId());
@@ -152,7 +128,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements MovieDeta
 
     @Override
     public void toggleFavoriteStar(boolean value) {
-        mFavoritesStar.setChecked(value);
+        binding.included.favouriteStar.setChecked(value);
     }
 
     @Override
