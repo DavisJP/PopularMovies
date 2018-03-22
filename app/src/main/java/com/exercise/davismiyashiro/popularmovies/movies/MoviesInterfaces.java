@@ -19,6 +19,10 @@ public interface MoviesInterfaces {
     }
 
     interface Presenter {
+        void attachView(MoviesInterfaces.View mainView);
+
         void loadMovies(String sorting);
+
+        void dettachView();
     }
 }

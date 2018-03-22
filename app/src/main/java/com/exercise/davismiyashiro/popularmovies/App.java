@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient;
 import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb;
+import com.facebook.stetho.Stetho;
 
 import timber.log.Timber;
 
@@ -13,12 +14,15 @@ import timber.log.Timber;
 
 public class App extends Application {
 
-    private final TheMovieDb movieDbApi;
+    private TheMovieDb movieDbApi;
 
-    public App() {
+    @Override
+    public void onCreate() {
+        super.onCreate();
 
         if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree());
+            Stetho.initializeWithDefaults(this);
         }
 
         MovieDbApiClient apiClient = new MovieDbApiClient();

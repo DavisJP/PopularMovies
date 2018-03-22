@@ -32,7 +32,9 @@ public class MovieDetailsPresenter implements MovieDetailsInterfaces.Presenter {
     }
 
     public void setFavoriteMovies(List<MovieDetails> mFavoriteMovies) {
-        this.mFavoriteMovies = mFavoriteMovies;
+        if (mFavoriteMovies != null) {
+            this.mFavoriteMovies = mFavoriteMovies;
+        }
     }
 
     public boolean hasFavoriteMovie(MovieDetails movie) {

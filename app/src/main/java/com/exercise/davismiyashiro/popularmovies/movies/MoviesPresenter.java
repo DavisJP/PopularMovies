@@ -27,6 +27,7 @@ public class MoviesPresenter implements MoviesInterfaces.Presenter {
         serviceApi = apiClient;
     }
 
+    @Override
     public void attachView(@NonNull MoviesInterfaces.View mainView) {
         view = mainView;
     }

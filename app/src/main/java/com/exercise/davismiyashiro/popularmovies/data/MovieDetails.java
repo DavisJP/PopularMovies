@@ -1,18 +1,22 @@
 package com.exercise.davismiyashiro.popularmovies.data;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.PrimaryKey;
 import android.databinding.BaseObservable;
 import android.databinding.Bindable;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.exercise.davismiyashiro.popularmovies.BR;
+import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 /**
  * Created by Davis Miyashiro on 05/02/2017.
  */
-
+@Entity(tableName = MoviesDbContract.MoviesEntry.TABLE_NAME)
 public class MovieDetails extends BaseObservable implements Parcelable {
 
     @SerializedName("poster_path")
@@ -26,6 +30,7 @@ public class MovieDetails extends BaseObservable implements Parcelable {
     private String releaseDate;
     @SerializedName("id")
     @Expose
+    @PrimaryKey
     private Integer id;
     @SerializedName("title")
     @Expose
@@ -34,6 +39,7 @@ public class MovieDetails extends BaseObservable implements Parcelable {
     @Expose
     private Double voteAverage;
 
+    @Ignore
     protected MovieDetails(Parcel in) {
         posterPath = in.readString();
         overview = in.readString();
@@ -43,12 +49,12 @@ public class MovieDetails extends BaseObservable implements Parcelable {
         voteAverage = in.readDouble();
     }
 
-    public MovieDetails(Integer movieId, String movieTitle, String posterPath, String synopsis, Double userRatings, String releaseDate) {
-        this.id = movieId;
-        this.title = movieTitle;
+    public MovieDetails(Integer id, String title, String posterPath, String overview, Double voteAverage, String releaseDate) {
+        this.id = id;
+        this.title = title;
         this.posterPath = posterPath;
-        this.overview = synopsis;
-        this.voteAverage = userRatings;
+        this.overview = overview;
+        this.voteAverage = voteAverage;
         this.releaseDate = releaseDate;
     }
 

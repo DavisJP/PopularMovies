@@ -1,22 +1,10 @@
 package com.exercise.davismiyashiro.popularmovies.moviedetails;
 
-import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
-import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.database.ContentObserver;
-import android.database.Cursor;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.support.annotation.StringRes;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -29,22 +17,22 @@ import com.exercise.davismiyashiro.popularmovies.R;
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
 import com.exercise.davismiyashiro.popularmovies.data.Review;
 import com.exercise.davismiyashiro.popularmovies.data.Trailer;
-import com.exercise.davismiyashiro.popularmovies.data.local.MovieDataService;
-import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract;
+import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDao;
+import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDb;
 import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb;
 import com.exercise.davismiyashiro.popularmovies.databinding.ActivityMovieDetailsBinding;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract.MoviesEntry;
+import static com.exercise.davismiyashiro.popularmovies.data.local.MovieDataService.AsyncTaskDelete;
+import static com.exercise.davismiyashiro.popularmovies.data.local.MovieDataService.AsyncTaskInsert;
+import static com.exercise.davismiyashiro.popularmovies.data.local.MovieDataService.AsyncTaskQueryAll;
 
 public class MovieDetailsActivity extends AppCompatActivity implements MovieDetailsInterfaces.View,
-        LoaderManager.LoaderCallbacks<Cursor>,
         TrailerListAdapter.OnTrailerClickListener,
         ReviewListAdapter.OnReviewClickListener {
 
-    public static final int ID_LOADER_FAVORITES = 91;
     public static String MOVIE_DETAILS = "THEMOVIEDBDETAILS";
     private MovieDetails mMovieDetails;
 
@@ -55,8 +43,12 @@ public class MovieDetailsActivity extends AppCompatActivity implements MovieDeta
 
     private MovieDetailsPresenter presenter;
 
-    private ContentResolver mContentResolver;
-    private MovieContentObserver mMovieContentObserver = MovieContentObserver.getTestContentObserver();
+    private MoviesDb db;
+    private MoviesDao moviesDao;
+
+    private AsyncTaskInsert asyncTaskInsert;
+    private AsyncTaskDelete asyncTaskDelete;
+    private AsyncTaskQueryAll asyncTaskQueryAll;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +63,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements MovieDeta
             mMovieDetails = getIntent().getParcelableExtra(MOVIE_DETAILS);
         }
 
-        mTrailersAdapter = new TrailerListAdapter(new ArrayList<Trailer>(), this);
+        mTrailersAdapter = new TrailerListAdapter(new ArrayList<>(), this);
         LinearLayoutManager layout = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         binding.included.rvTrailersList.setLayoutManager(layout);
         RecyclerView.ItemDecoration itemDecoration = new
@@ -79,7 +71,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements MovieDeta
         binding.included.rvTrailersList.addItemDecoration(itemDecoration);
         binding.included.rvTrailersList.setAdapter(mTrailersAdapter);
 
-        mReviewAdapter = new ReviewListAdapter(new ArrayList<Review>(), this);
+        mReviewAdapter = new ReviewListAdapter(new ArrayList<>(), this);
         LinearLayoutManager layoutRev = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         binding.included.rvReviewsList.setLayoutManager(layoutRev);
         binding.included.rvReviewsList.addItemDecoration(itemDecoration);
@@ -88,14 +80,18 @@ public class MovieDetailsActivity extends AppCompatActivity implements MovieDeta
         if (mMovieDetails != null) {
             binding.included.setMovieDetails(mMovieDetails);
             binding.included.movieVoteAverage.setText((mMovieDetails.getVoteAverage() != null) ? mMovieDetails.getVoteAverage().toString() : "0");
+
+            presenter.loadTrailers(mMovieDetails.getId());
+            presenter.loadReviews(mMovieDetails.getId());
+
+            Bundle movieId = new Bundle();
+            movieId.putInt("MOVIEID", mMovieDetails.getId());
         }
 
-        presenter.loadTrailers(mMovieDetails.getId());
-        presenter.loadReviews(mMovieDetails.getId());
+        db = MoviesDb.getDatabase(getApplication());
+        moviesDao = db.moviesDao();
 
-        Bundle movieId = new Bundle();
-        movieId.putInt("MOVIEID", mMovieDetails.getId());
-        getSupportLoaderManager().initLoader(ID_LOADER_FAVORITES, movieId, this);
+        refreshFavoriteMoviesList();
     }
 
     private TheMovieDb getTheMovieDbClient () {
@@ -104,26 +100,17 @@ public class MovieDetailsActivity extends AppCompatActivity implements MovieDeta
 
     public void toggleFavoriteMovieBtn(View view) {
         if (!presenter.hasFavoriteMovie(mMovieDetails)) {
-            ContentValues contentValues = new ContentValues();
-            contentValues.put(MoviesEntry.COLUMN_MOVIE_ID, mMovieDetails.getId());
-            contentValues.put(MoviesEntry.COLUMN_MOVIE_TITLE, mMovieDetails.getTitle());
-            contentValues.put(MoviesEntry.COLUMN_MOVIE_POSTER, mMovieDetails.getPosterPath());
-            contentValues.put(MoviesEntry.COLUMN_MOVIE_SYNOPSIS, mMovieDetails.getOverview());
-            contentValues.put(MoviesEntry.COLUMN_RELEASE_DATE, mMovieDetails.getReleaseDate());
-            contentValues.put(MoviesEntry.COLUMN_USER_RATINGS, mMovieDetails.getVoteAverage());
-
-            MovieDataService.insertNewMovie(this, contentValues);
-
+//            MovieDataService.insertNewMovie(this, contentValues);
+            asyncTaskInsert = new AsyncTaskInsert(moviesDao, () -> refreshFavoriteMoviesList());
+            asyncTaskInsert.execute(mMovieDetails);
             toggleFavoriteStar(true);
         } else {
             //delete
-            Uri uri = MoviesEntry.CONTENT_URI.buildUpon().appendPath(mMovieDetails.getId().toString()).build();
-
-            MovieDataService.deleteMovie(this, uri);
-
+//            MovieDataService.deleteMovie(this, uri);
+            asyncTaskDelete = new AsyncTaskDelete(moviesDao, () -> refreshFavoriteMoviesList());
+            asyncTaskDelete.execute(mMovieDetails);
             toggleFavoriteStar(false);
         }
-        refreshFavoriteMoviesList();
     }
 
     @Override
@@ -143,31 +130,37 @@ public class MovieDetailsActivity extends AppCompatActivity implements MovieDeta
 
     @Override
     public void refreshFavoriteMoviesList() {
-        getSupportLoaderManager().restartLoader(ID_LOADER_FAVORITES, null, this);
+        asyncTaskQueryAll = new AsyncTaskQueryAll(moviesDao, movieList -> {
+            if (movieList != null) {
+                presenter.setFavoriteMovies(movieList);
+                toggleFavoriteStar(presenter.hasFavoriteMovie(mMovieDetails));
+            }
+        });
+        asyncTaskQueryAll.execute();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        mContentResolver = getContentResolver();
-        mContentResolver.registerContentObserver(MoviesEntry.CONTENT_URI, true, mMovieContentObserver);
+//        mContentResolver = getContentResolver();
+//        mContentResolver.registerContentObserver(MoviesEntry.CONTENT_URI, true, mMovieContentObserver);
 
-        IntentFilter mIntentFilter = new IntentFilter();
-        mIntentFilter.addAction(MovieDataService.ACTION_INSERT);
-        mIntentFilter.addAction(MovieDataService.ACTION_DELETE);
-        registerReceiver(mReceiver, mIntentFilter);
+//        IntentFilter mIntentFilter = new IntentFilter();
+//        mIntentFilter.addAction(MovieDataService.ACTION_INSERT);
+//        mIntentFilter.addAction(MovieDataService.ACTION_DELETE);
+//        registerReceiver(mReceiver, mIntentFilter);
     }
 
-    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(MovieDataService.ACTION_INSERT)) {
-                showDbResultMessage(R.string.movie_added_msg);
-            } else if (intent.getAction().equals(MovieDataService.ACTION_DELETE)) {
-                showDbResultMessage(R.string.movie_deleted_msg);
-            }
-        }
-    };
+//    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            if (intent.getAction().equals(MovieDataService.ACTION_INSERT)) {
+//                showDbResultMessage(R.string.movie_added_msg);
+//            } else if (intent.getAction().equals(MovieDataService.ACTION_DELETE)) {
+//                showDbResultMessage(R.string.movie_deleted_msg);
+//            }
+//        }
+//    };
 
     @Override
     public void showDbResultMessage (@StringRes int msg) {
@@ -177,61 +170,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements MovieDeta
     @Override
     protected void onPause() {
         super.onPause();
-        mContentResolver.unregisterContentObserver(mMovieContentObserver);
-        unregisterReceiver(mReceiver);
-    }
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-
-        switch (id) {
-            case ID_LOADER_FAVORITES:
-                return new CursorLoader(this,
-                        MoviesDbContract.MoviesEntry.CONTENT_URI,
-                        null,
-                        null,
-                        null,
-                        null);
-            default:
-                return null;
-        }
-
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-
-        if (cursor != null) {
-            List<MovieDetails> listFavoriteMovies = new ArrayList<>();
-
-            while (cursor.moveToNext()) {
-                String columnMovieId = MoviesDbContract.MoviesEntry.COLUMN_MOVIE_ID;
-                String columnMovieTitle = MoviesDbContract.MoviesEntry.COLUMN_MOVIE_TITLE;
-                String columnMoviePoster = MoviesDbContract.MoviesEntry.COLUMN_MOVIE_POSTER;
-                String columnSynopsis = MoviesDbContract.MoviesEntry.COLUMN_MOVIE_SYNOPSIS;
-                String columnUserRatings = MoviesDbContract.MoviesEntry.COLUMN_USER_RATINGS;
-                String columnReleaseDate = MoviesDbContract.MoviesEntry.COLUMN_RELEASE_DATE;
-
-                Integer movieId = cursor.getInt(cursor.getColumnIndex(columnMovieId));
-                String title = cursor.getString(cursor.getColumnIndex(columnMovieTitle));
-                String posterPath = cursor.getString(cursor.getColumnIndex(columnMoviePoster));
-                String synopsis = cursor.getString(cursor.getColumnIndex(columnSynopsis));
-                Double userRatings = cursor.getDouble(cursor.getColumnIndex(columnUserRatings));
-                String releaseDate = cursor.getString(cursor.getColumnIndex(columnReleaseDate));
-
-                MovieDetails movieDetails = new MovieDetails(movieId, title, posterPath, synopsis, userRatings, releaseDate);
-                listFavoriteMovies.add(movieDetails);
-
-                presenter.setFavoriteMovies(listFavoriteMovies);
-
-                toggleFavoriteStar(presenter.hasFavoriteMovie(mMovieDetails));
-            }
-        }
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-
+//        unregisterReceiver(mReceiver);
     }
 
     private void openTrailer(String param) {
@@ -252,33 +191,16 @@ public class MovieDetailsActivity extends AppCompatActivity implements MovieDeta
 
     }
 
-    static class MovieContentObserver extends ContentObserver {
-
-        private MovieContentObserver(HandlerThread handler) {
-            super(new Handler(handler.getLooper()));
-        }
-
-        static MovieContentObserver getTestContentObserver() {
-            HandlerThread ht = new HandlerThread("ContentObserverThread");
-            ht.start();
-            return new MovieContentObserver(ht);
-        }
-
-        @Override
-        public void onChange(boolean selfChange) {
-            super.onChange(selfChange);
-            //TODO: it calls both, only keep one!
-        }
-
-        @Override
-        public void onChange(boolean selfChange, Uri uri) {
-            super.onChange(selfChange, uri);
-        }
-    }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
         presenter.dettachView();
+        cancelAsyncTasks();
+    }
+
+    public void cancelAsyncTasks() {
+        if (asyncTaskInsert != null) asyncTaskInsert.cancel(true);
+        if (asyncTaskDelete != null) asyncTaskDelete.cancel(true);
+        if (asyncTaskQueryAll != null) asyncTaskQueryAll.cancel(true);
     }
 }

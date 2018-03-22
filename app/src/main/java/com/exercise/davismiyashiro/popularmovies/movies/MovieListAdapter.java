@@ -48,8 +48,10 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.Movi
     }
 
     public void replaceData(List<MovieDetails> movies) {
-        mMovieList = movies;
-        notifyDataSetChanged();
+        if (movies != null) {
+            mMovieList = movies;
+            notifyDataSetChanged();
+        }
     }
 
     public class MovieListHolder extends RecyclerView.ViewHolder {
