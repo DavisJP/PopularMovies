@@ -24,11 +24,6 @@
             android:label="@string/title_activity_movie_details"
             android:theme="@style/AppTheme.NoActionBar" />
 
-        <provider
-            android:name="com.exercise.davismiyashiro.popularmovies.data.local.MoviesProvider"
-            android:authorities="com.exercise.davismiyashiro.popularmovies"
-            android:exported="false" />
-
         <service
             android:name=".data.local.MovieDataService"
             android:exported="false"/>

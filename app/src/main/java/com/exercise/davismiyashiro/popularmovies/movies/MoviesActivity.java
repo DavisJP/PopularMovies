@@ -1,5 +1,6 @@
 package com.exercise.davismiyashiro.popularmovies.movies;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
@@ -11,21 +12,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.exercise.davismiyashiro.popularmovies.App;
 import com.exercise.davismiyashiro.popularmovies.R;
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
-import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDao;
-import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDb;
-import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb;
 import com.exercise.davismiyashiro.popularmovies.databinding.ActivityMoviesBinding;
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsActivity;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.exercise.davismiyashiro.popularmovies.data.local.MovieDataService.AsyncTaskQueryAll;
-
-public class MoviesActivity extends AppCompatActivity implements MoviesInterfaces.View,
+public class MoviesActivity extends AppCompatActivity implements
         MovieListAdapter.OnMovieClickListener {
 
     public static final String POPULARITY_DESC_PARAM = "popular";
@@ -36,14 +31,10 @@ public class MoviesActivity extends AppCompatActivity implements MoviesInterface
 
     private MovieListAdapter mMovieListAdapter;
 
-    private MoviesInterfaces.Presenter presenter;
-
     private String mSortOpt = POPULARITY_DESC_PARAM;
     private String SORT_KEY = "SORT_KEY";
 
-    private MoviesDb db;
-    private MoviesDao moviesDao;
-    private AsyncTaskQueryAll asyncTaskQueryAll;
+    private MoviesViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,8 +42,7 @@ public class MoviesActivity extends AppCompatActivity implements MoviesInterface
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_movies);
 
-        presenter = new MoviesPresenter(getTheMovieDbClient());
-        presenter.attachView(this);
+        viewModel = ViewModelProviders.of(this).get(MoviesViewModel.class);
 
         if (savedInstanceState != null) {
             mSortOpt = savedInstanceState.getString(SORT_KEY);
@@ -66,15 +56,21 @@ public class MoviesActivity extends AppCompatActivity implements MoviesInterface
         binding.rvMovieList.setAdapter(mMovieListAdapter);
 
         if (mSortOpt.equals(FAVORITES_PARAM)) {
-            refreshFavoriteMovies();
+            viewModel.refreshFavoriteMovies();
         } else {
-            presenter.loadMovies(mSortOpt);
+            viewModel.loadMovies(mSortOpt);
         }
 
-        setTitleBar (mSortOpt);
+        viewModel.getMoviesObservable().observe(this, movies -> {
+            if (movies != null && !movies.isEmpty()) {
+                updateMovieData(movies);
+                showMovieList();
+            } else {
+                showErrorMsg();
+            }
+        });
 
-        db = MoviesDb.getDatabase(getApplication());
-        moviesDao = db.moviesDao();
+        setTitleBar (mSortOpt);
     }
 
     private void setTitleBar (String favoritesParam) {
@@ -97,10 +93,6 @@ public class MoviesActivity extends AppCompatActivity implements MoviesInterface
         }
     }
 
-    private TheMovieDb getTheMovieDbClient () {
-        return ((App)getApplication()).getMovieDbApi();
-    }
-
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putString(SORT_KEY, mSortOpt);
@@ -119,19 +111,16 @@ public class MoviesActivity extends AppCompatActivity implements MoviesInterface
         super.onResume();
     }
 
-    @Override
     public void showErrorMsg() {
         binding.tvErrorMessageDisplay.setVisibility(View.VISIBLE);
         binding.rvMovieList.setVisibility(View.INVISIBLE);
     }
 
-    @Override
     public void showMovieList() {
         binding.tvErrorMessageDisplay.setVisibility(View.INVISIBLE);
         binding.rvMovieList.setVisibility(View.VISIBLE);
     }
 
-    @Override
     public void updateMovieData(List<MovieDetails> listMovies) {
         mMovieListAdapter.replaceData(listMovies);
     }
@@ -150,8 +139,7 @@ public class MoviesActivity extends AppCompatActivity implements MoviesInterface
             case R.id.action_popular:
 
                 mSortOpt = POPULARITY_DESC_PARAM;
-
-                presenter.loadMovies(mSortOpt);
+                viewModel.loadMovies(mSortOpt);
                 setTitleBar(mSortOpt);
 
                 return true;
@@ -159,8 +147,7 @@ public class MoviesActivity extends AppCompatActivity implements MoviesInterface
             case R.id.action_highest_rated:
 
                 mSortOpt = HIGHEST_RATED_PARAM;
-
-                presenter.loadMovies(mSortOpt);
+                viewModel.loadMovies(mSortOpt);
                 setTitleBar(mSortOpt);
 
                 return true;
@@ -168,8 +155,7 @@ public class MoviesActivity extends AppCompatActivity implements MoviesInterface
             case R.id.action_favorites:
 
                 mSortOpt = FAVORITES_PARAM;
-
-                refreshFavoriteMovies();
+                viewModel.refreshFavoriteMovies();
                 setTitleBar(mSortOpt);
 
                 return true;
@@ -177,18 +163,6 @@ public class MoviesActivity extends AppCompatActivity implements MoviesInterface
                 return super.onOptionsItemSelected(item);
         }
 
-    }
-
-    private void refreshFavoriteMovies() {
-        asyncTaskQueryAll = new AsyncTaskQueryAll(moviesDao, movieList -> {
-            if (movieList != null) {
-                updateMovieData(movieList);
-                showMovieList();
-            } else {
-                showErrorMsg(); //TODO: Show no favorites
-            }
-        });
-        asyncTaskQueryAll.execute();
     }
 
     @Override
@@ -201,11 +175,6 @@ public class MoviesActivity extends AppCompatActivity implements MoviesInterface
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        presenter.dettachView();
-        cancelAsyncTasks();
-    }
-
-    public void cancelAsyncTasks() {
-        if (asyncTaskQueryAll != null) asyncTaskQueryAll.cancel(true);
+        viewModel.cancelAsyncTasks();
     }
 }
