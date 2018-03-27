@@ -26,12 +26,14 @@ import timber.log.Timber;
 
 public class MoviesViewModel extends AndroidViewModel {
 
+    private String sortingOption;
+
     TheMovieDb serviceApi;
 
     private MoviesDb db;
+
     private MoviesDao moviesDao;
     private MovieDataService.AsyncTaskQueryAll asyncTaskQueryAll;
-
     private MediatorLiveData<List<MovieDetails>> moviesObservable;
 
     public MoviesViewModel(@NonNull Application application) {
@@ -50,8 +52,12 @@ public class MoviesViewModel extends AndroidViewModel {
         return moviesObservable;
     }
 
-    public void loadMovies(String sorting) {
-        final Call call  = serviceApi.getPopular(sorting, BuildConfig.API_KEY);
+    public void setSortingOption(String sortingOption) {
+        this.sortingOption = sortingOption;
+    }
+
+    public void loadMovies() {
+        final Call call  = serviceApi.getPopular(sortingOption, BuildConfig.API_KEY);
 
         MovieDbApiClient.enqueue(call, new MovieDbApiClient.RequestListener<Response<MovieDetails>>() {
             @Override
@@ -79,7 +85,11 @@ public class MoviesViewModel extends AndroidViewModel {
     public void refreshFavoriteMovies() {
         asyncTaskQueryAll = new MovieDataService.AsyncTaskQueryAll(moviesDao, movieList -> {
             if (movieList != null) {
-                moviesObservable.setValue(movieList);
+                moviesObservable.addSource(movieList, values -> {
+                    if (sortingOption.equals(MoviesActivity.FAVORITES_PARAM)){
+                        moviesObservable.setValue(values);
+                    }
+                });
             } else {
                 moviesObservable.setValue(null); //TODO: Show no favorites
             }

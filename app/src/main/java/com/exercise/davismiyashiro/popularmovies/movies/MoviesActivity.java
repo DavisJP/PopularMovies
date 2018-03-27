@@ -55,11 +55,6 @@ public class MoviesActivity extends AppCompatActivity implements
         mMovieListAdapter = new MovieListAdapter(new LinkedList<>(),this);
         binding.rvMovieList.setAdapter(mMovieListAdapter);
 
-        if (mSortOpt.equals(FAVORITES_PARAM)) {
-            viewModel.refreshFavoriteMovies();
-        } else {
-            viewModel.loadMovies(mSortOpt);
-        }
 
         viewModel.getMoviesObservable().observe(this, movies -> {
             if (movies != null && !movies.isEmpty()) {
@@ -70,6 +65,14 @@ public class MoviesActivity extends AppCompatActivity implements
             }
         });
 
+        if (mSortOpt.equals(FAVORITES_PARAM)) {
+            viewModel.refreshFavoriteMovies();
+        } else {
+            viewModel.setSortingOption(mSortOpt);
+            viewModel.loadMovies();
+        }
+
+        viewModel.setSortingOption(mSortOpt);
         setTitleBar (mSortOpt);
     }
 
@@ -139,7 +142,8 @@ public class MoviesActivity extends AppCompatActivity implements
             case R.id.action_popular:
 
                 mSortOpt = POPULARITY_DESC_PARAM;
-                viewModel.loadMovies(mSortOpt);
+                viewModel.setSortingOption(mSortOpt);
+                viewModel.loadMovies();
                 setTitleBar(mSortOpt);
 
                 return true;
@@ -147,7 +151,8 @@ public class MoviesActivity extends AppCompatActivity implements
             case R.id.action_highest_rated:
 
                 mSortOpt = HIGHEST_RATED_PARAM;
-                viewModel.loadMovies(mSortOpt);
+                viewModel.setSortingOption(mSortOpt);
+                viewModel.loadMovies();
                 setTitleBar(mSortOpt);
 
                 return true;
@@ -155,6 +160,7 @@ public class MoviesActivity extends AppCompatActivity implements
             case R.id.action_favorites:
 
                 mSortOpt = FAVORITES_PARAM;
+                viewModel.setSortingOption(mSortOpt);
                 viewModel.refreshFavoriteMovies();
                 setTitleBar(mSortOpt);
 

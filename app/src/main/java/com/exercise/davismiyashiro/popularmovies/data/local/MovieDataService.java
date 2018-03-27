@@ -1,6 +1,7 @@
 package com.exercise.davismiyashiro.popularmovies.data.local;
 
 import android.app.IntentService;
+import android.arch.lifecycle.LiveData;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -79,14 +80,14 @@ public class MovieDataService extends IntentService {
         context.startService(intent);
     }
 
-    public static class AsyncTaskQueryAll extends AsyncTask<Void, Void, List<MovieDetails>> {
+    public static class AsyncTaskQueryAll extends AsyncTask<Void, Void, LiveData<List<MovieDetails>>> {
 
         private MoviesDao localDao;
         private AsyncTaskQueryAllResponse asyncResponse;
-        private List<MovieDetails> movieList;
+        private LiveData<List<MovieDetails>> movieList;
 
         public interface AsyncTaskQueryAllResponse {
-            void processFinish(List<MovieDetails> movieList);
+            void processFinish(LiveData<List<MovieDetails>> movieList);
         }
 
         public AsyncTaskQueryAll(MoviesDao moviesDao, AsyncTaskQueryAllResponse delegate) {
@@ -95,7 +96,7 @@ public class MovieDataService extends IntentService {
         }
 
         @Override
-        protected List<MovieDetails> doInBackground(Void... voids) {
+        protected LiveData<List<MovieDetails>> doInBackground(Void... voids) {
             if (!isCancelled()) {
                 movieList = localDao.getAllMovies();
             }
@@ -103,7 +104,7 @@ public class MovieDataService extends IntentService {
         }
 
         @Override
-        protected void onPostExecute(List<MovieDetails> movieDetails) {
+        protected void onPostExecute(LiveData<List<MovieDetails>> movieDetails) {
             super.onPostExecute(movieDetails);
             asyncResponse.processFinish(movieList);
         }

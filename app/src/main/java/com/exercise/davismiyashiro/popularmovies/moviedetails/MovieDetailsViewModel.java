@@ -2,6 +2,7 @@ package com.exercise.davismiyashiro.popularmovies.moviedetails;
 
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
+import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MediatorLiveData;
 import android.support.annotation.NonNull;
 
@@ -42,6 +43,7 @@ public class MovieDetailsViewModel extends AndroidViewModel{
 
     private MediatorLiveData<List<Trailer>> trailersObservable;
     private MediatorLiveData<List<Review>> reviewsObservable;
+
     public MovieDetailsViewModel(@NonNull Application application) {
         super(application);
 
@@ -51,7 +53,7 @@ public class MovieDetailsViewModel extends AndroidViewModel{
         moviesDao = db.moviesDao();
 
         moviesObservable = new MediatorLiveData<>();
-        moviesObservable.setValue(new ArrayList<>());
+        moviesObservable.setValue(null);
 
         trailersObservable = new MediatorLiveData<>();
         trailersObservable.setValue(new ArrayList<>());
@@ -60,7 +62,7 @@ public class MovieDetailsViewModel extends AndroidViewModel{
         trailersObservable.setValue(new ArrayList<>());
     }
 
-    public MediatorLiveData<List<MovieDetails>> getMoviesObservable() {
+    public LiveData<List<MovieDetails>> getMoviesObservable() {
         return moviesObservable;
     }
 
@@ -75,7 +77,9 @@ public class MovieDetailsViewModel extends AndroidViewModel{
     public void refreshFavoriteMoviesList() {
         asyncTaskQueryAll = new MovieDataService.AsyncTaskQueryAll(moviesDao, movieList -> {
             if (movieList != null) {
-                moviesObservable.setValue(movieList);
+                moviesObservable.addSource(movieList, values -> moviesObservable.setValue(values));
+//                moviesObservable.setValue(movieList);
+//                moviesObservable.postValue(movieList);
             }
         });
         asyncTaskQueryAll.execute();
