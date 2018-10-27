@@ -25,7 +25,6 @@ public class Repository {
     private TheMovieDb theMovieDb;
     private MoviesDao moviesDao;
 
-    //    private MutableLiveData<List<MovieDetails>> moviesObservable;
     private MovieDataService.AsyncTaskQueryAll asyncTaskQueryAll;
 
     public Repository(TheMovieDb networkService, MoviesDao dbService) {
@@ -45,7 +44,7 @@ public class Repository {
 
                 if (throwable.getCause() instanceof UnknownError) {
                     throwable.printStackTrace();
-//                    throw new UnknownError(throwable.getMessage());
+                    throw new UnknownError(throwable.getMessage());
                 }
                 moviesObservable.setValue(null);
             }

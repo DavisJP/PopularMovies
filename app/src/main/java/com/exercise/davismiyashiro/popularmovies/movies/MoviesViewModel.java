@@ -3,18 +3,16 @@ package com.exercise.davismiyashiro.popularmovies.movies;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.ViewModel;
+import android.arch.lifecycle.ViewModelProvider;
 import android.databinding.Bindable;
 import android.databinding.Observable;
 import android.databinding.PropertyChangeRegistry;
 import android.support.annotation.NonNull;
 
 import com.android.databinding.library.baseAdapters.BR;
-import com.exercise.davismiyashiro.popularmovies.App;
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
 import com.exercise.davismiyashiro.popularmovies.data.Repository;
-import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDao;
-import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDb;
-import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb;
 
 import java.util.List;
 
@@ -28,31 +26,16 @@ public class MoviesViewModel extends AndroidViewModel implements Observable {
 
 //    private String sortingOption;
 
-    TheMovieDb serviceApi;
-
-    private MoviesDb db;
-
-    private MoviesDao moviesDao;
-
     private LiveData<List<MovieDetails>> moviesObservable;
     private Repository repository;
 
     private PropertyChangeRegistry callbacks = new PropertyChangeRegistry();
 
-    public MoviesViewModel(@NonNull Application application) {
+    public MoviesViewModel(@NonNull Application application, Repository repositoryParam) {
         super(application);
 
-        serviceApi = ((App) application).getMovieDbApi();
-
-        db = MoviesDb.getDatabase(getApplication());
-        moviesDao = db.moviesDao();
-
-//        moviesObservable = new MediatorLiveData<>();
-//        moviesObservable.setValue(null);
-
-        repository = new Repository(serviceApi, moviesDao);
+        repository = repositoryParam;
     }
-
 
     @Bindable
     public LiveData<List<MovieDetails>> getMoviesObservable() {
@@ -103,5 +86,22 @@ public class MoviesViewModel extends AndroidViewModel implements Observable {
      */
     private void notifyPropertyChanged(int fieldId) {
         callbacks.notifyCallbacks(this, fieldId, null);
+    }
+
+    public static class Factory extends ViewModelProvider.NewInstanceFactory {
+
+        private final Application application;
+        private final Repository repository;
+
+        public Factory (Application application, Repository repository) {
+            this.application = application;
+            this.repository = repository;
+        }
+
+        @NonNull
+        @Override
+        public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+            return (T) new MoviesViewModel(application, repository);
+        }
     }
 }

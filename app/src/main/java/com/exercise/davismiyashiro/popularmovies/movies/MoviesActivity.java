@@ -12,8 +12,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.exercise.davismiyashiro.popularmovies.App;
 import com.exercise.davismiyashiro.popularmovies.R;
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
+import com.exercise.davismiyashiro.popularmovies.data.Repository;
 import com.exercise.davismiyashiro.popularmovies.databinding.ActivityMoviesBinding;
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsActivity;
 
@@ -40,7 +42,11 @@ public class MoviesActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        viewModel = ViewModelProviders.of(this).get(MoviesViewModel.class);
+        Repository repository = ((App)getApplication()).getRepository();
+
+        MoviesViewModel.Factory factory = new MoviesViewModel.Factory(getApplication(), repository);
+
+        viewModel = ViewModelProviders.of(this, factory).get(MoviesViewModel.class);
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_movies);
         binding.setLifecycleOwner(this);
