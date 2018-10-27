@@ -40,9 +40,12 @@ public class MoviesActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_movies);
-
         viewModel = ViewModelProviders.of(this).get(MoviesViewModel.class);
+
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_movies);
+        binding.setLifecycleOwner(this);
+
+        binding.setViewmodel(viewModel);
 
         if (savedInstanceState != null) {
             mSortOpt = savedInstanceState.getString(SORT_KEY);
@@ -56,7 +59,7 @@ public class MoviesActivity extends AppCompatActivity implements
         binding.rvMovieList.setAdapter(mMovieListAdapter);
 
 
-        viewModel.getMoviesObservable().observe(this, movies -> {
+        viewModel.getMoviesBySortingOption(mSortOpt).observe(this, movies -> {
             if (movies != null && !movies.isEmpty()) {
                 updateMovieData(movies);
                 showMovieList();
@@ -65,14 +68,6 @@ public class MoviesActivity extends AppCompatActivity implements
             }
         });
 
-        if (mSortOpt.equals(FAVORITES_PARAM)) {
-            viewModel.refreshFavoriteMovies();
-        } else {
-            viewModel.setSortingOption(mSortOpt);
-            viewModel.loadMovies();
-        }
-
-        viewModel.setSortingOption(mSortOpt);
         setTitleBar (mSortOpt);
     }
 
@@ -142,8 +137,7 @@ public class MoviesActivity extends AppCompatActivity implements
             case R.id.action_popular:
 
                 mSortOpt = POPULARITY_DESC_PARAM;
-                viewModel.setSortingOption(mSortOpt);
-                viewModel.loadMovies();
+                viewModel.getMoviesBySortingOption(mSortOpt);
                 setTitleBar(mSortOpt);
 
                 return true;
@@ -151,8 +145,7 @@ public class MoviesActivity extends AppCompatActivity implements
             case R.id.action_highest_rated:
 
                 mSortOpt = HIGHEST_RATED_PARAM;
-                viewModel.setSortingOption(mSortOpt);
-                viewModel.loadMovies();
+                viewModel.getMoviesBySortingOption(mSortOpt);
                 setTitleBar(mSortOpt);
 
                 return true;
@@ -160,8 +153,7 @@ public class MoviesActivity extends AppCompatActivity implements
             case R.id.action_favorites:
 
                 mSortOpt = FAVORITES_PARAM;
-                viewModel.setSortingOption(mSortOpt);
-                viewModel.refreshFavoriteMovies();
+                viewModel.getMoviesBySortingOption(mSortOpt);
                 setTitleBar(mSortOpt);
 
                 return true;

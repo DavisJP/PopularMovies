@@ -2,102 +2,106 @@ package com.exercise.davismiyashiro.popularmovies.movies;
 
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
-import android.arch.lifecycle.MediatorLiveData;
+import android.arch.lifecycle.LiveData;
+import android.databinding.Bindable;
+import android.databinding.Observable;
+import android.databinding.PropertyChangeRegistry;
 import android.support.annotation.NonNull;
 
+import com.android.databinding.library.baseAdapters.BR;
 import com.exercise.davismiyashiro.popularmovies.App;
-import com.exercise.davismiyashiro.popularmovies.BuildConfig;
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
-import com.exercise.davismiyashiro.popularmovies.data.Response;
-import com.exercise.davismiyashiro.popularmovies.data.local.MovieDataService;
+import com.exercise.davismiyashiro.popularmovies.data.Repository;
 import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDao;
 import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDb;
-import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient;
 import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb;
 
 import java.util.List;
 
-import retrofit2.Call;
-import timber.log.Timber;
+import static com.exercise.davismiyashiro.popularmovies.movies.MoviesActivity.FAVORITES_PARAM;
 
 /**
  * Created by Davis Miyashiro.
  */
 
-public class MoviesViewModel extends AndroidViewModel {
+public class MoviesViewModel extends AndroidViewModel implements Observable {
 
-    private String sortingOption;
+//    private String sortingOption;
 
     TheMovieDb serviceApi;
 
     private MoviesDb db;
 
     private MoviesDao moviesDao;
-    private MovieDataService.AsyncTaskQueryAll asyncTaskQueryAll;
-    private MediatorLiveData<List<MovieDetails>> moviesObservable;
+
+    private LiveData<List<MovieDetails>> moviesObservable;
+    private Repository repository;
+
+    private PropertyChangeRegistry callbacks = new PropertyChangeRegistry();
 
     public MoviesViewModel(@NonNull Application application) {
         super(application);
 
-        serviceApi = ((App)application).getMovieDbApi();
+        serviceApi = ((App) application).getMovieDbApi();
 
         db = MoviesDb.getDatabase(getApplication());
         moviesDao = db.moviesDao();
 
-        moviesObservable = new MediatorLiveData<>();
-        moviesObservable.setValue(null);
+//        moviesObservable = new MediatorLiveData<>();
+//        moviesObservable.setValue(null);
+
+        repository = new Repository(serviceApi, moviesDao);
     }
 
-    public MediatorLiveData<List<MovieDetails>> getMoviesObservable() {
+
+    @Bindable
+    public LiveData<List<MovieDetails>> getMoviesObservable() {
         return moviesObservable;
     }
 
-    public void setSortingOption(String sortingOption) {
-        this.sortingOption = sortingOption;
+    public void setMoviesObservable(LiveData<List<MovieDetails>> moviesObservable) {
+        this.moviesObservable = moviesObservable;
+        notifyPropertyChanged(BR.moviesObservable);
     }
 
-    public void loadMovies() {
-        final Call call  = serviceApi.getPopular(sortingOption, BuildConfig.API_KEY);
+    public LiveData<List<MovieDetails>> getMoviesBySortingOption(String sortingOption) {
 
-        MovieDbApiClient.enqueue(call, new MovieDbApiClient.RequestListener<Response<MovieDetails>>() {
-            @Override
-            public void onRequestFailure(Throwable throwable) {
-                Timber.e("FAIL! = " + throwable.getLocalizedMessage());
-                moviesObservable.setValue(null);
+        if (sortingOption.equals(FAVORITES_PARAM)) {
+            moviesObservable = repository.loadMoviesFromDb(sortingOption);
+        } else {
+            moviesObservable = repository.loadMoviesFromNetwork(sortingOption);
+        }
 
-                if (throwable.getCause() instanceof UnknownError) {
-                    throwable.printStackTrace();
-//                    throw new UnknownError(throwable.getMessage());
-                }
-            }
+        setMoviesObservable(moviesObservable);
 
-            @Override
-            public void onRequestSuccess(Response<MovieDetails> result) {
-                List<MovieDetails> movies = result.getResults();
-                    if (movies != null) {
-                        moviesObservable.setValue(movies);
-                    }
-                    //TODO: call.cancel() if finished too soon?
-            }
-        });
+        return moviesObservable;
     }
 
-    public void refreshFavoriteMovies() {
-        asyncTaskQueryAll = new MovieDataService.AsyncTaskQueryAll(moviesDao, movieList -> {
-            if (movieList != null) {
-                moviesObservable.addSource(movieList, values -> {
-                    if (sortingOption.equals(MoviesActivity.FAVORITES_PARAM)){
-                        moviesObservable.setValue(values);
-                    }
-                });
-            } else {
-                moviesObservable.setValue(null); //TODO: Show no favorites
-            }
-        });
-        asyncTaskQueryAll.execute();
-    }
+//    public void setSortingOption(String sortingOption) {
+//        this.sortingOption = sortingOption;
+//    }
 
     public void cancelAsyncTasks() {
-        if (asyncTaskQueryAll != null) asyncTaskQueryAll.cancel(true);
+        repository.cancelAsyncTasks();
+    }
+
+    @Override
+    public void addOnPropertyChangedCallback(OnPropertyChangedCallback callback) {
+        callbacks.add(callback);
+    }
+
+    @Override
+    public void removeOnPropertyChangedCallback(OnPropertyChangedCallback callback) {
+        callbacks.remove(callback);
+    }
+
+    /**
+     * Call this to notify of property changes generate on get Methods annotated with
+     * @Bindable and accessible from BR object
+     *
+     * @param fieldId
+     */
+    private void notifyPropertyChanged(int fieldId) {
+        callbacks.notifyCallbacks(this, fieldId, null);
     }
 }
