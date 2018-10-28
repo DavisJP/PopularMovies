@@ -1,18 +1,23 @@
 package com.exercise.davismiyashiro.popularmovies.data;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.PrimaryKey;
+import android.databinding.BaseObservable;
+import android.databinding.Bindable;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.util.List;
-
+import com.exercise.davismiyashiro.popularmovies.BR;
+import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 /**
  * Created by Davis Miyashiro on 05/02/2017.
  */
-
-public class MovieDetails implements Parcelable {
+@Entity(tableName = MoviesDbContract.MoviesEntry.TABLE_NAME)
+public class MovieDetails extends BaseObservable implements Parcelable {
 
     @SerializedName("poster_path")
     @Expose
@@ -25,6 +30,7 @@ public class MovieDetails implements Parcelable {
     private String releaseDate;
     @SerializedName("id")
     @Expose
+    @PrimaryKey
     private Integer id;
     @SerializedName("title")
     @Expose
@@ -33,6 +39,7 @@ public class MovieDetails implements Parcelable {
     @Expose
     private Double voteAverage;
 
+    @Ignore
     protected MovieDetails(Parcel in) {
         posterPath = in.readString();
         overview = in.readString();
@@ -42,12 +49,12 @@ public class MovieDetails implements Parcelable {
         voteAverage = in.readDouble();
     }
 
-    public MovieDetails(Integer movieId, String movieTitle, String posterPath, String synopsis, Double userRatings, String releaseDate) {
-        this.id = movieId;
-        this.title = movieTitle;
+    public MovieDetails(Integer id, String title, String posterPath, String overview, Double voteAverage, String releaseDate) {
+        this.id = id;
+        this.title = title;
         this.posterPath = posterPath;
-        this.overview = synopsis;
-        this.voteAverage = userRatings;
+        this.overview = overview;
+        this.voteAverage = voteAverage;
         this.releaseDate = releaseDate;
     }
 
@@ -63,52 +70,64 @@ public class MovieDetails implements Parcelable {
         }
     };
 
+    @Bindable
     public String getPosterPath() {
         return posterPath;
     }
 
     public void setPosterPath(String posterPath) {
         this.posterPath = posterPath;
+        notifyPropertyChanged(BR.posterPath);
     }
 
+    @Bindable
     public String getOverview() {
         return overview;
     }
 
     public void setOverview(String overview) {
         this.overview = overview;
+        notifyPropertyChanged(BR.overview);
     }
 
+    @Bindable
     public String getReleaseDate() {
         return releaseDate;
     }
 
     public void setReleaseDate(String releaseDate) {
         this.releaseDate = releaseDate;
+        notifyPropertyChanged(BR.releaseDate);
     }
 
+    @Bindable
     public Integer getId() {
         return id;
     }
 
     public void setId(Integer id) {
         this.id = id;
+        notifyPropertyChanged(BR.id);
     }
 
+    @Bindable
     public String getTitle() {
         return title;
     }
 
     public void setTitle(String title) {
         this.title = title;
+        notifyPropertyChanged(BR.title);
     }
 
+    @Bindable
     public Double getVoteAverage() {
         return voteAverage;
     }
 
     public void setVoteAverage(Double voteAverage) {
         this.voteAverage = voteAverage;
+        notifyPropertyChanged(BR.voteAverage);
     }
 
     @Override

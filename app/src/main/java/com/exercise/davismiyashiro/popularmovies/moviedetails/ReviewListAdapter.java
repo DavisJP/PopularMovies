@@ -1,18 +1,15 @@
 package com.exercise.davismiyashiro.popularmovies.moviedetails;
 
+import android.databinding.DataBindingUtil;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.exercise.davismiyashiro.popularmovies.R;
 import com.exercise.davismiyashiro.popularmovies.data.Review;
+import com.exercise.davismiyashiro.popularmovies.databinding.ReviewListItemBinding;
 
 import java.util.List;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 /**
  * Created by Davis Miyashiro on 01/03/2017.
@@ -28,19 +25,21 @@ public class ReviewListAdapter extends RecyclerView.Adapter<ReviewListAdapter.Re
         this.listener = listener;
     }
 
-    interface OnReviewClickListener {
+    public interface OnReviewClickListener {
         void onReviewClick(Review review);
     }
 
     @Override
     public ReviewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View root = LayoutInflater.from(parent.getContext()).inflate(R.layout.review_list_item, parent, false);
-        return new ReviewHolder(root);
+        ReviewListItemBinding binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()), R.layout.review_list_item, parent, false);
+        return new ReviewHolder(binding);
     }
 
     @Override
     public void onBindViewHolder(ReviewHolder holder, int position) {
-        holder.bindView(reviews.get(position));
+        holder.binding.setReview(reviews.get(position));
+        holder.binding.setReviewCallback(listener);
+        holder.binding.executePendingBindings();
     }
 
     @Override
@@ -55,30 +54,11 @@ public class ReviewListAdapter extends RecyclerView.Adapter<ReviewListAdapter.Re
 
     public class ReviewHolder extends RecyclerView.ViewHolder {
 
-        @BindView(R.id.review_name)
-        TextView reviewName;
-        @BindView(R.id.review_content)
-        TextView reviewContent;
+        ReviewListItemBinding binding;
 
-        private Review review;
-
-        public ReviewHolder(View itemView) {
-            super(itemView);
-
-            ButterKnife.bind(this, itemView);
-
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    listener.onReviewClick(review);
-                }
-            });
-        }
-
-        void bindView(Review review) {
-            this.review = review;
-            reviewName.setText(review.getAuthor());
-            reviewContent.setText(review.getContent());
+        public ReviewHolder(ReviewListItemBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
         }
     }
 }

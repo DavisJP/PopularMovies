@@ -2,8 +2,14 @@ package com.exercise.davismiyashiro.popularmovies;
 
 import android.app.Application;
 
+import com.exercise.davismiyashiro.popularmovies.data.Repository;
+import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDao;
+import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDb;
 import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient;
 import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb;
+import com.facebook.stetho.Stetho;
+
+import timber.log.Timber;
 
 /**
  * Created by Davis Miyashiro on 07/12/2017.
@@ -11,15 +17,32 @@ import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb;
 
 public class App extends Application {
 
-    private static final String THEMOVIEDB_API = "https://api.themoviedb.org";
-    private final TheMovieDb movieDbApi;
+    private MoviesDb db;
+    private MoviesDao moviesDao;
 
-    public App() {
+    private TheMovieDb serviceApi;
+    private Repository repository;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        if (BuildConfig.DEBUG) {
+            Timber.plant(new Timber.DebugTree());
+            Stetho.initializeWithDefaults(this);
+        }
+
         MovieDbApiClient apiClient = new MovieDbApiClient();
-        movieDbApi = apiClient.getService();
+        serviceApi = apiClient.getService();
+
+        db = MoviesDb.getDatabase(this);
+        moviesDao = db.moviesDao();
+
+        repository = new Repository(serviceApi, moviesDao);
     }
 
-    public TheMovieDb getMovieDbApi () {
-        return movieDbApi;
+    public Repository getRepository() {
+        return repository;
     }
+
 }

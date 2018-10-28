@@ -1,15 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_movies"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.exercise.davismiyashiro.popularmovies.movies.MoviesActivity">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+        <variable
+            name="viewmodel"
+            type="com.exercise.davismiyashiro.popularmovies.movies.MoviesViewModel" />
+    </data>
+    <FrameLayout
+        android:id="@+id/activity_movies"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.exercise.davismiyashiro.popularmovies.movies.MoviesActivity">
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv_movie_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"></android.support.v7.widget.RecyclerView>
+        android:layout_height="match_parent"
+        app:data="@{viewmodel.moviesObservable}"
+        tools:listitem="@layout/movie_list_item"/>
 
     <TextView
         android:id="@+id/tv_error_message_display"
@@ -17,6 +26,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="16dp"
-        android:text="Please check your network status or try again later."
+        android:text="@string/please_check_your_network_status_or_try_again_later"
         android:visibility="invisible" />
-</FrameLayout>
+    </FrameLayout>
+</layout>

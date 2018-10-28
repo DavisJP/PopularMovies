@@ -1,12 +1,19 @@
 package com.exercise.davismiyashiro.popularmovies.data.local;
 
 import android.app.IntentService;
+import android.arch.lifecycle.LiveData;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.annotation.Nullable;
-import android.util.Log;
+
+import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
+
+import java.util.List;
+
+import timber.log.Timber;
 
 import static com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract.MoviesEntry;
 
@@ -41,21 +48,21 @@ public class MovieDataService extends IntentService {
         int rows = getContentResolver().delete(uri, null, null);
 
         if (rows > 0) {
-            Log.d(TAG, "Delete Movie ok");
+            Timber.d(TAG, "Delete Movie ok");
             Intent deleteOk = new Intent(ACTION_DELETE);
             sendBroadcast(deleteOk);
         } else {
-            Log.e(TAG, "Error deleting Movie");
+            Timber.e(TAG, "Error deleting Movie");
         }
     }
 
     private void insertMovieDb(ContentValues values) {
         if (getContentResolver().insert(MoviesEntry.CONTENT_URI, values) != null) {
-            Log.d(TAG, "Insert Movie ok");
+            Timber.d(TAG, "Insert Movie ok");
             Intent insertOk = new Intent(ACTION_INSERT);
             sendBroadcast(insertOk);
         } else {
-            Log.e(TAG, "Error inserting Movie");
+            Timber.e(TAG, "Error inserting Movie");
         }
     }
 
@@ -71,5 +78,97 @@ public class MovieDataService extends IntentService {
         intent.setAction(ACTION_DELETE);
         intent.setData(uri);
         context.startService(intent);
+    }
+
+    public static class AsyncTaskQueryAll extends AsyncTask<Void, Void, LiveData<List<MovieDetails>>> {
+
+        private MoviesDao localDao;
+        private AsyncTaskQueryAllResponse asyncResponse;
+        private LiveData<List<MovieDetails>> movieList;
+
+        public interface AsyncTaskQueryAllResponse {
+            void processFinish(LiveData<List<MovieDetails>> movieList);
+        }
+
+        public AsyncTaskQueryAll(MoviesDao moviesDao, AsyncTaskQueryAllResponse delegate) {
+            localDao = moviesDao;
+            asyncResponse = delegate;
+        }
+
+        @Override
+        protected LiveData<List<MovieDetails>> doInBackground(Void... voids) {
+            if (!isCancelled()) {
+                movieList = localDao.getAllMovies();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(LiveData<List<MovieDetails>> movieDetails) {
+            super.onPostExecute(movieDetails);
+            asyncResponse.processFinish(movieList);
+        }
+    }
+
+    public static class AsyncTaskInsert extends AsyncTask<MovieDetails, Void, Void>{
+
+        private MoviesDao localDao;
+        private AsyncResponse asyncResponse;
+
+        public interface AsyncResponse {
+            void processFinish();
+        }
+
+        public AsyncTaskInsert(MoviesDao moviesDao, AsyncResponse delegate) {
+            localDao = moviesDao;
+            asyncResponse = delegate;
+        }
+
+        @Override
+        protected Void doInBackground(MovieDetails... movieDetails) {
+            if (!isCancelled()) {
+                if (movieDetails != null) {
+                    localDao.insert(movieDetails[0]);
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            asyncResponse.processFinish();
+        }
+    }
+
+    public static class AsyncTaskDelete extends AsyncTask<MovieDetails, Void, Void>{
+
+        private MoviesDao localDao;
+        private AsyncResponse asyncResponse;
+
+        public interface AsyncResponse {
+            void processFinish();
+        }
+
+        public AsyncTaskDelete(MoviesDao moviesDao, AsyncResponse delegate) {
+            localDao = moviesDao;
+            asyncResponse = delegate;
+        }
+
+        @Override
+        protected Void doInBackground(MovieDetails... movieDetails) {
+            if (!isCancelled()) {
+                if (movieDetails != null) {
+                    localDao.deleteMovies(movieDetails[0]);
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            asyncResponse.processFinish();
+        }
     }
 }

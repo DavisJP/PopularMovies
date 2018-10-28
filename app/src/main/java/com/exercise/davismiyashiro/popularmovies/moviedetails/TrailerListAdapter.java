@@ -1,18 +1,15 @@
 package com.exercise.davismiyashiro.popularmovies.moviedetails;
 
+import android.databinding.DataBindingUtil;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.exercise.davismiyashiro.popularmovies.R;
 import com.exercise.davismiyashiro.popularmovies.data.Trailer;
+import com.exercise.davismiyashiro.popularmovies.databinding.TrailerListItemBinding;
 
 import java.util.List;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 /**
  * Created by Davis Miyashiro on 26/02/2017.
@@ -28,19 +25,21 @@ public class TrailerListAdapter extends RecyclerView.Adapter<TrailerListAdapter.
         this.listener = listener;
     }
 
-    interface OnTrailerClickListener {
+    public interface OnTrailerClickListener {
         void onTrailerClick(Trailer trailer);
     }
 
     @Override
     public TrailerHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View root = LayoutInflater.from(parent.getContext()).inflate(R.layout.trailer_list_item, parent, false);
-        return new TrailerHolder(root);
+        TrailerListItemBinding binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()), R.layout.trailer_list_item, parent, false);
+        return new TrailerHolder(binding);
     }
 
     @Override
     public void onBindViewHolder(TrailerHolder holder, int position) {
-        holder.bindView(trailers.get(position));
+        holder.binding.setTrailer(trailers.get(position));
+        holder.binding.setTrailerCallback(listener);
+        holder.binding.executePendingBindings();
     }
 
     @Override
@@ -51,32 +50,15 @@ public class TrailerListAdapter extends RecyclerView.Adapter<TrailerListAdapter.
     public void replaceData(List<Trailer> trailers) {
         this.trailers = trailers;
         notifyDataSetChanged();
-
     }
 
     public class TrailerHolder extends RecyclerView.ViewHolder {
 
-        @BindView(R.id.trailer_name)
-        TextView trailerName;
+        private TrailerListItemBinding binding;
 
-        private Trailer trailer;
-
-        public TrailerHolder(View itemView) {
-            super(itemView);
-
-            ButterKnife.bind(this, itemView);
-
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    listener.onTrailerClick(trailer);
-                }
-            });
-        }
-
-        public void bindView(Trailer trailer) {
-            this.trailer = trailer;
-            this.trailerName.setText(trailer.getName());
+        public TrailerHolder(TrailerListItemBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
         }
     }
 }
