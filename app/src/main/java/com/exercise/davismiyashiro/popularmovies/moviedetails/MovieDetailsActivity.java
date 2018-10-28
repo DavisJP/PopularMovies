@@ -13,8 +13,10 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Toast;
 
+import com.exercise.davismiyashiro.popularmovies.App;
 import com.exercise.davismiyashiro.popularmovies.R;
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
+import com.exercise.davismiyashiro.popularmovies.data.Repository;
 import com.exercise.davismiyashiro.popularmovies.data.Review;
 import com.exercise.davismiyashiro.popularmovies.data.Trailer;
 import com.exercise.davismiyashiro.popularmovies.databinding.ActivityMovieDetailsBinding;
@@ -45,7 +47,10 @@ public class MovieDetailsActivity extends AppCompatActivity implements
             mMovieDetails = getIntent().getParcelableExtra(MOVIE_DETAILS);
         }
 
-        viewModel = ViewModelProviders.of(this).get(MovieDetailsViewModel.class);
+        Repository repository = ((App) getApplication()).getRepository();
+
+        MovieDetailsViewModel.Factory factory = new MovieDetailsViewModel.Factory(getApplication(), repository);
+        viewModel = ViewModelProviders.of(this, factory).get(MovieDetailsViewModel.class);
 
         mTrailersAdapter = new TrailerListAdapter(new ArrayList<>(), this);
         LinearLayoutManager layout = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
@@ -65,47 +70,32 @@ public class MovieDetailsActivity extends AppCompatActivity implements
             binding.included.setMovieDetails(mMovieDetails);
             binding.included.movieVoteAverage.setText((mMovieDetails.getVoteAverage() != null) ? mMovieDetails.getVoteAverage().toString() : "0");
 
-            viewModel.loadTrailers(mMovieDetails.getId());
-            viewModel.loadReviews(mMovieDetails.getId());
-            viewModel.refreshFavoriteMoviesList();
-
             Bundle movieId = new Bundle();
             movieId.putInt("MOVIEID", mMovieDetails.getId());
+
+            viewModel.getReviewsObservable(mMovieDetails.getId()).observe(this,
+                    reviews -> mReviewAdapter.replaceData(reviews));
+
+            viewModel.getTrailersObservable(mMovieDetails.getId()).observe(this,
+                    trailers -> mTrailersAdapter.replaceData(trailers));
+
+            viewModel.getMovieDetailsObservable().observe(this, movies -> {
+                if (movies != null && !movies.isEmpty()) {
+                    binding.included.setIsFavorite(movies.contains(mMovieDetails));
+                }
+            });
         }
-
-        viewModel.getReviewsObservable().observe(this, reviews -> {
-            mReviewAdapter.replaceData(reviews);
-        });
-
-        viewModel.getTrailersObservable().observe(this, trailers -> {
-            mTrailersAdapter.replaceData(trailers);
-        });
-
-        viewModel.getMoviesObservable().observe(this, movies -> {
-            if (movies!= null && !movies.isEmpty()){
-                toggleFavoriteStar(movies.contains(mMovieDetails));
-            }
-        });
     }
 
     public void toggleFavoriteMovieBtn(View view) {
-        if (!binding.included.favouriteStar.isChecked()) {
+        if (!binding.included.getIsFavorite()) {
             viewModel.insertMovie(mMovieDetails);
         } else {
             viewModel.deleteMovie(mMovieDetails);
         }
     }
 
-    public void toggleFavoriteStar(boolean value) {
-        binding.included.favouriteStar.setChecked(value);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    public void showDbResultMessage (@StringRes int msg) {
+    public void showDbResultMessage(@StringRes int msg) {
         Toast.makeText(getBaseContext(), msg, Toast.LENGTH_SHORT).show();
     }
 

@@ -45,7 +45,4 @@ public class App extends Application {
         return repository;
     }
 
-    public TheMovieDb getMovieDbApi () {
-        return serviceApi;
-    }
 }

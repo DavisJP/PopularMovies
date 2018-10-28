@@ -16,6 +16,8 @@ import java.util.List;
 import retrofit2.Call;
 import timber.log.Timber;
 
+import static com.exercise.davismiyashiro.popularmovies.movies.MoviesActivity.FAVORITES_PARAM;
+
 /**
  * Created by Davis Miyashiro.
  */
@@ -25,6 +27,8 @@ public class Repository {
     private TheMovieDb theMovieDb;
     private MoviesDao moviesDao;
 
+    private MovieDataService.AsyncTaskInsert asyncTaskInsert;
+    private MovieDataService.AsyncTaskDelete asyncTaskDelete;
     private MovieDataService.AsyncTaskQueryAll asyncTaskQueryAll;
 
     public Repository(TheMovieDb networkService, MoviesDao dbService) {
@@ -84,5 +88,73 @@ public class Repository {
 
     public void cancelAsyncTasks() {
         if (asyncTaskQueryAll != null) asyncTaskQueryAll.cancel(true);
+        if (asyncTaskInsert != null) asyncTaskInsert.cancel(true);
+        if (asyncTaskDelete != null) asyncTaskDelete.cancel(true);
+    }
+
+    public LiveData<List<Trailer>> findTrailersByMovieId(Integer movieId) {
+
+        final Call call = theMovieDb.getTrailers(String.valueOf(movieId), BuildConfig.API_KEY);
+
+        final MediatorLiveData<List<Trailer>> trailersObservable = new MediatorLiveData<>();
+
+        MovieDbApiClient.enqueue(call, new MovieDbApiClient.RequestListener<Response<Trailer>>() {
+            @Override
+            public void onRequestFailure(Throwable throwable) {
+                Timber.d("DAVISLOG", "FAIL! = " + throwable.getLocalizedMessage());
+                throwable.printStackTrace();
+                //TODO: Add exception handling
+                trailersObservable.setValue(null);
+            }
+
+            @Override
+            public void onRequestSuccess(Response<Trailer> result) {
+                List<Trailer> trailers = result.getResults();
+                if (trailers != null && !trailers.isEmpty()) {
+                    trailersObservable.setValue(trailers);
+                }
+            }
+        });
+        return trailersObservable;
+    }
+
+    public LiveData<List<Review>> findReviewsByMovieId(Integer movieId) {
+
+        final Call call = theMovieDb.getReviews(String.valueOf(movieId), BuildConfig.API_KEY);
+
+        final MediatorLiveData<List<Review>> reviewsObservable = new MediatorLiveData<>();
+
+        MovieDbApiClient.enqueue(call, new MovieDbApiClient.RequestListener<Response<Review>>() {
+            @Override
+            public void onRequestFailure(Throwable throwable) {
+                if (call.isCanceled()) {
+                    Timber.e("DAVISLOG", "request was cancelled");
+                } else {
+                    Timber.d("DAVISLOG", "FAIL! = " + throwable.getLocalizedMessage());
+                    throwable.printStackTrace();
+                    //TODO: Add exception handling
+                    reviewsObservable.setValue(null);
+                }
+            }
+
+            @Override
+            public void onRequestSuccess(Response<Review> result) {
+                List<Review> reviews = result.getResults();
+                if (reviews != null && !reviews.isEmpty()) {
+                    reviewsObservable.setValue(reviews);
+                }
+            }
+        });
+        return reviewsObservable;
+    }
+
+    public void insertMovieDb(MovieDetails movieDetails) {
+        asyncTaskInsert = new MovieDataService.AsyncTaskInsert(moviesDao, () -> loadMoviesFromDb(FAVORITES_PARAM));
+        asyncTaskInsert.execute(movieDetails);
+    }
+
+    public void deleteMovieDb(MovieDetails movieDetails) {
+        asyncTaskDelete = new MovieDataService.AsyncTaskDelete(moviesDao, () -> loadMoviesFromDb(FAVORITES_PARAM));
+        asyncTaskDelete.execute(movieDetails);
     }
 }

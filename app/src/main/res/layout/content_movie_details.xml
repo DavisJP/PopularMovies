@@ -4,6 +4,9 @@
         <variable
             name="movieDetails"
             type="com.exercise.davismiyashiro.popularmovies.data.MovieDetails" />
+        <variable
+            name="isFavorite"
+            type="boolean"/>
     </data>
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -85,16 +88,16 @@
                     android:textSize="18sp"
                     tools:text="7.6"/>
 
-                <Button
+                <TextView
                     android:id="@+id/mark_favorite"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="10dp"
                     android:layout_marginTop="@dimen/activity_horizontal_margin"
-                    android:background="@color/movie_title_bg"
-                    android:padding="8dp"
-                    android:onClick="toggleFavoriteMovieBtn"
-                    android:text="@string/mark_as_favorite" />
+                    android:text="@string/mark_as_favorite"
+                    android:textColor="@android:color/black"
+                    android:textSize="18sp"
+                    tools:text="@string/mark_as_favorite"/>
 
                 <CheckBox
                     android:id="@+id/favourite_star"
@@ -102,7 +105,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:clickable="false"
+                    android:clickable="true"
+                    android:onClick="toggleFavoriteMovieBtn"
+                    android:checked="@{isFavorite}"
                     android:visibility="visible" />
             </LinearLayout>
         </RelativeLayout>
