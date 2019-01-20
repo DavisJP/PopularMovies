@@ -1,13 +1,13 @@
 package com.exercise.davismiyashiro.popularmovies.movies;
 
-import android.databinding.DataBindingUtil;
-import android.support.v7.widget.RecyclerView;
+import androidx.databinding.DataBindingUtil;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import com.exercise.davismiyashiro.popularmovies.R;
-import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
 import com.exercise.davismiyashiro.popularmovies.databinding.MovieListItemBinding;
+import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -17,16 +17,16 @@ import java.util.List;
  */
 public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.MovieListHolder> {
 
-    private List<MovieDetails> mMovieList;
+    private List<MovieDetailsObservable> mMovieList;
     private OnMovieClickListener mClickListener;
 
-    public MovieListAdapter(LinkedList<MovieDetails> movieList,OnMovieClickListener listener) {
+    public MovieListAdapter(LinkedList<MovieDetailsObservable> movieList,OnMovieClickListener listener) {
         mMovieList = movieList;
         mClickListener = listener;
     }
 
     public interface OnMovieClickListener {
-        void getMovieClicked(MovieDetails movieDetails);
+        void getMovieClicked(MovieDetailsObservable movieDetails);
     }
 
     @Override
@@ -47,7 +47,7 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.Movi
         return mMovieList.size();
     }
 
-    public void replaceData(List<MovieDetails> movies) {
+    public void replaceData(List<MovieDetailsObservable> movies) {
         if (movies != null) {
             mMovieList = movies;
             notifyDataSetChanged();

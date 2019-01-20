@@ -1,8 +1,8 @@
 package com.exercise.davismiyashiro.popularmovies.data;
 
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MediatorLiveData;
-import android.arch.lifecycle.MutableLiveData;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.exercise.davismiyashiro.popularmovies.BuildConfig;
 import com.exercise.davismiyashiro.popularmovies.data.local.MovieDataService;
@@ -11,6 +11,7 @@ import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient;
 import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb;
 import com.exercise.davismiyashiro.popularmovies.movies.MoviesActivity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -29,6 +30,7 @@ public class Repository {
 
     private MovieDataService.AsyncTaskInsert asyncTaskInsert;
     private MovieDataService.AsyncTaskDelete asyncTaskDelete;
+    private MovieDataService.AsyncTaskQueryMovie asyncTaskQueryMovie;
     private MovieDataService.AsyncTaskQueryAll asyncTaskQueryAll;
 
     public Repository(TheMovieDb networkService, MoviesDao dbService) {
@@ -50,7 +52,7 @@ public class Repository {
                     throwable.printStackTrace();
                     throw new UnknownError(throwable.getMessage());
                 }
-                moviesObservable.setValue(null);
+                moviesObservable.setValue(new ArrayList<>());
             }
 
             @Override
@@ -59,7 +61,7 @@ public class Repository {
                 if (movies != null) {
                     moviesObservable.setValue(movies);
                 } else {
-                    moviesObservable.setValue(null);
+                    moviesObservable.setValue(new ArrayList<>());
                     //TODO: call.cancel() if finished too soon?
                 }
             }
@@ -79,10 +81,27 @@ public class Repository {
                     }
                 });
             } else {
-                moviesObservable.setValue(null); //TODO: Show no favorites
+                moviesObservable.setValue(new ArrayList<>()); //TODO: Show no favorites
             }
         });
         asyncTaskQueryAll.execute();
+        return moviesObservable;
+    }
+
+    public LiveData<MovieDetails> getMovieFromDb(int movieId) {
+
+        final MediatorLiveData<MovieDetails> moviesObservable = new MediatorLiveData<>();
+
+        asyncTaskQueryMovie = new MovieDataService.AsyncTaskQueryMovie(moviesDao, movie -> {
+            if (movie != null) {
+                moviesObservable.addSource(movie, result -> {
+//                    if (result.getId() == movieId) {
+                        moviesObservable.setValue(result);
+//                    }
+                });
+            }
+        });
+        asyncTaskQueryMovie.execute(movieId);
         return moviesObservable;
     }
 
@@ -104,7 +123,7 @@ public class Repository {
                 Timber.d("DAVISLOG", "FAIL! = " + throwable.getLocalizedMessage());
                 throwable.printStackTrace();
                 //TODO: Add exception handling
-                trailersObservable.setValue(null);
+                trailersObservable.setValue(new ArrayList<>());
             }
 
             @Override
@@ -133,7 +152,7 @@ public class Repository {
                     Timber.d("DAVISLOG", "FAIL! = " + throwable.getLocalizedMessage());
                     throwable.printStackTrace();
                     //TODO: Add exception handling
-                    reviewsObservable.setValue(null);
+                    reviewsObservable.setValue(new ArrayList<>());
                 }
             }
 

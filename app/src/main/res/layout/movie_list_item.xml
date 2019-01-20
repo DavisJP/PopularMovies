@@ -6,7 +6,7 @@
     <data>
         <variable
             name="movieDetails"
-            type="com.exercise.davismiyashiro.popularmovies.data.MovieDetails"/>
+            type="com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable"/>
         <variable
             name="callback"
             type="com.exercise.davismiyashiro.popularmovies.movies.MovieListAdapter.OnMovieClickListener"/>

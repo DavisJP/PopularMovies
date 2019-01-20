@@ -7,7 +7,7 @@ import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.moshi.MoshiConverterFactory;
 import timber.log.Timber;
 
 /**
@@ -27,7 +27,7 @@ public class MovieDbApiClient {
             Retrofit retrofitSingle = new Retrofit.Builder()
                     .baseUrl(THEMOVIEDB_API)
                     .client(getOkHttp())
-                    .addConverterFactory(GsonConverterFactory.create())
+                    .addConverterFactory(MoshiConverterFactory.create())
                     .build();
             service = retrofitSingle.create(TheMovieDb.class);
         }

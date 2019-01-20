@@ -1,12 +1,12 @@
 package com.exercise.davismiyashiro.popularmovies.movies;
 
-import android.arch.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
-import android.databinding.DataBindingUtil;
+import androidx.databinding.DataBindingUtil;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
 import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,10 +14,10 @@ import android.view.View;
 
 import com.exercise.davismiyashiro.popularmovies.App;
 import com.exercise.davismiyashiro.popularmovies.R;
-import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
 import com.exercise.davismiyashiro.popularmovies.data.Repository;
 import com.exercise.davismiyashiro.popularmovies.databinding.ActivityMoviesBinding;
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsActivity;
+import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -125,7 +125,7 @@ public class MoviesActivity extends AppCompatActivity implements
         binding.rvMovieList.setVisibility(View.VISIBLE);
     }
 
-    public void updateMovieData(List<MovieDetails> listMovies) {
+    public void updateMovieData(List<MovieDetailsObservable> listMovies) {
         mMovieListAdapter.replaceData(listMovies);
     }
 
@@ -170,7 +170,7 @@ public class MoviesActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void getMovieClicked(MovieDetails movieDetails) {
+    public void getMovieClicked(MovieDetailsObservable movieDetails) {
         Intent intent = new Intent(this, MovieDetailsActivity.class);
         intent.putExtra(MovieDetailsActivity.MOVIE_DETAILS, movieDetails);
         startActivity(intent);
