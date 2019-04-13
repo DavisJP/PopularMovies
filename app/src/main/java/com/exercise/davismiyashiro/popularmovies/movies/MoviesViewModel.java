@@ -27,8 +27,6 @@ import static com.exercise.davismiyashiro.popularmovies.movies.MoviesActivity.FA
 
 public class MoviesViewModel extends AndroidViewModel implements Observable {
 
-//    private String sortingOption;
-
     private LiveData<List<MovieDetailsObservable>> moviesObservable;
     private Repository repository;
 
@@ -50,20 +48,14 @@ public class MoviesViewModel extends AndroidViewModel implements Observable {
         notifyPropertyChanged(BR.moviesObservable);
     }
 
-    public LiveData<List<MovieDetailsObservable>> getMoviesBySortingOption(String sortingOption) {
+    public void setMoviesBySortingOption(String sortingOption) {
 
         if (sortingOption.equals(FAVORITES_PARAM)) {
             setMoviesObservable(repository.loadMoviesFromDb(sortingOption));
         } else {
             setMoviesObservable(repository.loadMoviesFromNetwork(sortingOption));
         }
-
-        return getMoviesObservable();
     }
-
-//    public void setSortingOption(String sortingOption) {
-//        this.sortingOption = sortingOption;
-//    }
 
     public void cancelAsyncTasks() {
         repository.cancelAsyncTasks();
@@ -110,11 +102,11 @@ public class MoviesViewModel extends AndroidViewModel implements Observable {
         MediatorLiveData<List<MovieDetailsObservable>> movieDetailsObservableList = new MediatorLiveData<>();
 
         movieDetailsObservableList.addSource(movies, result -> {
-        if (result != null && !result.isEmpty()) {
+        if (result != null) {
             List<MovieDetailsObservable> movieDetailsObservableList1 = new ArrayList<>();
             for (MovieDetails movieDetails : result) {
                 movieDetailsObservableList1.add(new MovieDetailsObservable(
-                        movieDetails.getId(),
+                        movieDetails.getMovieid(),
                         movieDetails.getTitle(),
                         movieDetails.getPosterPath(),
                         movieDetails.getOverview(),

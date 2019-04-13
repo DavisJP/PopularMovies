@@ -81,7 +81,7 @@ public class Repository {
                     }
                 });
             } else {
-                moviesObservable.setValue(new ArrayList<>()); //TODO: Show no favorites
+                moviesObservable.setValue(new ArrayList<>());
             }
         });
         asyncTaskQueryAll.execute();
@@ -89,19 +89,17 @@ public class Repository {
     }
 
     public LiveData<MovieDetails> getMovieFromDb(int movieId) {
-
         final MediatorLiveData<MovieDetails> moviesObservable = new MediatorLiveData<>();
 
-        asyncTaskQueryMovie = new MovieDataService.AsyncTaskQueryMovie(moviesDao, movie -> {
-            if (movie != null) {
-                moviesObservable.addSource(movie, result -> {
-//                    if (result.getId() == movieId) {
-                        moviesObservable.setValue(result);
-//                    }
-                });
+        moviesObservable.addSource(moviesDao.getMovieById(movieId), result -> {
+            if (result != null && result.getMovieid() != 0) {
+                Timber.e("moviesDao result: " + result);
+                moviesObservable.setValue(result);
+            } else {
+                Timber.e("moviesDao returned null");
+                moviesObservable.setValue(null);
             }
         });
-        asyncTaskQueryMovie.execute(movieId);
         return moviesObservable;
     }
 

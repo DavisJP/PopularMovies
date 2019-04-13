@@ -1,21 +1,20 @@
 package com.exercise.davismiyashiro.popularmovies.moviedetails;
 
-import android.arch.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProviders;
 import android.content.Intent;
-import android.databinding.DataBindingUtil;
+import androidx.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.StringRes;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.view.View;
+import androidx.annotation.StringRes;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import android.widget.Toast;
 
 import com.exercise.davismiyashiro.popularmovies.App;
 import com.exercise.davismiyashiro.popularmovies.R;
-import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
 import com.exercise.davismiyashiro.popularmovies.data.Repository;
 import com.exercise.davismiyashiro.popularmovies.data.Review;
 import com.exercise.davismiyashiro.popularmovies.data.Trailer;
@@ -23,12 +22,14 @@ import com.exercise.davismiyashiro.popularmovies.databinding.ActivityMovieDetail
 
 import java.util.ArrayList;
 
+import timber.log.Timber;
+
 public class MovieDetailsActivity extends AppCompatActivity implements
         TrailerListAdapter.OnTrailerClickListener,
         ReviewListAdapter.OnReviewClickListener {
 
     public static String MOVIE_DETAILS = "THEMOVIEDBDETAILS";
-    private MovieDetails mMovieDetails;
+    private MovieDetailsObservable mMovieDetails;
 
     private ActivityMovieDetailsBinding binding;
 
@@ -40,20 +41,24 @@ public class MovieDetailsActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_movie_details);
-        setSupportActionBar(binding.toolbar);
-
-        if (getIntent().hasExtra(MOVIE_DETAILS)) {
-            mMovieDetails = getIntent().getParcelableExtra(MOVIE_DETAILS);
-        }
 
         Repository repository = ((App) getApplication()).getRepository();
 
         MovieDetailsViewModel.Factory factory = new MovieDetailsViewModel.Factory(getApplication(), repository);
         viewModel = ViewModelProviders.of(this, factory).get(MovieDetailsViewModel.class);
 
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_movie_details);
+        binding.included.setLifecycleOwner(this);
+        binding.included.setViewmodel(viewModel);
+
+        setSupportActionBar(binding.toolbar);
+
+        if (getIntent().hasExtra(MOVIE_DETAILS)) {
+            mMovieDetails = getIntent().getParcelableExtra(MOVIE_DETAILS);
+        }
+
         mTrailersAdapter = new TrailerListAdapter(new ArrayList<>(), this);
-        LinearLayoutManager layout = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        LinearLayoutManager layout = new LinearLayoutManager(this, RecyclerView.VERTICAL, false);
         binding.included.rvTrailersList.setLayoutManager(layout);
         RecyclerView.ItemDecoration itemDecoration = new
                 DividerItemDecoration(this, DividerItemDecoration.VERTICAL);
@@ -61,38 +66,26 @@ public class MovieDetailsActivity extends AppCompatActivity implements
         binding.included.rvTrailersList.setAdapter(mTrailersAdapter);
 
         mReviewAdapter = new ReviewListAdapter(new ArrayList<>(), this);
-        LinearLayoutManager layoutRev = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        LinearLayoutManager layoutRev = new LinearLayoutManager(this, RecyclerView.VERTICAL, false);
         binding.included.rvReviewsList.setLayoutManager(layoutRev);
         binding.included.rvReviewsList.addItemDecoration(itemDecoration);
         binding.included.rvReviewsList.setAdapter(mReviewAdapter);
 
-        if (mMovieDetails != null) {
-            binding.included.setMovieDetails(mMovieDetails);
-            binding.included.movieVoteAverage.setText((mMovieDetails.getVoteAverage() != null) ? mMovieDetails.getVoteAverage().toString() : "0");
+        viewModel.getReviewsObservable(mMovieDetails.getId()).observe(this,
+                reviews -> mReviewAdapter.replaceData(reviews));
 
-            Bundle movieId = new Bundle();
-            movieId.putInt("MOVIEID", mMovieDetails.getId());
+        viewModel.getTrailersObservable(mMovieDetails.getId()).observe(this,
+                trailers -> mTrailersAdapter.replaceData(trailers));
 
-            viewModel.getReviewsObservable(mMovieDetails.getId()).observe(this,
-                    reviews -> mReviewAdapter.replaceData(reviews));
+        viewModel.setMovieDetailsLivedatas(mMovieDetails);
 
-            viewModel.getTrailersObservable(mMovieDetails.getId()).observe(this,
-                    trailers -> mTrailersAdapter.replaceData(trailers));
-
-            viewModel.getMovieDetailsObservable().observe(this, movies -> {
-                if (movies != null && !movies.isEmpty()) {
-                    binding.included.setIsFavorite(movies.contains(mMovieDetails));
-                }
-            });
-        }
-    }
-
-    public void toggleFavoriteMovieBtn(View view) {
-        if (!binding.included.getIsFavorite()) {
-            viewModel.insertMovie(mMovieDetails);
-        } else {
-            viewModel.deleteMovie(mMovieDetails);
-        }
+        viewModel.getMovieObservable(mMovieDetails.getId()).observe(this, value -> {
+            if (value != null) {
+                Timber.e("Is true!");
+            } else {
+                Timber.e("Is False!");
+            }
+        });
     }
 
     public void showDbResultMessage(@StringRes int msg) {

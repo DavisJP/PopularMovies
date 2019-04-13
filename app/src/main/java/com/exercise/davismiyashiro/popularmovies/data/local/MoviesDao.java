@@ -9,17 +9,16 @@ import androidx.room.Query;
 import androidx.room.Update;
 
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
-import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract.MoviesEntry;
 
 import java.util.List;
+
+import static com.exercise.davismiyashiro.popularmovies.data.local.MoviesDb.TABLE_NAME;
 
 /**
  * Created by Davis Miyashiro.
  */
 @Dao
 public interface MoviesDao {
-
-    String SELECT_ALL_MOVIES = "SELECT * FROM " + MoviesEntry.TABLE_NAME;
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(MovieDetails movie);
@@ -33,10 +32,10 @@ public interface MoviesDao {
     @Delete
     void deleteMovies(MovieDetails... movies);
 
-    @Query("SELECT * FROM " + MoviesEntry.TABLE_NAME)
+    @Query("SELECT * FROM " + TABLE_NAME)
     LiveData<List<MovieDetails>> getAllMovies();
 
-    @Query("SELECT * FROM movies WHERE id = :id")
-    LiveData<MovieDetails> getMovie(int id);
+    @Query("SELECT * FROM " + TABLE_NAME + " WHERE movieid = :id")
+    LiveData<MovieDetails> getMovieById(Integer id);
 
 }

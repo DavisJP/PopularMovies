@@ -2,9 +2,10 @@ package com.exercise.davismiyashiro.popularmovies;
 
 import android.content.Context;
 import android.content.Intent;
-import androidx.test.InstrumentationRegistry;
+
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
-import androidx.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.exercise.davismiyashiro.popularmovies.movies.MoviesActivity;
 
@@ -17,7 +18,6 @@ import org.junit.runner.RunWith;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
-import static androidx.test.InstrumentationRegistry.getInstrumentation;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -47,7 +47,7 @@ public class MoviesActivityTest {
     @Test
     public void useAppContext() throws Exception {
         // Context of the app under test.
-        Context appContext = InstrumentationRegistry.getTargetContext();
+        Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
         assertEquals("com.exercise.davismiyashiro.popularmovies", appContext.getPackageName());
     }
@@ -57,7 +57,7 @@ public class MoviesActivityTest {
         String fileName = "popularJSON.json";
         server.enqueue(new MockResponse()
                 .setResponseCode(200)
-                .setBody(JsonFileReaderHelper.getStringFromFile(getInstrumentation().getContext(), fileName)));
+                .setBody(JsonFileReaderHelper.getStringFromFile(InstrumentationRegistry.getInstrumentation().getContext(), fileName)));
 
         Intent intent = new Intent();
         activityRule.launchActivity(intent);

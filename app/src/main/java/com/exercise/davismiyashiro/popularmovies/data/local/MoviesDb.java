@@ -7,13 +7,14 @@ import android.content.Context;
 
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
 
-import static com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbHelper.DATABASE_NAME;
-
 /**
  * Created by Davis Miyashiro.
  */
 @Database(entities = {MovieDetails.class}, version = 1, exportSchema = false)
 public abstract class MoviesDb extends RoomDatabase {
+
+    public static final String DATABASE_NAME = "moviesdatabase.db";
+    public static final String TABLE_NAME = "movies";
 
     public abstract MoviesDao moviesDao();
 

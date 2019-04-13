@@ -64,8 +64,9 @@ public class MoviesActivity extends AppCompatActivity implements
         mMovieListAdapter = new MovieListAdapter(new LinkedList<>(),this);
         binding.rvMovieList.setAdapter(mMovieListAdapter);
 
+        viewModel.setMoviesBySortingOption(mSortOpt);
 
-        viewModel.getMoviesBySortingOption(mSortOpt).observe(this, movies -> {
+        viewModel.getMoviesObservable().observe(this, movies -> {
             if (movies != null && !movies.isEmpty()) {
                 updateMovieData(movies);
                 showMovieList();
@@ -143,7 +144,7 @@ public class MoviesActivity extends AppCompatActivity implements
             case R.id.action_popular:
 
                 mSortOpt = POPULARITY_DESC_PARAM;
-                viewModel.getMoviesBySortingOption(mSortOpt);
+                viewModel.setMoviesBySortingOption(mSortOpt);
                 setTitleBar(mSortOpt);
 
                 return true;
@@ -151,7 +152,7 @@ public class MoviesActivity extends AppCompatActivity implements
             case R.id.action_highest_rated:
 
                 mSortOpt = HIGHEST_RATED_PARAM;
-                viewModel.getMoviesBySortingOption(mSortOpt);
+                viewModel.setMoviesBySortingOption(mSortOpt);
                 setTitleBar(mSortOpt);
 
                 return true;
@@ -159,7 +160,7 @@ public class MoviesActivity extends AppCompatActivity implements
             case R.id.action_favorites:
 
                 mSortOpt = FAVORITES_PARAM;
-                viewModel.getMoviesBySortingOption(mSortOpt);
+                viewModel.setMoviesBySortingOption(mSortOpt);
                 setTitleBar(mSortOpt);
 
                 return true;
