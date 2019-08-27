@@ -1,6 +1,8 @@
 package com.exercise.davismiyashiro.popularmovies.movies;
 
 import android.app.Application;
+
+import androidx.databinding.library.baseAdapters.BR;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
@@ -11,7 +13,6 @@ import androidx.databinding.Observable;
 import androidx.databinding.PropertyChangeRegistry;
 import androidx.annotation.NonNull;
 
-import com.exercise.davismiyashiro.popularmovies.BR;
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
 import com.exercise.davismiyashiro.popularmovies.data.Repository;
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable;
@@ -69,6 +70,13 @@ public class MoviesViewModel extends AndroidViewModel implements Observable {
     @Override
     public void removeOnPropertyChangedCallback(OnPropertyChangedCallback callback) {
         callbacks.remove(callback);
+    }
+
+    /**
+     * Notifies listeners that all properties of this instance have changed.
+     */
+    public void notifyChange() {
+        callbacks.notifyCallbacks(this, 0, null);
     }
 
     /**
