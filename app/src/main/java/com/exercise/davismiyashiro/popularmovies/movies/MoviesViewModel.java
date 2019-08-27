@@ -1,19 +1,23 @@
 package com.exercise.davismiyashiro.popularmovies.movies;
 
 import android.app.Application;
-import android.arch.lifecycle.AndroidViewModel;
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.ViewModel;
-import android.arch.lifecycle.ViewModelProvider;
-import android.databinding.Bindable;
-import android.databinding.Observable;
-import android.databinding.PropertyChangeRegistry;
-import android.support.annotation.NonNull;
 
-import com.android.databinding.library.baseAdapters.BR;
+import androidx.databinding.library.baseAdapters.BR;
+import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.databinding.Bindable;
+import androidx.databinding.Observable;
+import androidx.databinding.PropertyChangeRegistry;
+import androidx.annotation.NonNull;
+
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
 import com.exercise.davismiyashiro.popularmovies.data.Repository;
+import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.exercise.davismiyashiro.popularmovies.movies.MoviesActivity.FAVORITES_PARAM;
@@ -24,9 +28,7 @@ import static com.exercise.davismiyashiro.popularmovies.movies.MoviesActivity.FA
 
 public class MoviesViewModel extends AndroidViewModel implements Observable {
 
-//    private String sortingOption;
-
-    private LiveData<List<MovieDetails>> moviesObservable;
+    private LiveData<List<MovieDetailsObservable>> moviesObservable;
     private Repository repository;
 
     private PropertyChangeRegistry callbacks = new PropertyChangeRegistry();
@@ -38,31 +40,23 @@ public class MoviesViewModel extends AndroidViewModel implements Observable {
     }
 
     @Bindable
-    public LiveData<List<MovieDetails>> getMoviesObservable() {
+    public LiveData<List<MovieDetailsObservable>> getMoviesObservable() {
         return moviesObservable;
     }
 
     public void setMoviesObservable(LiveData<List<MovieDetails>> moviesObservable) {
-        this.moviesObservable = moviesObservable;
+        this.moviesObservable = convertMovieDetailsToUImodel(moviesObservable);
         notifyPropertyChanged(BR.moviesObservable);
     }
 
-    public LiveData<List<MovieDetails>> getMoviesBySortingOption(String sortingOption) {
+    public void setMoviesBySortingOption(String sortingOption) {
 
         if (sortingOption.equals(FAVORITES_PARAM)) {
-            moviesObservable = repository.loadMoviesFromDb(sortingOption);
+            setMoviesObservable(repository.loadMoviesFromDb(sortingOption));
         } else {
-            moviesObservable = repository.loadMoviesFromNetwork(sortingOption);
+            setMoviesObservable(repository.loadMoviesFromNetwork(sortingOption));
         }
-
-        setMoviesObservable(moviesObservable);
-
-        return moviesObservable;
     }
-
-//    public void setSortingOption(String sortingOption) {
-//        this.sortingOption = sortingOption;
-//    }
 
     public void cancelAsyncTasks() {
         repository.cancelAsyncTasks();
@@ -76,6 +70,13 @@ public class MoviesViewModel extends AndroidViewModel implements Observable {
     @Override
     public void removeOnPropertyChangedCallback(OnPropertyChangedCallback callback) {
         callbacks.remove(callback);
+    }
+
+    /**
+     * Notifies listeners that all properties of this instance have changed.
+     */
+    public void notifyChange() {
+        callbacks.notifyCallbacks(this, 0, null);
     }
 
     /**
@@ -103,5 +104,27 @@ public class MoviesViewModel extends AndroidViewModel implements Observable {
         public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
             return (T) new MoviesViewModel(application, repository);
         }
+    }
+
+    private LiveData<List<MovieDetailsObservable>> convertMovieDetailsToUImodel(LiveData<List<MovieDetails>> movies) {
+        MediatorLiveData<List<MovieDetailsObservable>> movieDetailsObservableList = new MediatorLiveData<>();
+
+        movieDetailsObservableList.addSource(movies, result -> {
+        if (result != null) {
+            List<MovieDetailsObservable> movieDetailsObservableList1 = new ArrayList<>();
+            for (MovieDetails movieDetails : result) {
+                movieDetailsObservableList1.add(new MovieDetailsObservable(
+                        movieDetails.getMovieid(),
+                        movieDetails.getTitle(),
+                        movieDetails.getPosterPath(),
+                        movieDetails.getOverview(),
+                        movieDetails.getReleaseDate(),
+                        movieDetails.getVoteAverage()));
+            }
+            movieDetailsObservableList.setValue(movieDetailsObservableList1);
+        }
+
+        });
+        return movieDetailsObservableList;
     }
 }

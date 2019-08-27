@@ -1,21 +1,19 @@
 package com.exercise.davismiyashiro.popularmovies.data.local;
 
 import android.app.IntentService;
-import android.arch.lifecycle.LiveData;
+import androidx.lifecycle.LiveData;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
 
 import java.util.List;
 
 import timber.log.Timber;
-
-import static com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract.MoviesEntry;
 
 /**
  * Created by Davis Miyashiro on 07/12/2017.
@@ -24,6 +22,14 @@ import static com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContr
 public class MovieDataService extends IntentService {
 
     private static final String TAG = MovieDataService.class.getSimpleName();
+
+    public static final String CONTENT_AUTHORITY = "com.exercise.davismiyashiro.popularmovies";
+    public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
+    public static final String PATH_MOVIES = "movies";
+
+    public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon()
+            .appendPath(PATH_MOVIES)
+            .build();
 
     public static final String ACTION_INSERT = TAG + ".INSERT";
     public static final String ACTION_DELETE = TAG + ".DELETE";
@@ -34,6 +40,10 @@ public class MovieDataService extends IntentService {
         super(TAG);
     }
 
+    /**
+     * @deprecated using AsyncTasks for more control over background tasks
+     */
+    @Deprecated
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
         if (ACTION_INSERT.equals(intent.getAction())) {
@@ -57,7 +67,7 @@ public class MovieDataService extends IntentService {
     }
 
     private void insertMovieDb(ContentValues values) {
-        if (getContentResolver().insert(MoviesEntry.CONTENT_URI, values) != null) {
+        if (getContentResolver().insert(CONTENT_URI, values) != null) {
             Timber.d(TAG, "Insert Movie ok");
             Intent insertOk = new Intent(ACTION_INSERT);
             sendBroadcast(insertOk);
@@ -66,18 +76,36 @@ public class MovieDataService extends IntentService {
         }
     }
 
-    public static void insertNewMovie (Context context, ContentValues values) {
-        Intent intent = new Intent(context, MovieDataService.class);
-        intent.setAction(ACTION_INSERT);
-        intent.putExtra(EXTRA_VALUES, values);
-        context.startService(intent);
-    }
+    public static class AsyncTaskQueryMovie extends AsyncTask<Integer, Void, LiveData<MovieDetails>> {
 
-    public static void deleteMovie (Context context, Uri uri) {
-        Intent intent = new Intent(context, MovieDataService.class);
-        intent.setAction(ACTION_DELETE);
-        intent.setData(uri);
-        context.startService(intent);
+        private MoviesDao localDao;
+        private AsyncTaskQueryResponse asyncResponse;
+        private LiveData<MovieDetails> movie;
+
+        public interface AsyncTaskQueryResponse {
+            void processFinish(LiveData<MovieDetails> movie);
+        }
+
+        public AsyncTaskQueryMovie(MoviesDao moviesDao, AsyncTaskQueryResponse delegate) {
+            localDao = moviesDao;
+            asyncResponse = delegate;
+        }
+
+        @Override
+        protected LiveData<MovieDetails> doInBackground(Integer... id) {
+            if (!isCancelled()) {
+                //TODO: DB works but this is not updating
+                movie = localDao.getMovieById(id[0]);
+                return localDao.getMovieById(id[0]);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(LiveData<MovieDetails> movieDetails) {
+            super.onPostExecute(movieDetails);
+            asyncResponse.processFinish(movie);
+        }
     }
 
     public static class AsyncTaskQueryAll extends AsyncTask<Void, Void, LiveData<List<MovieDetails>>> {

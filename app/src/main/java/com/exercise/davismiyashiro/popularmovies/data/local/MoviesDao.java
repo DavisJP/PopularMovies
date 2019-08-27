@@ -1,25 +1,24 @@
 package com.exercise.davismiyashiro.popularmovies.data.local;
 
-import android.arch.lifecycle.LiveData;
-import android.arch.persistence.room.Dao;
-import android.arch.persistence.room.Delete;
-import android.arch.persistence.room.Insert;
-import android.arch.persistence.room.OnConflictStrategy;
-import android.arch.persistence.room.Query;
-import android.arch.persistence.room.Update;
+import androidx.lifecycle.LiveData;
+import androidx.room.Dao;
+import androidx.room.Delete;
+import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
+import androidx.room.Query;
+import androidx.room.Update;
 
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails;
-import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDbContract.MoviesEntry;
 
 import java.util.List;
+
+import static com.exercise.davismiyashiro.popularmovies.data.local.MoviesDb.TABLE_NAME;
 
 /**
  * Created by Davis Miyashiro.
  */
 @Dao
 public interface MoviesDao {
-
-    String SELECT_ALL_MOVIES = "SELECT * FROM " + MoviesEntry.TABLE_NAME;
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(MovieDetails movie);
@@ -33,6 +32,10 @@ public interface MoviesDao {
     @Delete
     void deleteMovies(MovieDetails... movies);
 
-    @Query("SELECT * FROM " + MoviesEntry.TABLE_NAME)
+    @Query("SELECT * FROM " + TABLE_NAME)
     LiveData<List<MovieDetails>> getAllMovies();
+
+    @Query("SELECT * FROM " + TABLE_NAME + " WHERE movieid = :id")
+    LiveData<MovieDetails> getMovieById(Integer id);
+
 }
