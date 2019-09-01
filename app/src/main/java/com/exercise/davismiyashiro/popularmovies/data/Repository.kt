@@ -2,10 +2,9 @@ package com.exercise.davismiyashiro.popularmovies.data
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
-import com.exercise.davismiyashiro.popularmovies.BuildConfig
 import com.exercise.davismiyashiro.popularmovies.data.local.MovieDataService
 import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDao
-import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient
+import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient.BaseNetworkHandler
 import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb
 import com.exercise.davismiyashiro.popularmovies.movies.MoviesActivity.FAVORITES_PARAM
 import timber.log.Timber
@@ -15,39 +14,24 @@ import java.util.*
  * Created by Davis Miyashiro.
  */
 
-class Repository(private val theMovieDb: TheMovieDb, private val moviesDao: MoviesDao) {
+class Repository(private val theMovieDb: TheMovieDb, private val moviesDao: MoviesDao) : BaseNetworkHandler(){
 
     private var asyncTaskInsert: MovieDataService.AsyncTaskInsert? = null
     private var asyncTaskDelete: MovieDataService.AsyncTaskDelete? = null
     private val asyncTaskQueryMovie: MovieDataService.AsyncTaskQueryMovie? = null
     private var asyncTaskQueryAll: MovieDataService.AsyncTaskQueryAll? = null
 
-    fun loadMoviesFromNetwork(sortingOption: String): LiveData<List<MovieDetails>> {
-        val call = theMovieDb.getPopular(sortingOption, BuildConfig.API_KEY)
+    suspend fun loadMoviesFromNetwork(sortingOption: String): LiveData<List<MovieDetails>> {
 
         val moviesObservable = MediatorLiveData<List<MovieDetails>>()
 
-        MovieDbApiClient.enqueue(call, object : MovieDbApiClient.RequestListener<Response<MovieDetails>> {
-            override fun onRequestFailure(throwable: Throwable) {
-                Timber.e("FAIL! = " + throwable.localizedMessage)
+        val moviesResponse = apiCall(
+                call = {theMovieDb.getPopular(sortingOption).await()},
+                errorMessage = "Error Fetching Movies"
+        )
 
-                if (throwable.cause is UnknownError) {
-                    throwable.printStackTrace()
-                    throw UnknownError(throwable.message)
-                }
-                moviesObservable.setValue(ArrayList())
-            }
+        moviesObservable.postValue(moviesResponse?.results)
 
-            override fun onRequestSuccess(result: Response<MovieDetails>?) {
-                val movies = result!!.results
-                if (movies != null) {
-                    moviesObservable.setValue(movies)
-                } else {
-                    moviesObservable.setValue(ArrayList())
-                    //TODO: call.cancel() if finished too soon?
-                }
-            }
-        })
         return moviesObservable
     }
 
@@ -94,55 +78,36 @@ class Repository(private val theMovieDb: TheMovieDb, private val moviesDao: Movi
         if (asyncTaskDelete != null) asyncTaskDelete?.cancel(true)
     }
 
-    fun findTrailersByMovieId(movieId: Int?): LiveData<List<Trailer>> {
-
-        val call = theMovieDb.getTrailers(movieId.toString(), BuildConfig.API_KEY)
+    suspend fun findTrailersByMovieId(movieId: Int?): LiveData<List<Trailer>> {
 
         val trailersObservable = MediatorLiveData<List<Trailer>>()
 
-        MovieDbApiClient.enqueue(call, object : MovieDbApiClient.RequestListener<Response<Trailer>> {
-            override fun onRequestFailure(throwable: Throwable) {
-                Timber.d("DAVISLOG: FAIL! = $throwable.localizedMessage")
-                throwable.printStackTrace()
-                //TODO: Add exception handling
-                trailersObservable.value = ArrayList()
-            }
+        val trailersResponse = apiCall(
+                call = {theMovieDb.getTrailers(movieId.toString()).await()},
+                errorMessage = "Error Fetching Trailers"
+        )
 
-            override fun onRequestSuccess(result: Response<Trailer>?) {
-                val trailers = result!!.results
-                if (trailers != null && !trailers.isEmpty()) {
-                    trailersObservable.value = trailers
-                }
-            }
-        })
+        trailersObservable.postValue(trailersResponse?.results)
         return trailersObservable
     }
 
-    fun findReviewsByMovieId(movieId: Int?): LiveData<List<Review>> {
-
-        val call = theMovieDb.getReviews(movieId.toString(), BuildConfig.API_KEY)
+    suspend fun findReviewsByMovieId(movieId: Int?): LiveData<List<Review>> {
 
         val reviewsObservable = MediatorLiveData<List<Review>>()
 
-        MovieDbApiClient.enqueue(call, object : MovieDbApiClient.RequestListener<Response<Review>> {
-            override fun onRequestFailure(throwable: Throwable) {
-                if (call.isCanceled) {
-                    Timber.e("DAVISLOG: request was cancelled")
-                } else {
-                    Timber.d(throwable, "DAVISLOG: FAIL! : $throwable.localizedMessage")
-                    throwable.printStackTrace()
-                    //TODO: Add exception handling
-                    reviewsObservable.setValue(ArrayList())
-                }
-            }
+        val reviewsResponse = apiCall(
+                call = {theMovieDb.getReviews(movieId.toString()).await()},
+                errorMessage = "Error Fetching Reviews"
+        )
 
-            override fun onRequestSuccess(result: Response<Review>?) {
-                val reviews = result!!.results
-                if (reviews != null && !reviews.isEmpty()) {
-                    reviewsObservable.value = reviews
-                }
+        if (reviewsResponse?.results != null)  {
+            val reviews = reviewsResponse.results
+            if (reviews.isNotEmpty()){
+                Timber.e("got reviews from network and not empty $reviews")
+                reviewsObservable.postValue(reviews)
             }
-        })
+        }
+
         return reviewsObservable
     }
 
