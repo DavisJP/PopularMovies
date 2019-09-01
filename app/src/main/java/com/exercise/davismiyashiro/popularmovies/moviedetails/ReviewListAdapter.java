@@ -48,8 +48,10 @@ public class ReviewListAdapter extends RecyclerView.Adapter<ReviewListAdapter.Re
     }
 
     public void replaceData(List<Review> reviews) {
-        this.reviews = reviews;
-        notifyDataSetChanged();
+        if (reviews != null) {
+            this.reviews = reviews;
+            notifyDataSetChanged();
+        }
     }
 
     public class ReviewHolder extends RecyclerView.ViewHolder {

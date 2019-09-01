@@ -48,8 +48,10 @@ public class TrailerListAdapter extends RecyclerView.Adapter<TrailerListAdapter.
     }
 
     public void replaceData(List<Trailer> trailers) {
-        this.trailers = trailers;
-        notifyDataSetChanged();
+        if (trailers != null) {
+            this.trailers = trailers;
+            notifyDataSetChanged();
+        }
     }
 
     public class TrailerHolder extends RecyclerView.ViewHolder {

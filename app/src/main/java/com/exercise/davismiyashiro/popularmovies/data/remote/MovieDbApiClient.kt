@@ -1,7 +1,6 @@
 package com.exercise.davismiyashiro.popularmovies.data.remote
 
 import com.exercise.davismiyashiro.popularmovies.BuildConfig
-import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -58,7 +57,6 @@ class MovieDbApiClient {
                     .baseUrl(THEMOVIEDB_API)
                     .client(okHttp)
                     .addConverterFactory(MoshiConverterFactory.create())
-                    .addCallAdapterFactory(CoroutineCallAdapterFactory())
                     .build()
             service = retrofitSingle.create(TheMovieDb::class.java)
         }

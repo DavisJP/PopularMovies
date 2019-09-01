@@ -48,7 +48,8 @@ public class MovieDetailsActivity extends AppCompatActivity implements
         viewModel = ViewModelProviders.of(this, factory).get(MovieDetailsViewModel.class);
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_movie_details);
-        binding.included.setLifecycleOwner(this);
+        binding.setLifecycleOwner(this);
+//        binding.included.setLifecycleOwner(this);
         binding.included.setViewmodel(viewModel);
 
         setSupportActionBar(binding.toolbar);
@@ -71,13 +72,17 @@ public class MovieDetailsActivity extends AppCompatActivity implements
         binding.included.rvReviewsList.addItemDecoration(itemDecoration);
         binding.included.rvReviewsList.setAdapter(mReviewAdapter);
 
-        viewModel.getReviewsObservable(mMovieDetails.getId()).observe(this,
-                reviews -> mReviewAdapter.replaceData(reviews));
-
-        viewModel.getTrailersObservable(mMovieDetails.getId()).observe(this,
-                trailers -> mTrailersAdapter.replaceData(trailers));
-
         viewModel.setMovieDetailsLivedatas(mMovieDetails);
+
+        viewModel.getReviews().observe(this, reviews -> {
+            mReviewAdapter.replaceData(reviews);
+        });
+
+        viewModel.getTrailers().observe(this, trailers -> {
+            if (trailers != null && !trailers.isEmpty()) {
+                mTrailersAdapter.replaceData(trailers);
+            }
+        });
 
         viewModel.getMovieObservable(mMovieDetails.getId()).observe(this, value -> {
             if (value != null) {

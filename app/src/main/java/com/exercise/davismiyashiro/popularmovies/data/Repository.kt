@@ -26,7 +26,7 @@ class Repository(private val theMovieDb: TheMovieDb, private val moviesDao: Movi
         val moviesObservable = MediatorLiveData<List<MovieDetails>>()
 
         val moviesResponse = apiCall(
-                call = {theMovieDb.getPopular(sortingOption).await()},
+                call = {theMovieDb.getPopular(sortingOption)},
                 errorMessage = "Error Fetching Movies"
         )
 
@@ -83,7 +83,7 @@ class Repository(private val theMovieDb: TheMovieDb, private val moviesDao: Movi
         val trailersObservable = MediatorLiveData<List<Trailer>>()
 
         val trailersResponse = apiCall(
-                call = {theMovieDb.getTrailers(movieId.toString()).await()},
+                call = {theMovieDb.getTrailers(movieId.toString())},
                 errorMessage = "Error Fetching Trailers"
         )
 
@@ -96,14 +96,13 @@ class Repository(private val theMovieDb: TheMovieDb, private val moviesDao: Movi
         val reviewsObservable = MediatorLiveData<List<Review>>()
 
         val reviewsResponse = apiCall(
-                call = {theMovieDb.getReviews(movieId.toString()).await()},
+                call = {theMovieDb.getReviews(movieId.toString())},
                 errorMessage = "Error Fetching Reviews"
         )
 
         if (reviewsResponse?.results != null)  {
             val reviews = reviewsResponse.results
             if (reviews.isNotEmpty()){
-                Timber.e("got reviews from network and not empty $reviews")
                 reviewsObservable.postValue(reviews)
             }
         }

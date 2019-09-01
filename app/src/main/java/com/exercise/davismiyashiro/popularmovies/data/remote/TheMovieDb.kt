@@ -4,7 +4,6 @@ import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
 import com.exercise.davismiyashiro.popularmovies.data.Response
 import com.exercise.davismiyashiro.popularmovies.data.Review
 import com.exercise.davismiyashiro.popularmovies.data.Trailer
-import kotlinx.coroutines.Deferred
 
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -21,14 +20,14 @@ private const val API_MOVIE_ID_PARAM = "id"
 interface TheMovieDb {
 
     @GET("/3/movie/{sorting}")
-    fun getPopular(
-            @Path(API_SORTING_PARAM) sort: String): Deferred<retrofit2.Response<Response<MovieDetails>>>
+    suspend fun getPopular(
+            @Path(API_SORTING_PARAM) sort: String): retrofit2.Response<Response<MovieDetails>>
 
     @GET("/3/movie/{id}/videos")
-    fun getTrailers(
-            @Path(API_MOVIE_ID_PARAM) movieId: String): Deferred<retrofit2.Response<Response<Trailer>>>
+    suspend fun getTrailers(
+            @Path(API_MOVIE_ID_PARAM) movieId: String): retrofit2.Response<Response<Trailer>>
 
     @GET("/3/movie/{id}/reviews")
-    fun getReviews(
-            @Path(API_MOVIE_ID_PARAM) movieId: String): Deferred<retrofit2.Response<Response<Review>>>
+    suspend fun getReviews(
+            @Path(API_MOVIE_ID_PARAM) movieId: String): retrofit2.Response<Response<Review>>
 }
