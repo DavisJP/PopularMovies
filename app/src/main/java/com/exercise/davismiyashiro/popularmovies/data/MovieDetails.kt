@@ -4,7 +4,7 @@ import androidx.room.Entity
 
 import androidx.room.PrimaryKey
 import android.os.Parcelable
-import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDb.TABLE_NAME
+import com.exercise.davismiyashiro.popularmovies.data.local.TABLE_NAME
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass

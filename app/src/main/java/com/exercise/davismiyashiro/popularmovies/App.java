@@ -35,7 +35,7 @@ public class App extends Application {
         MovieDbApiClient apiClient = new MovieDbApiClient();
         serviceApi = apiClient.getService();
 
-        db = MoviesDb.getDatabase(this);
+        db = MoviesDb.Companion.getDatabase(this);
         moviesDao = db.moviesDao();
 
         repository = new Repository(serviceApi, moviesDao);
