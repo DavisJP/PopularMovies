@@ -6,7 +6,7 @@ import com.exercise.davismiyashiro.popularmovies.data.local.MovieDataService
 import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDao
 import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient.BaseNetworkHandler
 import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb
-import com.exercise.davismiyashiro.popularmovies.movies.MoviesActivity.FAVORITES_PARAM
+import com.exercise.davismiyashiro.popularmovies.movies.FAVORITES_PARAM
 import timber.log.Timber
 import java.util.*
 

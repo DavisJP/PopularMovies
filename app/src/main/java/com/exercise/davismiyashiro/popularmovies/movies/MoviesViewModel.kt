@@ -14,7 +14,6 @@ import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObserv
 
 import java.util.ArrayList
 
-import com.exercise.davismiyashiro.popularmovies.movies.MoviesActivity.FAVORITES_PARAM
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
