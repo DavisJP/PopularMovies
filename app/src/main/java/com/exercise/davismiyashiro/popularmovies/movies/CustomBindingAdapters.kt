@@ -42,7 +42,7 @@ object CustomBindingAdapters {
     @BindingAdapter("imgUrl")
     @JvmStatic fun loadImage(view: ImageView, url: String?) {
         url?.let {
-            Picasso.with(view.context)
+            Picasso.get()
                     .load(IMG_BASE_URL + it)
                     .placeholder(android.R.drawable.progress_indeterminate_horizontal)
                     .into(view)

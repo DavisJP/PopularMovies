@@ -61,7 +61,7 @@ class MoviesActivity : AppCompatActivity(), MovieListAdapter.OnMovieClickListene
 
         val repository = (application as App).repository
 
-        val factory = MoviesViewModel.Factory(application, repository!!)
+        val factory = MoviesViewModel.Factory(application, repository)
 
         viewModel = ViewModelProviders.of(this, factory).get(MoviesViewModel::class.java)
 
