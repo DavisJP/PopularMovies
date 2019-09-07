@@ -23,7 +23,7 @@
   ~ SOFTWARE.
   -->
 
-<layout>
+<layout xmlns:tools="http://schemas.android.com/tools">
     <data>
         <variable
             name="trailer"
@@ -37,10 +37,11 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <ImageView
+        <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/trailer_play"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            tools:src="@tools:sample/avatars"/>
 
         <TextView
             android:id="@+id/trailer_name"
@@ -48,6 +49,7 @@
             android:layout_height="wrap_content"
             android:padding="@dimen/activity_vertical_margin"
             android:text="@{trailer.name}"
-            android:onClick="@{() -> trailerCallback.onTrailerClick(trailer)}"/>
+            android:onClick="@{() -> trailerCallback.onTrailerClick(trailer)}"
+            tools:text="@tools:sample/cities"/>
     </LinearLayout>
 </layout>

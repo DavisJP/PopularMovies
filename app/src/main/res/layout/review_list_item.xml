@@ -23,7 +23,8 @@
   ~ SOFTWARE.
   -->
 
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <data>
         <variable
             name="review"
@@ -43,14 +44,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="@dimen/activity_vertical_margin"
-            android:text="@{review.author}"/>
+            android:text="@{review.author}"
+            tools:text="@tools:sample/first_names"/>
 
         <TextView
             android:id="@+id/review_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="@dimen/activity_vertical_margin"
-            android:text="@{review.content}"/>
+            android:text="@{review.content}"
+            tools:text="@tools:sample/lorem"/>
 
     </LinearLayout>
 </layout>
