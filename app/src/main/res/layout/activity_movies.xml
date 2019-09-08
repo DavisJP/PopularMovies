@@ -31,26 +31,35 @@
             name="viewmodel"
             type="com.exercise.davismiyashiro.popularmovies.movies.MoviesViewModel" />
     </data>
-    <FrameLayout
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        tools:context="com.exercise.davismiyashiro.popularmovies.movies.MoviesActivity"
         android:id="@+id/activity_movies"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context="com.exercise.davismiyashiro.popularmovies.movies.MoviesActivity">
+        android:layout_height="match_parent">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_movie_list"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:data="@{viewmodel.moviesObservable}"
-        tools:listitem="@layout/movie_list_item"/>
+        <TextView
+            android:id="@+id/tv_error_message_display"
+            android:layout_width="0dp"
+            android:layout_height="88dp"
+            android:padding="16dp"
+            android:text="@string/please_check_your_network_status_or_try_again_later"
+            android:textSize="22sp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/rv_movie_list" />
 
-    <TextView
-        android:id="@+id/tv_error_message_display"
-        android:textSize="22sp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:text="@string/please_check_your_network_status_or_try_again_later"
-        android:visibility="invisible" />
-    </FrameLayout>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_movie_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="visible"
+            app:data="@{viewmodel.moviesObservable}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:listitem="@layout/movie_list_item" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

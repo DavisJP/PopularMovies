@@ -23,171 +23,207 @@
   ~ SOFTWARE.
   -->
 
-<layout>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
     <data>
         <variable
             name="viewmodel"
             type="com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsViewModel" />
     </data>
 
-    <RelativeLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/content_movie_details"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         tools:context="com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsActivity"
         tools:showIn="@layout/activity_movie_details">
 
+        <CheckBox
+            android:id="@+id/favourite_star"
+            style="?android:attr/starStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="@{viewmodel.favoriteCheckBoxLivedata}"
+            android:clickable="true"
+            android:focusable="true"
+            android:onClick="@{() -> viewmodel.setFavorite()}"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="@+id/movie_title"
+            app:layout_constraintEnd_toEndOf="@id/guidelineRight"
+            app:layout_constraintTop_toTopOf="@+id/movie_title" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/movie_backdrop"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:contentDescription="@string/backdrop_description"
+            app:imgUrl="@{viewmodel.backDropPath}"
+            app:layout_constraintDimensionRatio="16:9"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:srcCompat="@drawable/header" />
+
         <TextView
             android:id="@+id/movie_title"
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_below="@+id/toolbar"
-            android:background="@color/movie_title_bg"
+            style="@style/AppTheme.TextHeadline"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:gravity="center_vertical"
-            android:paddingEnd="@dimen/activity_horizontal_margin"
             android:paddingStart="@dimen/activity_horizontal_margin"
-            android:textColor="@android:color/white"
-            android:textSize="30sp"
+            android:paddingEnd="@dimen/activity_horizontal_margin"
             android:text="@{viewmodel.title}"
+            android:textAppearance="@style/AppTheme.TextHeadline"
+            android:textColor="@android:color/black"
+            android:textSize="24sp"
+            app:layout_constraintEnd_toStartOf="@+id/favourite_star"
+            app:layout_constraintStart_toEndOf="@+id/imgUrl"
+            app:layout_constraintTop_toBottomOf="@+id/movie_backdrop"
             tools:text="Movie title" />
 
-        <RelativeLayout
-            android:id="@+id/movie_info"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/movie_release_date_label"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/movie_title"
-            android:paddingEnd="@dimen/activity_horizontal_margin"
-            android:paddingStart="@dimen/activity_horizontal_margin"
-            android:paddingTop="@dimen/activity_horizontal_margin">
+            android:layout_marginTop="8dp"
+            android:text="@string/release_date"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="@+id/movie_title"
+            app:layout_constraintTop_toBottomOf="@+id/movie_title" />
 
-            <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/imgUrl"
-                android:layout_width="200dp"
-                android:layout_height="200dp"
-                android:layout_alignParentStart="true"
-                android:adjustViewBounds="true"
-                app:imgUrl="@{viewmodel.posterPath}"
-                tools:background="@color/colorPrimaryDark" />
+        <TextView
+            android:id="@+id/movie_release_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@{viewmodel.releaseDate}"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toEndOf="@+id/movie_title"
+            app:layout_constraintStart_toEndOf="@+id/movie_release_date_label"
+            app:layout_constraintTop_toBottomOf="@+id/movie_title"
+            tools:text="2017-04-19" />
 
-            <LinearLayout
-                android:id="@+id/movie_description"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_toEndOf="@+id/imgUrl"
-                android:orientation="vertical">
+        <TextView
+            android:id="@+id/movie_vote_average_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/average_rating"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="@+id/movie_release_date_label"
+            app:layout_constraintTop_toBottomOf="@+id/movie_release_date_label" />
 
-                <TextView
-                    android:id="@+id/movie_release_date_label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/release_date"
-                    android:textColor="@android:color/black"
-                    android:textSize="18sp" />
-
-                <TextView
-                    android:id="@+id/movie_release_date"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="18sp"
-                    tools:text="2017-04-19"
-                    android:text="@{viewmodel.releaseDate}"/>
-
-                <TextView
-                    android:id="@+id/movie_vote_average_label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingTop="@dimen/activity_horizontal_margin"
-                    android:text="@string/average_rating"
-                    android:textColor="@android:color/black"
-                    android:textSize="18sp" />
-
-                <TextView
-                    android:id="@+id/movie_vote_average"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@{String.valueOf(viewmodel.voteAverage)}"
-                    android:textSize="18sp"
-                    tools:text="7.6"/>
-
-                <TextView
-                    android:id="@+id/mark_favorite"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="10dp"
-                    android:layout_marginTop="@dimen/activity_horizontal_margin"
-                    android:text="@string/mark_as_favorite"
-                    android:textColor="@android:color/black"
-                    android:textSize="18sp"
-                    tools:text="@string/mark_as_favorite"/>
-
-                <CheckBox
-                    android:id="@+id/favourite_star"
-                    style="?android:attr/starStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:clickable="true"
-                    android:onClick="@{() -> viewmodel.setFavorite()}"
-                    android:checked="@{viewmodel.favoriteCheckBoxLivedata}"
-                    android:visibility="visible" />
-            </LinearLayout>
-        </RelativeLayout>
+        <TextView
+            android:id="@+id/movie_vote_average"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{String.valueOf(viewmodel.voteAverage)}"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toEndOf="@+id/movie_title"
+            app:layout_constraintStart_toEndOf="@+id/movie_vote_average_label"
+            app:layout_constraintTop_toBottomOf="@id/movie_release_date"
+            tools:text="7.6" />
 
         <TextView
             android:id="@+id/movie_sinopsis"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/movie_info"
             android:padding="@dimen/activity_horizontal_margin"
-            tools:text="Movie description"
-            android:text="@{viewmodel.overview}"/>
+            android:text="@{viewmodel.overview}"
+            app:layout_constraintEnd_toStartOf="@+id/guidelineRight"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@+id/guideline"
+            app:layout_constraintTop_toTopOf="@+id/barrier"
+            tools:text="Movie description" />
 
-        <LinearLayout
-            android:id="@+id/linear_recyclers"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/movie_trailers"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/movie_sinopsis"
-            android:orientation="vertical">
+            android:padding="@dimen/activity_horizontal_margin"
+            android:text="@string/trailers"
+            app:layout_constraintStart_toStartOf="@+id/guideline"
+            app:layout_constraintTop_toBottomOf="@id/divider" />
 
-            <View
-                android:id="@+id/divider"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@android:color/darker_gray" />
+        <TextView
+            android:id="@+id/movie_reviews"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/activity_horizontal_margin"
+            android:text="@string/reviews"
+            app:layout_constraintStart_toStartOf="@+id/guideline"
+            app:layout_constraintTop_toBottomOf="@id/divider_reviews" />
 
-            <TextView
-                android:id="@+id/movie_trailers"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="@dimen/activity_horizontal_margin"
-                android:text="@string/trailers" />
+        <View
+            android:id="@+id/divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"
+            app:layout_constraintTop_toBottomOf="@id/movie_sinopsis" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_trailers_list"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                tools:listitem="@layout/trailer_list_item" />
+        <View
+            android:id="@+id/divider_reviews"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"
+            app:layout_constraintTop_toBottomOf="@id/rv_trailers_list" />
 
-            <View
-                android:id="@+id/divider_reviews"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@android:color/darker_gray" />
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/imgUrl"
+            android:layout_width="0dp"
+            android:layout_height="150dp"
+            android:adjustViewBounds="true"
+            app:imgUrl="@{viewmodel.posterPath}"
+            app:layout_constraintBottom_toBottomOf="@+id/movie_backdrop"
+            app:layout_constraintDimensionRatio="w,2:3"
+            app:layout_constraintStart_toStartOf="@+id/guideline"
+            app:layout_constraintTop_toBottomOf="@+id/movie_backdrop"
+            tools:background="@android:color/transparent"
+            tools:srcCompat="@drawable/poster" />
 
-            <TextView
-                android:id="@+id/movie_reviews"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="@dimen/activity_horizontal_margin"
-                android:text="@string/reviews" />
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/barrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="bottom"
+            app:constraint_referenced_ids="imgUrl,movie_vote_average_label"
+            tools:layout_editor_absoluteY="340dp" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_reviews_list"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-        </LinearLayout>
-    </RelativeLayout>
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guidelineRight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_end="16dp" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_begin="16dp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_trailers_list"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toStartOf="@id/guidelineRight"
+            app:layout_constraintStart_toStartOf="@+id/guideline"
+            app:layout_constraintTop_toBottomOf="@+id/movie_trailers"
+            tools:listitem="@layout/trailer_list_item" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_reviews_list"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toStartOf="@+id/guidelineRight"
+            app:layout_constraintStart_toStartOf="@+id/guideline"
+            app:layout_constraintTop_toBottomOf="@id/movie_reviews" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

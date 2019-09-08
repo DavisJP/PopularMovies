@@ -38,6 +38,7 @@ import kotlinx.android.parcel.Parcelize
 @Parcelize
 class MovieDetailsObservable(var idParam: Int,
                              var titleParam: String,
+                             var backdropPathParam: String,
                              var posterPathParam: String,
                              var overviewParam: String,
                              var releaseDateParam: String,
@@ -55,6 +56,13 @@ class MovieDetailsObservable(var idParam: Int,
             field = value
             notifyPropertyChanged(BR.title)
         }
+
+    @get:Bindable
+    var backdropPath: String = ""
+    set(value) {
+        field = value
+        notifyPropertyChanged(BR.backdropPath)
+    }
 
     @get:Bindable
     var posterPath: String = ""
@@ -87,6 +95,7 @@ class MovieDetailsObservable(var idParam: Int,
     init {
         id = idParam
         title = titleParam
+        backdropPath = backdropPathParam
         posterPath = posterPathParam
         overview = overviewParam
         releaseDate = releaseDateParam

@@ -45,6 +45,7 @@ class MovieDetailsViewModel(application: Application,
     val favoriteCheckBoxLivedata = MutableLiveData<Boolean>()
     var id = MutableLiveData<Int>()
     var title = MutableLiveData<String>()
+    var backDropPath = MutableLiveData<String>()
     var posterPath = MutableLiveData<String>()
     var releaseDate = MutableLiveData<String>()
     var overview = MutableLiveData<String>()
@@ -67,7 +68,7 @@ class MovieDetailsViewModel(application: Application,
     }
 
     fun setFavorite() {
-        if (favoriteCheckBoxLivedata != null && favoriteCheckBoxLivedata.value!!) {
+        if (favoriteCheckBoxLivedata.value!!) {
             Timber.e("Is favorite, should delete it!")
             deleteMovie(movieObservable.value!!)
             favoriteCheckBoxLivedata.postValue(false)
@@ -85,6 +86,7 @@ class MovieDetailsViewModel(application: Application,
         overview.postValue(movieDetailsObservable.overview)
         voteAverage.postValue(movieDetailsObservable.voteAverage)
         posterPath.postValue(movieDetailsObservable.posterPath)
+        backDropPath.postValue(movieDetailsObservable.backdropPath)
 
         movieObservable.postValue(movieDetailsObservable)
     }
@@ -102,6 +104,7 @@ class MovieDetailsViewModel(application: Application,
                 val value = MovieDetailsObservable(
                         result.movieid,
                         result.title,
+                        result.backdropPath,
                         result.posterPath,
                         result.overview,
                         result.releaseDate,
@@ -120,6 +123,7 @@ class MovieDetailsViewModel(application: Application,
         repository.insertMovieDb(MovieDetails(
                 movieDetailsObservable.id,
                 movieDetailsObservable.title,
+                movieDetailsObservable.backdropPath,
                 movieDetailsObservable.posterPath,
                 movieDetailsObservable.overview,
                 movieDetailsObservable.releaseDate,
@@ -131,6 +135,7 @@ class MovieDetailsViewModel(application: Application,
         repository.deleteMovieDb(MovieDetails(
                 movieDetailsObservable.id,
                 movieDetailsObservable.title,
+                movieDetailsObservable.backdropPath,
                 movieDetailsObservable.posterPath,
                 movieDetailsObservable.overview,
                 movieDetailsObservable.releaseDate,
