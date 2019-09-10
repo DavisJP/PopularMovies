@@ -118,10 +118,11 @@ class MoviesViewModel(application: Application, private val repository: Reposito
         movieDetailsObservableList.addSource(movies) { result ->
             if (result != null) {
                 val movieDetailsObservableList1 = ArrayList<MovieDetailsObservable>()
-                for ((movieid, title, posterPath, overview, releaseDate, voteAverage) in result) {
+                for ((movieid, title, backdropPath, posterPath, overview, releaseDate, voteAverage) in result) {
                     movieDetailsObservableList1.add(MovieDetailsObservable(
                             movieid,
                             title,
+                            backdropPath,
                             posterPath,
                             overview,
                             releaseDate,

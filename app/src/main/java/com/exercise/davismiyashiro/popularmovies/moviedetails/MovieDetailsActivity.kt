@@ -58,7 +58,7 @@ class MovieDetailsActivity : AppCompatActivity(), TrailerListAdapter.OnTrailerCl
 
         val repository = (application as App).repository
 
-        val factory = MovieDetailsViewModel.Factory(application, repository!!)
+        val factory = MovieDetailsViewModel.Factory(application, repository)
         viewModel = ViewModelProviders.of(this, factory).get(MovieDetailsViewModel::class.java)
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_movie_details)

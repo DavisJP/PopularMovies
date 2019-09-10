@@ -41,4 +41,5 @@
     <string name="highest_rated_movies">Highest Rated Movies</string>
     <string name="favorite_movies">Favorite Movies</string>
     <string name="please_check_your_network_status_or_try_again_later">Please check your network status or try again later.</string>
+    <string name="backdrop_description">Screenshot of the movie</string>
 </resources>

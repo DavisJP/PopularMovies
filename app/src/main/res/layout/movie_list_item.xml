@@ -40,7 +40,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <ImageView
+        <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/imgUrl"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -48,7 +48,7 @@
             android:adjustViewBounds="true"
             app:imgUrl="@{movieDetails.posterPath}"
             android:onClick="@{() -> callback.getMovieClicked(movieDetails)}"
-            tools:src="@tools:sample/cities" />
+            tools:src="@tools:sample/backgrounds/scenic" />
 
     </FrameLayout>
 </layout>
