@@ -22,34 +22,39 @@
  * SOFTWARE.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+package com.exercise.davismiyashiro.popularmovies
 
-buildscript {
-    ext.kotlin_version = '1.3.50'
-    repositories {
-        google()
-        jcenter()
-        maven { url 'https://maven.google.com' }
-        mavenCentral()
+import android.content.Context
+
+import java.io.BufferedReader
+import java.io.InputStream
+import java.io.InputStreamReader
+
+/**
+ * Created by Davis Miyashiro on 07/12/2017.
+ */
+
+object JsonFileReaderHelper {
+
+    @Throws(Exception::class)
+    fun convertStreamToString(`is`: InputStream): String {
+        val reader = BufferedReader(InputStreamReader(`is`))
+        val sb = StringBuilder()
+        while (true) {
+            val line = reader.readLine() ?: break
+            sb.append(line).append("\n")
+        }
+        reader.close()
+        return sb.toString()
     }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+    @Throws(Exception::class)
+    fun getStringFromFile(context: Context, filePath: String): String {
+        val stream = context.resources.assets.open(filePath)
+
+        val ret = convertStreamToString(stream)
+        //Make sure you close all streams.
+        stream.close()
+        return ret
     }
-}
-
-allprojects {
-    repositories {
-        google()
-        jcenter()
-        maven { url 'https://maven.google.com' }
-        mavenCentral()
-    }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
 }

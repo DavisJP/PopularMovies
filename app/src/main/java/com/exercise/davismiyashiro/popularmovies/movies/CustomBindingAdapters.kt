@@ -22,34 +22,37 @@
  * SOFTWARE.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+package com.exercise.davismiyashiro.popularmovies.movies
 
-buildscript {
-    ext.kotlin_version = '1.3.50'
-    repositories {
-        google()
-        jcenter()
-        maven { url 'https://maven.google.com' }
-        mavenCentral()
+import androidx.databinding.BindingAdapter
+import androidx.recyclerview.widget.RecyclerView
+import android.widget.ImageView
+
+import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
+import com.squareup.picasso.Picasso
+
+/**
+ * Created by Davis Miyashiro.
+ */
+
+object CustomBindingAdapters {
+
+    private const val IMG_BASE_URL = "https://image.tmdb.org/t/p/w500"
+
+    @BindingAdapter("imgUrl")
+    @JvmStatic fun loadImage(view: ImageView, url: String?) {
+        url?.let {
+            Picasso.get()
+                    .load(IMG_BASE_URL + it)
+                    .placeholder(android.R.drawable.progress_indeterminate_horizontal)
+                    .into(view)
+        }
     }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+    @BindingAdapter("app:data")
+    @JvmStatic fun loadMovieDetails(recyclerView: RecyclerView, movies: List<MovieDetailsObservable>?) {
+        if (recyclerView.adapter is MovieListAdapter) {
+            (recyclerView.adapter as MovieListAdapter).replaceData(movies)
+        }
     }
-}
-
-allprojects {
-    repositories {
-        google()
-        jcenter()
-        maven { url 'https://maven.google.com' }
-        mavenCentral()
-    }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
 }

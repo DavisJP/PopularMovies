@@ -22,34 +22,40 @@
  * SOFTWARE.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+package com.exercise.davismiyashiro.popularmovies.data.local
 
-buildscript {
-    ext.kotlin_version = '1.3.50'
-    repositories {
-        google()
-        jcenter()
-        maven { url 'https://maven.google.com' }
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+import androidx.lifecycle.LiveData
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Update
 
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
-    }
-}
+import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
 
-allprojects {
-    repositories {
-        google()
-        jcenter()
-        maven { url 'https://maven.google.com' }
-        mavenCentral()
-    }
-}
+/**
+ * Created by Davis Miyashiro.
+ */
+@Dao
+interface MoviesDao {
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
+    @get:Query("SELECT * FROM $TABLE_NAME")
+    val allMovies: LiveData<List<MovieDetails>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(movie: MovieDetails)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertMovies(movies: List<MovieDetails>)
+
+    @Update
+    fun updateMovies(vararg movies: MovieDetails)
+
+    @Delete
+    fun deleteMovies(vararg movies: MovieDetails)
+
+    @Query("SELECT * FROM $TABLE_NAME WHERE movieid = :id")
+    fun getMovieById(id: Int?): LiveData<MovieDetails>
+
 }

@@ -22,34 +22,23 @@
  * SOFTWARE.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+package com.exercise.davismiyashiro.popularmovies.data
 
-buildscript {
-    ext.kotlin_version = '1.3.50'
-    repositories {
-        google()
-        jcenter()
-        maven { url 'https://maven.google.com' }
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
-    }
-}
+/**
+ * Created by Davis Miyashiro on 19/02/2017.
+ */
 
-allprojects {
-    repositories {
-        google()
-        jcenter()
-        maven { url 'https://maven.google.com' }
-        mavenCentral()
-    }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
-}
+@JsonClass(generateAdapter = true)
+data class Trailer (
+        @field:Json(name = "id") val id: String,
+        @field:Json(name = "iso_639_1") var iso6391: String,
+        @field:Json(name = "iso_3166_1") var iso31661: String,
+        @field:Json(name = "key") var key: String,
+        @field:Json(name = "name") var name: String,
+        @field:Json(name = "site") var site: String,
+        @field:Json(name = "size") var size: Int,
+        @field:Json(name = "type") var type: String
+)

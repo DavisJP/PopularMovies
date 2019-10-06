@@ -22,34 +22,38 @@
  * SOFTWARE.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+package com.exercise.davismiyashiro.popularmovies.data.local
 
-buildscript {
-    ext.kotlin_version = '1.3.50'
-    repositories {
-        google()
-        jcenter()
-        maven { url 'https://maven.google.com' }
-        mavenCentral()
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import android.content.Context
+
+import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
+
+const val TABLE_NAME = "movies"
+/**
+ * Created by Davis Miyashiro.
+ */
+@Database(entities = [MovieDetails::class], version = 1, exportSchema = false)
+abstract class MoviesDb : RoomDatabase() {
+
+    abstract fun moviesDao(): MoviesDao
+
+    companion object {
+
+        private const val DATABASE_NAME = "moviesdatabase.db"
+
+        private var INSTANCE: MoviesDb? = null
+
+        @Synchronized
+        fun getDatabase(context: Context): MoviesDb? {
+            if (INSTANCE == null) {
+                INSTANCE = Room.databaseBuilder(context.applicationContext,
+                        MoviesDb::class.java, DATABASE_NAME)
+                        .build()
+            }
+            return INSTANCE
+        }
     }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
-    }
-}
-
-allprojects {
-    repositories {
-        google()
-        jcenter()
-        maven { url 'https://maven.google.com' }
-        mavenCentral()
-    }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
 }

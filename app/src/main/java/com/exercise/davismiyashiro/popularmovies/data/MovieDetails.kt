@@ -22,34 +22,30 @@
  * SOFTWARE.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+package com.exercise.davismiyashiro.popularmovies.data
 
-buildscript {
-    ext.kotlin_version = '1.3.50'
-    repositories {
-        google()
-        jcenter()
-        maven { url 'https://maven.google.com' }
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+import androidx.room.Entity
 
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
-    }
-}
+import androidx.room.PrimaryKey
+import android.os.Parcelable
+import com.exercise.davismiyashiro.popularmovies.data.local.TABLE_NAME
 
-allprojects {
-    repositories {
-        google()
-        jcenter()
-        maven { url 'https://maven.google.com' }
-        mavenCentral()
-    }
-}
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
+import kotlinx.android.parcel.Parcelize
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
-}
+/**
+ * Created by Davis Miyashiro on 05/02/2017.
+ */
+@Parcelize
+@JsonClass(generateAdapter = true)
+@Entity(tableName = TABLE_NAME)
+data class MovieDetails(
+        @field:Json(name = "id") @PrimaryKey var movieid: Int,
+        @field:Json(name = "title") var title: String,
+        @field:Json(name = "backdrop_path") var backdropPath: String,
+        @field:Json(name = "poster_path") var posterPath: String,
+        @field:Json(name = "overview") var overview: String,
+        @field:Json(name = "release_date") var releaseDate: String,
+        @field:Json(name = "vote_average") var voteAverage: Double
+) : Parcelable
