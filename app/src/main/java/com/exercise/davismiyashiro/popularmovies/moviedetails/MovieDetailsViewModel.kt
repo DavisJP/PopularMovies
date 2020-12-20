@@ -31,6 +31,7 @@ import com.exercise.davismiyashiro.popularmovies.data.Repository
 import com.exercise.davismiyashiro.popularmovies.data.Review
 import com.exercise.davismiyashiro.popularmovies.data.Trailer
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 /**
@@ -43,7 +44,7 @@ class MovieDetailsViewModel(application: Application,
 
     private val movieObservable = MutableLiveData<MovieDetailsObservable>()
     val favoriteCheckBoxLivedata = MutableLiveData<Boolean>()
-    var id = MutableLiveData<Int>()
+    private var id = MutableLiveData<Int>()
     var title = MutableLiveData<String>()
     var backDropPath = MutableLiveData<String>()
     var posterPath = MutableLiveData<String>()
@@ -70,12 +71,24 @@ class MovieDetailsViewModel(application: Application,
     fun setFavorite() {
         if (favoriteCheckBoxLivedata.value!!) {
             Timber.e("Is favorite, should delete it!")
-            deleteMovie(movieObservable.value!!)
+            executeDbOperation { deleteMovie(movieObservable.value!!) }
             favoriteCheckBoxLivedata.postValue(false)
         } else {
             Timber.e("Is not favorite, save it!")
-            insertMovie(movieObservable.value!!)
+            executeDbOperation { insertMovie(movieObservable.value!!) }
             favoriteCheckBoxLivedata.setValue(true)
+        }
+    }
+
+    private fun executeDbOperation(operation: suspend () -> Unit): Unit {
+        viewModelScope.launch {
+            try {
+                operation()
+            } catch (error: Exception) {
+                Timber.e(error)
+            } finally {
+                // TODO: Clear loading widget
+            }
         }
     }
 
@@ -118,7 +131,7 @@ class MovieDetailsViewModel(application: Application,
         return movieDetailsObservable
     }
 
-    fun insertMovie(movieDetailsObservable: MovieDetailsObservable) {
+    suspend fun insertMovie(movieDetailsObservable: MovieDetailsObservable) {
 
         repository.insertMovieDb(MovieDetails(
                 movieDetailsObservable.id,
@@ -130,7 +143,7 @@ class MovieDetailsViewModel(application: Application,
                 movieDetailsObservable.voteAverage))
     }
 
-    fun deleteMovie(movieDetailsObservable: MovieDetailsObservable) {
+    suspend fun deleteMovie(movieDetailsObservable: MovieDetailsObservable) {
 
         repository.deleteMovieDb(MovieDetails(
                 movieDetailsObservable.id,
@@ -142,10 +155,7 @@ class MovieDetailsViewModel(application: Application,
                 movieDetailsObservable.voteAverage))
     }
 
-    fun cancelAsyncTasks() {
-        repository.cancelAsyncTasks()
-    }
-
+    @Suppress("UNCHECKED_CAST")
     class Factory(private val application: Application, private val repository: Repository) : ViewModelProvider.NewInstanceFactory() {
 
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

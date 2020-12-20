@@ -162,11 +162,6 @@ class MoviesActivity : AppCompatActivity(), MovieListAdapter.OnMovieClickListene
         startActivity(intent)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        viewModel.cancelAsyncTasks()
-    }
-
     private fun calculateNoOfColumns(context: Context): Int {
         val displayMetrics = context.resources.displayMetrics
         val dpWidth = displayMetrics.widthPixels / displayMetrics.density

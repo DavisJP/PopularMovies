@@ -47,10 +47,6 @@
             android:name=".moviedetails.MovieDetailsActivity"
             android:label="@string/title_activity_movie_details"
             android:theme="@style/AppTheme.NoActionBar" />
-
-        <service
-            android:name=".data.local.MovieDataService"
-            android:exported="false"/>
     </application>
 
 </manifest>

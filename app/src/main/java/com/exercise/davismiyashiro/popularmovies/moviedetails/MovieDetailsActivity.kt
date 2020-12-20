@@ -130,11 +130,6 @@ class MovieDetailsActivity : AppCompatActivity(), TrailerListAdapter.OnTrailerCl
 
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        viewModel.cancelAsyncTasks()
-    }
-
     companion object {
 
         var MOVIE_DETAILS = "THEMOVIEDBDETAILS"

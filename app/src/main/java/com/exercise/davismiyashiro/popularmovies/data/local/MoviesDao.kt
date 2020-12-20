@@ -40,20 +40,20 @@ import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
 @Dao
 interface MoviesDao {
 
-    @get:Query("SELECT * FROM $TABLE_NAME")
-    val allMovies: LiveData<List<MovieDetails>>
+    @Query("SELECT * FROM $TABLE_NAME")
+    fun getAllMovies(): LiveData<List<MovieDetails>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(movie: MovieDetails)
+    suspend fun insert(movie: MovieDetails)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertMovies(movies: List<MovieDetails>)
+    suspend fun insertMovies(movies: List<MovieDetails>)
 
     @Update
-    fun updateMovies(vararg movies: MovieDetails)
+    suspend fun updateMovies(vararg movies: MovieDetails)
 
     @Delete
-    fun deleteMovies(vararg movies: MovieDetails)
+    suspend fun deleteMovies(vararg movies: MovieDetails)
 
     @Query("SELECT * FROM $TABLE_NAME WHERE movieid = :id")
     fun getMovieById(id: Int?): LiveData<MovieDetails>

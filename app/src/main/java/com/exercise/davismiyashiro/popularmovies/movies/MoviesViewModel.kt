@@ -76,10 +76,6 @@ class MoviesViewModel(application: Application, private val repository: Reposito
         }
     }
 
-    fun cancelAsyncTasks() {
-        repository.cancelAsyncTasks()
-    }
-
     override fun addOnPropertyChangedCallback(callback: Observable.OnPropertyChangedCallback) {
         callbacks.add(callback)
     }
