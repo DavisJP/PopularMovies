@@ -48,7 +48,7 @@ class MovieDbApiClient {
     private var service: TheMovieDb? = null
 
     private val authInterceptor = Interceptor { chain ->
-        val newUrl = chain.request().url()
+        val newUrl = chain.request().url
                 .newBuilder()
                 .addQueryParameter(API_KEY_PARAM, BuildConfig.API_KEY)
                 .build()
