@@ -49,7 +49,7 @@ object CustomBindingAdapters {
         }
     }
 
-    @BindingAdapter("app:data")
+    @BindingAdapter("moviedata")
     @JvmStatic fun loadMovieDetails(recyclerView: RecyclerView, movies: List<MovieDetailsObservable>?) {
         if (recyclerView.adapter is MovieListAdapter) {
             (recyclerView.adapter as MovieListAdapter).replaceData(movies)
