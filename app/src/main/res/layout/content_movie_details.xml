@@ -54,18 +54,6 @@
             app:layout_constraintEnd_toEndOf="@id/guidelineRight"
             app:layout_constraintTop_toTopOf="@+id/movie_title" />
 
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/movie_backdrop"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:contentDescription="@string/backdrop_description"
-            app:imgUrl="@{viewmodel.backDropPath}"
-            app:layout_constraintDimensionRatio="16:9"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:srcCompat="@drawable/header" />
-
         <TextView
             android:id="@+id/movie_title"
             style="@style/AppTheme.TextHeadline"
@@ -82,7 +70,7 @@
             android:textSize="24sp"
             app:layout_constraintEnd_toStartOf="@+id/favourite_star"
             app:layout_constraintStart_toEndOf="@+id/imgUrl"
-            app:layout_constraintTop_toBottomOf="@+id/movie_backdrop"
+            app:layout_constraintTop_toTopOf="parent"
             tools:text="Movie title" />
 
         <TextView
@@ -101,6 +89,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:layout_marginStart="8dp"
             android:text="@{viewmodel.releaseDate}"
             android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="@+id/movie_title"
@@ -179,10 +168,11 @@
             android:layout_height="150dp"
             android:adjustViewBounds="true"
             app:imgUrl="@{viewmodel.posterPath}"
-            app:layout_constraintBottom_toBottomOf="@+id/movie_backdrop"
+            app:layout_constraintBottom_toBottomOf="@+id/movie_vote_average_label"
             app:layout_constraintDimensionRatio="w,2:3"
             app:layout_constraintStart_toStartOf="@+id/guideline"
-            app:layout_constraintTop_toBottomOf="@+id/movie_backdrop"
+            app:layout_constraintTop_toBottomOf="@+id/movie_vote_average_label"
+            app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
             tools:background="@android:color/transparent"
             tools:srcCompat="@drawable/poster" />
 

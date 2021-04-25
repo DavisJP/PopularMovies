@@ -27,12 +27,14 @@ package com.exercise.davismiyashiro.popularmovies.moviedetails
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -41,8 +43,10 @@ import com.exercise.davismiyashiro.popularmovies.R
 import com.exercise.davismiyashiro.popularmovies.data.Review
 import com.exercise.davismiyashiro.popularmovies.data.Trailer
 import com.exercise.davismiyashiro.popularmovies.databinding.ActivityMovieDetailsBinding
+import com.google.android.material.appbar.AppBarLayout
 import timber.log.Timber
 import java.util.*
+import kotlin.math.abs
 
 class MovieDetailsActivity : AppCompatActivity(), TrailerListAdapter.OnTrailerClickListener, ReviewListAdapter.OnReviewClickListener {
     private var mMovieDetails: MovieDetailsObservable? = null
@@ -53,18 +57,21 @@ class MovieDetailsActivity : AppCompatActivity(), TrailerListAdapter.OnTrailerCl
 
     private lateinit var viewModel: MovieDetailsViewModel
 
+    private var appBarExpanded = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val repository = (application as App).repository
 
         val factory = MovieDetailsViewModel.Factory(application, repository)
-        viewModel = ViewModelProviders.of(this, factory).get(MovieDetailsViewModel::class.java)
+        viewModel = ViewModelProvider(this, factory).get(MovieDetailsViewModel::class.java)
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_movie_details)
         binding.lifecycleOwner = this
-        //        binding.included.setLifecycleOwner(this);
-        binding.included?.viewmodel = viewModel
+
+        binding.viewmodel = viewModel
+        binding.included.viewmodel = viewModel
 
         setSupportActionBar(binding.toolbar)
 
@@ -74,16 +81,27 @@ class MovieDetailsActivity : AppCompatActivity(), TrailerListAdapter.OnTrailerCl
 
         mTrailersAdapter = TrailerListAdapter(ArrayList(), this)
         val layout = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
-        binding.included?.rvTrailersList?.layoutManager = layout
+        binding.included.rvTrailersList.layoutManager = layout
         val itemDecoration = DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
-        binding.included?.rvTrailersList?.addItemDecoration(itemDecoration)
-        binding.included?.rvTrailersList?.adapter = mTrailersAdapter
+        binding.included.rvTrailersList.addItemDecoration(itemDecoration)
+        binding.included.rvTrailersList.adapter = mTrailersAdapter
 
         mReviewAdapter = ReviewListAdapter(ArrayList(), this)
         val layoutRev = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
-        binding.included?.rvReviewsList?.layoutManager = layoutRev
-        binding.included?.rvReviewsList?.addItemDecoration(itemDecoration)
-        binding.included?.rvReviewsList?.adapter = mReviewAdapter
+        binding.included.rvReviewsList.layoutManager = layoutRev
+        binding.included.rvReviewsList.addItemDecoration(itemDecoration)
+        binding.included.rvReviewsList.adapter = mReviewAdapter
+
+        binding.appBar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { _, verticalOffset ->
+            //  Vertical offset == 0 indicates appBar is fully expanded.
+            if (abs(verticalOffset) > 200) {
+                appBarExpanded = false
+                invalidateOptionsMenu()
+            } else {
+                appBarExpanded = true
+                invalidateOptionsMenu()
+            }
+        })
 
         mMovieDetails?.let {
             viewModel.setMovieDetailsLivedatas(it)
@@ -108,6 +126,21 @@ class MovieDetailsActivity : AppCompatActivity(), TrailerListAdapter.OnTrailerCl
                 }
             })
         }
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        // collapsed
+        if (!appBarExpanded || menu.size() != 0) {
+            menu.add(1, 1, 100, "Favorite")
+                .setIcon(android.R.drawable.btn_star_big_on)
+                .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
+        }
+        return super.onPrepareOptionsMenu(menu)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_favorite_movies, menu)
+        return true
     }
 
     fun showDbResultMessage(@StringRes msg: Int) {
