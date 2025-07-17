@@ -32,7 +32,7 @@ import com.exercise.davismiyashiro.popularmovies.data.local.TABLE_NAME
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 /**
  * Created by Davis Miyashiro on 05/02/2017.
