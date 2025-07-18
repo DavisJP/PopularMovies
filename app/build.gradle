@@ -91,7 +91,6 @@ dependencies {
 
     // Lifecycle components
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
-    implementation "androidx.lifecycle:lifecycle-common-java8:2.3.1"
 
     implementation 'com.squareup.okhttp3:logging-interceptor:5.1.0'
     implementation 'com.squareup.okhttp3:okhttp:5.1.0'
@@ -106,15 +105,15 @@ dependencies {
     implementation 'com.jakewharton.timber:timber:4.7.1'
 
     //Kotlin Coroutines
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.1"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2"
 
     //For integration of coroutines and ViewModelScope
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.2"
     //For LifecycleScope
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.9.2"
     //For liveData
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.3.1"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.9.2"
 
     testImplementation 'org.mockito:mockito-core:5.18.0'
     testImplementation 'com.squareup.okhttp3:mockwebserver:5.1.0'

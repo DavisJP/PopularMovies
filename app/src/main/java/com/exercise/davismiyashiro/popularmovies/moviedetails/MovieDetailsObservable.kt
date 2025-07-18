@@ -24,25 +24,26 @@
 
 package com.exercise.davismiyashiro.popularmovies.moviedetails
 
+import android.os.Parcelable
 import androidx.databinding.BaseObservable
 import androidx.databinding.Bindable
-import android.os.Parcelable
 import androidx.databinding.library.baseAdapters.BR
-
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 /**
  *
  * Created by Davis Miyashiro.
  */
 @Parcelize
-class MovieDetailsObservable(var idParam: Int,
-                             var titleParam: String,
-                             var backdropPathParam: String,
-                             var posterPathParam: String,
-                             var overviewParam: String,
-                             var releaseDateParam: String,
-                             var voteAverageParam: Double) : BaseObservable(), Parcelable {
+class MovieDetailsObservable(
+    var idParam: Int,
+    var titleParam: String,
+    var backdropPathParam: String,
+    var posterPathParam: String,
+    var overviewParam: String,
+    var releaseDateParam: String,
+    var voteAverageParam: Double
+) : BaseObservable(), Parcelable {
     @get:Bindable
     var id: Int = 0
         set(value) {
@@ -59,10 +60,10 @@ class MovieDetailsObservable(var idParam: Int,
 
     @get:Bindable
     var backdropPath: String = ""
-    set(value) {
-        field = value
-        notifyPropertyChanged(BR.backdropPath)
-    }
+        set(value) {
+            field = value
+            notifyPropertyChanged(BR.backdropPath)
+        }
 
     @get:Bindable
     var posterPath: String = ""

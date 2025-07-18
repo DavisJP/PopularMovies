@@ -32,15 +32,18 @@ import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import com.exercise.davismiyashiro.popularmovies.App
 import com.exercise.davismiyashiro.popularmovies.R
 import com.exercise.davismiyashiro.popularmovies.databinding.ActivityMoviesBinding
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsActivity
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
-import java.util.*
+import kotlinx.coroutines.launch
+import java.util.LinkedList
 
 const val POPULARITY_DESC_PARAM = "popular"
 const val HIGHEST_RATED_PARAM = "top_rated"
@@ -67,7 +70,6 @@ class MoviesActivity : AppCompatActivity(), MovieListAdapter.OnMovieClickListene
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_movies)
         binding.lifecycleOwner = this
-        binding.viewmodel = viewModel
 
         if (savedInstanceState != null) {
             mSortOpt = savedInstanceState.getString(SORT_KEY) ?: POPULARITY_DESC_PARAM
@@ -80,18 +82,24 @@ class MoviesActivity : AppCompatActivity(), MovieListAdapter.OnMovieClickListene
         mMovieListAdapter = MovieListAdapter(LinkedList(), this)
         binding.rvMovieList.adapter = mMovieListAdapter
 
-        viewModel.setMoviesBySortingOption(mSortOpt)
-
-        viewModel.moviesObservable.observe(this, Observer { movies ->
-            if (movies != null && movies.isNotEmpty()) {
-                updateMovieData(movies)
-                showMovieList()
-            } else {
-                showErrorMsg()
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { uiState ->
+                    if (uiState.isLoading) {
+                        showLoading()
+                    } else {
+                        if (uiState.movieList.isNotEmpty()) {
+                            updateMovieData(uiState.movieList)
+                            showMovieList()
+                        } else {
+                            showErrorMsg()
+                        }
+                    }
+                }
             }
-        })
-
-        setTitleBar(mSortOpt)
+            setTitleBar(mSortOpt)
+        }
+        viewModel.loadMovieListBySortingOption(mSortOpt)
     }
 
     private fun setTitleBar(favoritesParam: String) {
@@ -111,12 +119,20 @@ class MoviesActivity : AppCompatActivity(), MovieListAdapter.OnMovieClickListene
         super.onSaveInstanceState(outState)
     }
 
+    private fun showLoading() {
+        binding.progressBar.visibility = View.VISIBLE
+        binding.tvErrorMessageDisplay.visibility = View.INVISIBLE
+        binding.rvMovieList.visibility = View.INVISIBLE
+    }
+
     private fun showErrorMsg() {
+        binding.progressBar.visibility = View.GONE
         binding.tvErrorMessageDisplay.visibility = View.VISIBLE
         binding.rvMovieList.visibility = View.INVISIBLE
     }
 
     private fun showMovieList() {
+        binding.progressBar.visibility = View.GONE
         binding.tvErrorMessageDisplay.visibility = View.INVISIBLE
         binding.rvMovieList.visibility = View.VISIBLE
     }
@@ -134,24 +150,25 @@ class MoviesActivity : AppCompatActivity(), MovieListAdapter.OnMovieClickListene
         when (item.itemId) {
             R.id.action_popular -> {
                 mSortOpt = POPULARITY_DESC_PARAM
-                viewModel.setMoviesBySortingOption(mSortOpt)
+                viewModel.loadMovieListBySortingOption(mSortOpt)
                 setTitleBar(mSortOpt)
                 return true
             }
 
             R.id.action_highest_rated -> {
                 mSortOpt = HIGHEST_RATED_PARAM
-                viewModel.setMoviesBySortingOption(mSortOpt)
+                viewModel.loadMovieListBySortingOption(mSortOpt)
                 setTitleBar(mSortOpt)
                 return true
             }
 
             R.id.action_favorites -> {
                 mSortOpt = FAVORITES_PARAM
-                viewModel.setMoviesBySortingOption(mSortOpt)
+                viewModel.loadMovieListBySortingOption(mSortOpt)
                 setTitleBar(mSortOpt)
                 return true
             }
+
             else -> return super.onOptionsItemSelected(item)
         }
     }
