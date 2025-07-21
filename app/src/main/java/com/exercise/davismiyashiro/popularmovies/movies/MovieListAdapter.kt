@@ -26,32 +26,33 @@ package com.exercise.davismiyashiro.popularmovies.movies
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.exercise.davismiyashiro.popularmovies.R
 import com.exercise.davismiyashiro.popularmovies.databinding.MovieListItemBinding
+import com.exercise.davismiyashiro.popularmovies.moviedetails.IMG_BASE_URL
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
+import com.squareup.picasso.Picasso
 
 /**
  * Created by Davis Miyashiro on 27/01/2017.
  */
-class MovieListAdapter(private var movieList: List<MovieDetailsObservable>,
-                       private val mClickListener: OnMovieClickListener) :
-        RecyclerView.Adapter<MovieListAdapter.MovieListHolder>() {
+class MovieListAdapter(
+    private var movieList: List<MovieDetailsObservable>,
+    private val mClickListener: OnMovieClickListener
+) :
+    RecyclerView.Adapter<MovieListAdapter.MovieListHolder>() {
 
     interface OnMovieClickListener {
         fun getMovieClicked(movieDetails: MovieDetailsObservable)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MovieListHolder {
-        val binding = DataBindingUtil.inflate<MovieListItemBinding>(LayoutInflater.from(parent.context), R.layout.movie_list_item, parent, false)
-        binding.callback = mClickListener
+        val binding =
+            MovieListItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return MovieListHolder(binding)
     }
 
     override fun onBindViewHolder(holder: MovieListHolder, position: Int) {
-        holder.binding.movieDetails = movieList[position]
-        holder.binding.executePendingBindings()
+        holder.bind(movieList[position])
     }
 
     override fun getItemCount(): Int {
@@ -65,5 +66,17 @@ class MovieListAdapter(private var movieList: List<MovieDetailsObservable>,
         }
     }
 
-    inner class MovieListHolder(internal val binding: MovieListItemBinding) : RecyclerView.ViewHolder(binding.root)
+    inner class MovieListHolder(internal val binding: MovieListItemBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+
+        fun bind(movieDetails: MovieDetailsObservable) {
+            if (movieDetails.posterPath.isNotEmpty()) {
+                Picasso.get()
+                    .load(IMG_BASE_URL + movieDetails.posterPath)
+                    .placeholder(android.R.drawable.progress_indeterminate_horizontal)
+                    .into(binding.imgUrl)
+            }
+            binding.imgUrl.setOnClickListener { mClickListener.getMovieClicked(movieDetails) }
+        }
+    }
 }

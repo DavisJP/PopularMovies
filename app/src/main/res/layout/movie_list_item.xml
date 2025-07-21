@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ MIT License
   ~
   ~ Copyright (c) 2019 Davis Miyashiro
@@ -24,17 +23,7 @@
   -->
 
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-
-    <data>
-        <variable
-            name="movieDetails"
-            type="com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable"/>
-        <variable
-            name="callback"
-            type="com.exercise.davismiyashiro.popularmovies.movies.MovieListAdapter.OnMovieClickListener"/>
-    </data>
+    xmlns:tools="http://schemas.android.com/tools">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -46,8 +35,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:adjustViewBounds="true"
-            app:imgUrl="@{movieDetails.posterPath}"
-            android:onClick="@{() -> callback.getMovieClicked(movieDetails)}"
             tools:src="@tools:sample/backgrounds/scenic" />
 
     </FrameLayout>

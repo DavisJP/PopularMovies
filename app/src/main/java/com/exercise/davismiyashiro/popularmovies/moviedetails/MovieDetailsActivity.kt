@@ -43,9 +43,10 @@ import com.exercise.davismiyashiro.popularmovies.data.Trailer
 import com.exercise.davismiyashiro.popularmovies.databinding.ActivityMovieDetailsBinding
 import com.squareup.picasso.Picasso
 
+const val IMG_BASE_URL = "https://image.tmdb.org/t/p/w500"
+
 class MovieDetailsActivity : AppCompatActivity(), TrailerListAdapter.OnTrailerClickListener,
     ReviewListAdapter.OnReviewClickListener {
-    private val IMG_BASE_URL = "https://image.tmdb.org/t/p/w500"
 
     private var mMovieDetails: MovieDetailsObservable? = null
 
