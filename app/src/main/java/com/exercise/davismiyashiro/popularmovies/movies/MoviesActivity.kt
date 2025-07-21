@@ -33,7 +33,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
@@ -66,7 +66,7 @@ class MoviesActivity : AppCompatActivity(), MovieListAdapter.OnMovieClickListene
 
         val factory = MoviesViewModel.Factory(application, repository)
 
-        viewModel = ViewModelProviders.of(this, factory).get(MoviesViewModel::class.java)
+        viewModel = ViewModelProvider(this, factory)[MoviesViewModel::class.java]
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_movies)
         binding.lifecycleOwner = this

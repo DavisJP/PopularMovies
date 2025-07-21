@@ -32,7 +32,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -62,7 +62,7 @@ class MovieDetailsActivity : AppCompatActivity(), TrailerListAdapter.OnTrailerCl
         val repository = (application as App).repository
 
         val factory = MovieDetailsViewModel.Factory(application, repository)
-        viewModel = ViewModelProviders.of(this, factory).get(MovieDetailsViewModel::class.java)
+        viewModel = ViewModelProvider(this, factory)[MovieDetailsViewModel::class.java]
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_movie_details)
         binding.lifecycleOwner = this
