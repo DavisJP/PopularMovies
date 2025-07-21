@@ -25,7 +25,16 @@
 package com.exercise.davismiyashiro.popularmovies.moviedetails
 
 import android.app.Application
-import androidx.lifecycle.*
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.distinctUntilChanged
+import androidx.lifecycle.liveData
+import androidx.lifecycle.map
+import androidx.lifecycle.switchMap
+import androidx.lifecycle.viewModelScope
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
 import com.exercise.davismiyashiro.popularmovies.data.Repository
 import com.exercise.davismiyashiro.popularmovies.data.Review
@@ -38,22 +47,19 @@ import timber.log.Timber
  * Created by Davis Miyashiro.
  */
 
-class MovieDetailsViewModel(application: Application,
-                            private val repository: Repository) :
-        AndroidViewModel(application) {
+class MovieDetailsViewModel(
+    application: Application,
+    private val repository: Repository
+) :
+    AndroidViewModel(application) {
 
     private val movieObservable = MutableLiveData<MovieDetailsObservable>()
-    val favoriteCheckBoxLivedata = MutableLiveData<Boolean>()
-    private var id = MutableLiveData<Int>()
-    var title = MutableLiveData<String>()
-    var backDropPath = MutableLiveData<String>()
-    var posterPath = MutableLiveData<String>()
-    var releaseDate = MutableLiveData<String>()
-    var overview = MutableLiveData<String>()
-    var voteAverage = MutableLiveData<Double>()
+    val movieLiveData: LiveData<MovieDetailsObservable> = movieObservable
+
+    private val id = MutableLiveData<Int>()
 
     val reviews: LiveData<List<Review>> = id.switchMap { value ->
-        liveData (context = viewModelScope.coroutineContext + Dispatchers.IO) {
+        liveData(context = viewModelScope.coroutineContext + Dispatchers.IO) {
             emitSource(repository.findReviewsByMovieId(value))
         }
     }
@@ -64,19 +70,23 @@ class MovieDetailsViewModel(application: Application,
         }
     }
 
-    fun getMovieObservable(movieId: Int): LiveData<MovieDetailsObservable> {
-        return convertMovieDetailsToUImodel(repository.getMovieFromDb(movieId))
-    }
+    val favoriteCheckBoxLivedata: LiveData<Boolean> = id.switchMap { id ->
+        if (id == 0) {
+            MutableLiveData(false)
+        } else {
+            repository.getMovieFromDb(id).map { movie: MovieDetails? ->
+                movie != null
+            }
+        }
+    }.distinctUntilChanged()
 
     fun setFavorite() {
-        if (favoriteCheckBoxLivedata.value!!) {
-            Timber.e("Is favorite, should delete it!")
-            executeDbOperation { deleteMovie(movieObservable.value!!) }
-            favoriteCheckBoxLivedata.postValue(false)
+        val currentIsFavorite = favoriteCheckBoxLivedata.value ?: return
+        val movieObs = movieObservable.value ?: return
+        if (currentIsFavorite) {
+            executeDbOperation { deleteMovie(movieObs) }
         } else {
-            Timber.e("Is not favorite, save it!")
-            executeDbOperation { insertMovie(movieObservable.value!!) }
-            favoriteCheckBoxLivedata.setValue(true)
+            executeDbOperation { insertMovie(movieObs) }
         }
     }
 
@@ -94,69 +104,43 @@ class MovieDetailsViewModel(application: Application,
 
     fun setMovieDetailsLivedatas(movieDetailsObservable: MovieDetailsObservable) {
         id.postValue(movieDetailsObservable.id)
-        title.postValue(movieDetailsObservable.title)
-        releaseDate.postValue(movieDetailsObservable.releaseDate)
-        overview.postValue(movieDetailsObservable.overview)
-        voteAverage.postValue(movieDetailsObservable.voteAverage)
-        posterPath.postValue(movieDetailsObservable.posterPath)
-        backDropPath.postValue(movieDetailsObservable.backdropPath)
 
         movieObservable.postValue(movieDetailsObservable)
     }
 
-    private fun convertMovieDetailsToUImodel(movie: LiveData<MovieDetails>): LiveData<MovieDetailsObservable> {
-        val movieDetailsObservable = MediatorLiveData<MovieDetailsObservable>()
-
-        favoriteCheckBoxLivedata.postValue(false)
-        movieDetailsObservable.addSource(movie) { result ->
-
-            //If it's not null then it's a favorite
-            if (result != null) {
-                favoriteCheckBoxLivedata.postValue(true)
-                Timber.e("Is true!")
-                val value = MovieDetailsObservable(
-                        result.movieid,
-                        result.title,
-                        result.backdropPath,
-                        result.posterPath,
-                        result.overview,
-                        result.releaseDate,
-                        result.voteAverage)
-                movieDetailsObservable.setValue(value)
-            } else {
-                Timber.e("Is False!")
-                favoriteCheckBoxLivedata.postValue(false)
-            }
-        }
-        return movieDetailsObservable
-    }
-
     suspend fun insertMovie(movieDetailsObservable: MovieDetailsObservable) {
 
-        repository.insertMovieDb(MovieDetails(
+        repository.insertMovieDb(
+            MovieDetails(
                 movieDetailsObservable.id,
                 movieDetailsObservable.title,
                 movieDetailsObservable.backdropPath,
                 movieDetailsObservable.posterPath,
                 movieDetailsObservable.overview,
                 movieDetailsObservable.releaseDate,
-                movieDetailsObservable.voteAverage))
+                movieDetailsObservable.voteAverage
+            )
+        )
     }
 
     suspend fun deleteMovie(movieDetailsObservable: MovieDetailsObservable) {
 
-        repository.deleteMovieDb(MovieDetails(
+        repository.deleteMovieDb(
+            MovieDetails(
                 movieDetailsObservable.id,
                 movieDetailsObservable.title,
                 movieDetailsObservable.backdropPath,
                 movieDetailsObservable.posterPath,
                 movieDetailsObservable.overview,
                 movieDetailsObservable.releaseDate,
-                movieDetailsObservable.voteAverage))
+                movieDetailsObservable.voteAverage
+            )
+        )
     }
 
     @Suppress("UNCHECKED_CAST")
-    class Factory(private val application: Application, private val repository: Repository) : ViewModelProvider.NewInstanceFactory() {
+    class Factory(private val application: Application, private val repository: Repository) :
+        ViewModelProvider.NewInstanceFactory() {
 
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             return MovieDetailsViewModel(application, repository) as T

@@ -24,12 +24,9 @@
 
 package com.exercise.davismiyashiro.popularmovies.moviedetails
 
-import androidx.databinding.DataBindingUtil
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
-
-import com.exercise.davismiyashiro.popularmovies.R
+import androidx.recyclerview.widget.RecyclerView
 import com.exercise.davismiyashiro.popularmovies.data.Review
 import com.exercise.davismiyashiro.popularmovies.databinding.ReviewListItemBinding
 
@@ -37,23 +34,24 @@ import com.exercise.davismiyashiro.popularmovies.databinding.ReviewListItemBindi
  * Created by Davis Miyashiro on 01/03/2017.
  */
 
-class ReviewListAdapter(private var reviews: List<Review>,
-                        private val listener: OnReviewClickListener) :
-        RecyclerView.Adapter<ReviewListAdapter.ReviewHolder>() {
+class ReviewListAdapter(
+    private var reviews: List<Review>,
+    private val listener: OnReviewClickListener
+) :
+    RecyclerView.Adapter<ReviewListAdapter.ReviewHolder>() {
 
     interface OnReviewClickListener {
         fun onReviewClick(review: Review)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReviewHolder {
-        val binding = DataBindingUtil.inflate<ReviewListItemBinding>(LayoutInflater.from(parent.context), R.layout.review_list_item, parent, false)
+        val binding =
+            ReviewListItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ReviewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ReviewHolder, position: Int) {
-        holder.binding.review = reviews[position]
-        holder.binding.reviewCallback = listener
-        holder.binding.executePendingBindings()
+        holder.bind(reviews[position])
     }
 
     override fun getItemCount(): Int {
@@ -67,5 +65,12 @@ class ReviewListAdapter(private var reviews: List<Review>,
         }
     }
 
-    inner class ReviewHolder(internal var binding: ReviewListItemBinding) : RecyclerView.ViewHolder(binding.root)
+    inner class ReviewHolder(internal var binding: ReviewListItemBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(review: Review) {
+            binding.reviewName.text = review.author
+            binding.reviewContent.text = review.content
+            binding.root.setOnClickListener { listener.onReviewClick(review) }
+        }
+    }
 }

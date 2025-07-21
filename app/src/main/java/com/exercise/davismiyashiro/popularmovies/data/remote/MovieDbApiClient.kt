@@ -31,9 +31,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
-import timber.log.Timber
 import java.io.IOException
-import java.lang.Exception
 
 private const val API_KEY_PARAM = "api_key"
 private const val THEMOVIEDB_API = "https://api.themoviedb.org"
@@ -49,14 +47,14 @@ class MovieDbApiClient {
 
     private val authInterceptor = Interceptor { chain ->
         val newUrl = chain.request().url
-                .newBuilder()
-                .addQueryParameter(API_KEY_PARAM, BuildConfig.API_KEY)
-                .build()
+            .newBuilder()
+            .addQueryParameter(API_KEY_PARAM, BuildConfig.API_KEY)
+            .build()
 
         val newRequest = chain.request()
-                .newBuilder()
-                .url(newUrl)
-                .build()
+            .newBuilder()
+            .url(newUrl)
+            .build()
         chain.proceed(newRequest)
     }
 
@@ -70,57 +68,70 @@ class MovieDbApiClient {
             }
 
             return OkHttpClient.Builder()
-                    .addInterceptor(logging)
-                    .addInterceptor(authInterceptor)
-                    .build()
+                .addInterceptor(logging)
+                .addInterceptor(authInterceptor)
+                .build()
         }
 
     fun getService(): TheMovieDb? {
         if (service == null) {
             val retrofitSingle = Retrofit.Builder()
-                    .baseUrl(THEMOVIEDB_API)
-                    .client(okHttp)
-                    .addConverterFactory(MoshiConverterFactory.create())
-                    .build()
+                .baseUrl(THEMOVIEDB_API)
+                .client(okHttp)
+                .addConverterFactory(MoshiConverterFactory.create())
+                .build()
             service = retrofitSingle.create(TheMovieDb::class.java)
         }
         return service
     }
 
-    sealed class Result<out T : Any> {
-        data class Success<out T : Any>(val data: T) : Result<T>()
-        data class Error(val exception: Exception) : Result<Nothing>()
-    }
+    sealed class Result<out E, out S> {
+        data class Error(val exception: Exception) : Result<Exception, Nothing>()
+        data class Success<out S>(val data: S) : Result<Nothing, S>()
 
-    open class BaseNetworkHandler {
-        suspend fun <T : Any> apiCall(call: suspend () -> Response<T>, errorMessage: String): T? {
-            val result : Result<T> = apiResult(call, errorMessage)
-            var data: T? = null
-
-            when (result) {
-                is Result.Success -> data = result.data
-                is Result.Error -> {
-                    if (result.exception is UnknownError) {
-                        result.exception.printStackTrace()
-                        throw UnknownError(result.exception.message)
-                    }
-                    Timber.e("$errorMessage : Error occurred during apiResult: ${result.exception}")
-                }
+        fun <T> fold(ex: (Exception) -> T, success: (S) -> T): T {
+            return when (this) {
+                is Error -> ex(exception)
+                is Success -> success(data)
             }
-            return data
         }
 
-        private suspend fun <T: Any> apiResult(call: suspend () -> Response<T>, errorMessage: String): Result<T> {
-            val response = call.invoke()
-            return if (response.isSuccessful)
-                Result.Success(response.body()!!)
-            else {
-                when (response.code()) {
-                    401 -> Result.Error(IOException(errorMessage.plus("onRequestUnauthenticated: ${response.message()}")))
-                    in 400..499 -> Result.Error(IOException(errorMessage.plus("onRequestClientError: ${response.message()}")))
-                    in 500..599 -> Result.Error(IOException(errorMessage.plus("onRequestServerError: ${response.message()}")))
-                    else -> Result.Error(IOException(errorMessage.plus ("UnknownError: ${response.code()} ${response.message()}")))
+        inline fun <T> map(transform: (S) -> T): Result<E, T> {
+            return when (this) {
+                is Error -> this
+                is Success -> Success(transform(data))
+            }
+        }
+    }
+
+    class ApiException(message: String, cause: Throwable? = null) : RuntimeException(message, cause)
+    class NetworkException(message: String, cause: Throwable? = null) : IOException(message, cause)
+    class UnexpectedApiException(message: String, cause: Throwable? = null) :
+        RuntimeException(message, cause)
+
+    open class BaseNetworkHandler {
+        suspend fun <T : Any> apiCall(
+            call: suspend () -> Response<T>,
+            errorMessage: String
+        ): Result<Exception, T> {
+            try {
+                val response = call()
+                return if (response.isSuccessful)
+                    response.body()?.let { body ->
+                        Result.Success(body)
+                    } ?: Result.Error(ApiException(errorMessage))
+                else {
+                    when (response.code()) {
+                        401 -> Result.Error(ApiException(errorMessage.plus("onRequestUnauthenticated: ${response.message()}")))
+                        in 400..499 -> Result.Error(ApiException(errorMessage.plus("onRequestClientError: ${response.message()}")))
+                        in 500..599 -> Result.Error(ApiException(errorMessage.plus("onRequestServerError: ${response.message()}")))
+                        else -> Result.Error(ApiException(errorMessage.plus("UnknownError: ${response.code()} ${response.message()}")))
+                    }
                 }
+            } catch (e: IOException) {
+                return Result.Error(NetworkException(errorMessage, e))
+            } catch (e: Exception) {
+                return Result.Error(UnexpectedApiException(errorMessage, e))
             }
         }
     }

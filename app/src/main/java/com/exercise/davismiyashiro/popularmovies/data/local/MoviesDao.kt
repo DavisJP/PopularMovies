@@ -31,7 +31,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
 
 /**
@@ -41,7 +40,7 @@ import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
 interface MoviesDao {
 
     @Query("SELECT * FROM $TABLE_NAME")
-    fun getAllMovies(): LiveData<List<MovieDetails>>
+    suspend fun getAllMovies(): List<MovieDetails>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(movie: MovieDetails)

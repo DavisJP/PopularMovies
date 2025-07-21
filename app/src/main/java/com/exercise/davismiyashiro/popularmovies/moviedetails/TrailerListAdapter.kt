@@ -24,12 +24,9 @@
 
 package com.exercise.davismiyashiro.popularmovies.moviedetails
 
-import androidx.databinding.DataBindingUtil
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
-
-import com.exercise.davismiyashiro.popularmovies.R
+import androidx.recyclerview.widget.RecyclerView
 import com.exercise.davismiyashiro.popularmovies.data.Trailer
 import com.exercise.davismiyashiro.popularmovies.databinding.TrailerListItemBinding
 
@@ -37,21 +34,23 @@ import com.exercise.davismiyashiro.popularmovies.databinding.TrailerListItemBind
  * Created by Davis Miyashiro on 26/02/2017.
  */
 
-class TrailerListAdapter(private var trailers: List<Trailer>, private val listener: OnTrailerClickListener) : RecyclerView.Adapter<TrailerListAdapter.TrailerHolder>() {
+class TrailerListAdapter(
+    private var trailers: List<Trailer>,
+    private val listener: OnTrailerClickListener
+) : RecyclerView.Adapter<TrailerListAdapter.TrailerHolder>() {
 
     interface OnTrailerClickListener {
         fun onTrailerClick(trailer: Trailer)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TrailerHolder {
-        val binding = DataBindingUtil.inflate<TrailerListItemBinding>(LayoutInflater.from(parent.context), R.layout.trailer_list_item, parent, false)
+        val binding =
+            TrailerListItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return TrailerHolder(binding)
     }
 
     override fun onBindViewHolder(holder: TrailerHolder, position: Int) {
-        holder.binding.trailer = trailers[position]
-        holder.binding.trailerCallback = listener
-        holder.binding.executePendingBindings()
+        holder.bind(trailers[position])
     }
 
     override fun getItemCount(): Int {
@@ -65,5 +64,11 @@ class TrailerListAdapter(private var trailers: List<Trailer>, private val listen
         }
     }
 
-    inner class TrailerHolder(internal val binding: TrailerListItemBinding) : RecyclerView.ViewHolder(binding.root)
+    inner class TrailerHolder(internal val binding: TrailerListItemBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(trailer: Trailer) {
+            binding.trailerName.text = trailer.name
+            binding.root.setOnClickListener { listener.onTrailerClick(trailer) }
+        }
+    }
 }
