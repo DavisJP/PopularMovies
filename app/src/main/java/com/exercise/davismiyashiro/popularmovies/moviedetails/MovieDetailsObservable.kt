@@ -24,81 +24,20 @@
 
 package com.exercise.davismiyashiro.popularmovies.moviedetails
 
-import androidx.databinding.BaseObservable
-import androidx.databinding.Bindable
 import android.os.Parcelable
-import androidx.databinding.library.baseAdapters.BR
-
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 /**
  *
  * Created by Davis Miyashiro.
  */
 @Parcelize
-class MovieDetailsObservable(var idParam: Int,
-                             var titleParam: String,
-                             var backdropPathParam: String,
-                             var posterPathParam: String,
-                             var overviewParam: String,
-                             var releaseDateParam: String,
-                             var voteAverageParam: Double) : BaseObservable(), Parcelable {
-    @get:Bindable
-    var id: Int = 0
-        set(value) {
-            field = value
-            notifyPropertyChanged(BR.id)
-        }
-
-    @get:Bindable
-    var title: String = ""
-        set(value) {
-            field = value
-            notifyPropertyChanged(BR.title)
-        }
-
-    @get:Bindable
-    var backdropPath: String = ""
-    set(value) {
-        field = value
-        notifyPropertyChanged(BR.backdropPath)
-    }
-
-    @get:Bindable
-    var posterPath: String = ""
-        set(value) {
-            field = value
-            notifyPropertyChanged(BR.posterPath)
-        }
-
-    @get:Bindable
-    var overview: String = ""
-        set(value) {
-            field = value
-            notifyPropertyChanged(BR.overview)
-        }
-
-    @get:Bindable
-    var releaseDate: String = ""
-        set(value) {
-            field = value
-            notifyPropertyChanged(BR.releaseDate)
-        }
-
-    @get:Bindable
-    var voteAverage: Double = 0.0
-        set(value) {
-            field = value
-            notifyPropertyChanged(BR.voteAverage)
-        }
-
-    init {
-        id = idParam
-        title = titleParam
-        backdropPath = backdropPathParam
-        posterPath = posterPathParam
-        overview = overviewParam
-        releaseDate = releaseDateParam
-        voteAverage = voteAverageParam
-    }
-}
+data class MovieDetailsObservable(
+    val id: Int,
+    var title: String,
+    var backdropPath: String,
+    var posterPath: String,
+    var overview: String,
+    var releaseDate: String,
+    var voteAverage: Double
+) : Parcelable

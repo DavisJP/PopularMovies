@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ MIT License
   ~
   ~ Copyright (c) 2019 Davis Miyashiro
@@ -23,20 +22,37 @@
   ~ SOFTWARE.
   -->
 
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.exercise.davismiyashiro.popularmovies">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data
+                android:host="www.youtube.com"
+                android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data
+                android:host="m.youtube.com"
+                android:scheme="https" />
+        </intent>
+
+<!--        <package android:name="com.google.android.youtube" />-->
+    </queries>
+
     <application
-        android:allowBackup="true"
         android:name=".App"
+        android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".movies.MoviesActivity"
+        <activity
+            android:name=".movies.MoviesActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -46,6 +62,7 @@
         </activity>
         <activity
             android:name=".moviedetails.MovieDetailsActivity"
+            android:exported="true"
             android:label="@string/title_activity_movie_details"
             android:theme="@style/AppTheme.NoActionBar" />
     </application>

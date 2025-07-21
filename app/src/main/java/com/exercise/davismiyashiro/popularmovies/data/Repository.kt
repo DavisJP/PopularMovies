@@ -27,54 +27,40 @@ package com.exercise.davismiyashiro.popularmovies.data
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDao
+import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient
 import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient.BaseNetworkHandler
 import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb
-import com.exercise.davismiyashiro.popularmovies.movies.FAVORITES_PARAM
 import timber.log.Timber
 
 /**
  * Created by Davis Miyashiro.
  */
 
-class Repository(private val theMovieDb: TheMovieDb, private val moviesDao: MoviesDao) : BaseNetworkHandler() {
+class Repository(private val theMovieDb: TheMovieDb, private val moviesDao: MoviesDao) :
+    BaseNetworkHandler() {
 
-    suspend fun loadMoviesFromNetwork(sortingOption: String): LiveData<List<MovieDetails>> {
-
-        val moviesObservable = MediatorLiveData<List<MovieDetails>>()
-
+    suspend fun loadMoviesFromNetwork(sortingOption: String): MovieDbApiClient.Result<Exception, List<MovieDetails>> {
         val moviesResponse = apiCall(
-                call = { theMovieDb.getPopular(sortingOption) },
-                errorMessage = "Error Fetching Movies"
+            call = { theMovieDb.getPopular(sortingOption) },
+            errorMessage = "Error Fetching Movies"
         )
 
-        moviesObservable.postValue(moviesResponse?.results)
-
-        return moviesObservable
+        return moviesResponse.map { moviesResponse ->
+            moviesResponse.results
+        }
     }
 
-    fun loadMoviesFromDb(sortingOption: String): LiveData<List<MovieDetails>> {
-        val moviesObservable = MediatorLiveData<List<MovieDetails>>()
-        moviesObservable.addSource<List<MovieDetails>>(moviesDao.getAllMovies()) { values ->
-            if (sortingOption == FAVORITES_PARAM) {
-                moviesObservable.value = values
-            }
+    suspend fun loadMoviesFromDb(): MovieDbApiClient.Result<Exception, List<MovieDetails>> {
+        return try {
+            val movies = moviesDao.getAllMovies()
+            MovieDbApiClient.Result.Success(movies)
+        } catch (e: Exception) {
+            MovieDbApiClient.Result.Error(e)
         }
-        return moviesObservable
     }
 
     fun getMovieFromDb(movieId: Int): LiveData<MovieDetails> {
-        val moviesObservable = MediatorLiveData<MovieDetails>()
-
-        moviesObservable.addSource(moviesDao.getMovieById(movieId)) { result ->
-            if (result != null && result.movieid != 0) {
-                Timber.e("moviesDao result: $result")
-                moviesObservable.setValue(result)
-            } else {
-                Timber.e("moviesDao returned null")
-                moviesObservable.setValue(null)
-            }
-        }
-        return moviesObservable
+        return moviesDao.getMovieById(movieId)
     }
 
     suspend fun findTrailersByMovieId(movieId: Int?): LiveData<List<Trailer>> {
@@ -82,11 +68,22 @@ class Repository(private val theMovieDb: TheMovieDb, private val moviesDao: Movi
         val trailersObservable = MediatorLiveData<List<Trailer>>()
 
         val trailersResponse = apiCall(
-                call = { theMovieDb.getTrailers(movieId.toString()) },
-                errorMessage = "Error Fetching Trailers"
+            call = { theMovieDb.getTrailers(movieId.toString()) },
+            errorMessage = "Error Fetching Trailers"
         )
 
-        trailersObservable.postValue(trailersResponse?.results)
+        val result = trailersResponse.map { response -> response.results }
+
+        result.fold(
+            success = {
+                if (it.isNotEmpty()) {
+                    trailersObservable.postValue(it)
+                }
+            },
+            ex = {
+                Timber.e(it)
+            }
+        )
         return trailersObservable
     }
 
@@ -95,27 +92,32 @@ class Repository(private val theMovieDb: TheMovieDb, private val moviesDao: Movi
         val reviewsObservable = MediatorLiveData<List<Review>>()
 
         val reviewsResponse = apiCall(
-                call = { theMovieDb.getReviews(movieId.toString()) },
-                errorMessage = "Error Fetching Reviews"
+            call = { theMovieDb.getReviews(movieId.toString()) },
+            errorMessage = "Error Fetching Reviews"
         )
 
-        if (reviewsResponse?.results != null) {
-            val reviews = reviewsResponse.results
-            if (reviews.isNotEmpty()) {
-                reviewsObservable.postValue(reviews)
-            }
-        }
+        val result = reviewsResponse.map { response -> response.results }
 
+        result.fold(
+            success = {
+                if (it.isNotEmpty()) {
+                    reviewsObservable.postValue(it)
+                }
+            },
+            ex = {
+                Timber.e(it)
+            }
+        )
         return reviewsObservable
     }
 
     suspend fun insertMovieDb(movieDetails: MovieDetails) {
         moviesDao.insert(movieDetails)
-        loadMoviesFromDb(FAVORITES_PARAM)
+        loadMoviesFromDb()
     }
 
     suspend fun deleteMovieDb(movieDetails: MovieDetails) {
         moviesDao.deleteMovies(movieDetails)
-        loadMoviesFromDb(FAVORITES_PARAM)
+        loadMoviesFromDb()
     }
 }
