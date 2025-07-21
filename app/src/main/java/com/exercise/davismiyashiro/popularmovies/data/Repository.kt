@@ -60,18 +60,7 @@ class Repository(private val theMovieDb: TheMovieDb, private val moviesDao: Movi
     }
 
     fun getMovieFromDb(movieId: Int): LiveData<MovieDetails> {
-        val moviesObservable = MediatorLiveData<MovieDetails>()
-
-        moviesObservable.addSource(moviesDao.getMovieById(movieId)) { result ->
-            if (result != null && result.movieid != 0) {
-                Timber.e("moviesDao result: $result")
-                moviesObservable.setValue(result)
-            } else {
-                Timber.e("moviesDao returned null")
-                moviesObservable.setValue(null)
-            }
-        }
-        return moviesObservable
+        return moviesDao.getMovieById(movieId)
     }
 
     suspend fun findTrailersByMovieId(movieId: Int?): LiveData<List<Trailer>> {
