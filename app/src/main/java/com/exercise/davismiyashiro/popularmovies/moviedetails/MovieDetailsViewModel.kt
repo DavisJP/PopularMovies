@@ -25,6 +25,7 @@
 package com.exercise.davismiyashiro.popularmovies.moviedetails
 
 import android.app.Application
+import androidx.annotation.StringRes
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -35,11 +36,15 @@ import androidx.lifecycle.liveData
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
+import com.exercise.davismiyashiro.popularmovies.R
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
 import com.exercise.davismiyashiro.popularmovies.data.Repository
 import com.exercise.davismiyashiro.popularmovies.data.Review
 import com.exercise.davismiyashiro.popularmovies.data.Trailer
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -80,22 +85,39 @@ class MovieDetailsViewModel(
         }
     }.distinctUntilChanged()
 
+    private val _toastMessageEvents = MutableSharedFlow<Int>()
+    val toastMessageEvents: SharedFlow<Int> = _toastMessageEvents.asSharedFlow()
+
     fun setFavorite() {
         val currentIsFavorite = favoriteCheckBoxLivedata.value ?: return
         val movieObs = movieObservable.value ?: return
         if (currentIsFavorite) {
-            executeDbOperation { deleteMovie(movieObs) }
+            executeDbOperation(
+                operation = { deleteMovie(movieObs) },
+                successMessage = R.string.movie_deleted_msg,
+                failureMessage = R.string.error_movie_deleted_msg
+            )
         } else {
-            executeDbOperation { insertMovie(movieObs) }
+            executeDbOperation(
+                operation = { insertMovie(movieObs) },
+                successMessage = R.string.movie_added_msg,
+                failureMessage = R.string.error_movie_added_msg
+            )
         }
     }
 
-    private fun executeDbOperation(operation: suspend () -> Unit): Unit {
+    private fun executeDbOperation(
+        operation: suspend () -> Unit,
+        @StringRes successMessage: Int,
+        @StringRes failureMessage: Int
+    ) {
         viewModelScope.launch {
             try {
                 operation()
+                _toastMessageEvents.emit(successMessage)
             } catch (error: Exception) {
                 Timber.e(error)
+                _toastMessageEvents.emit(failureMessage)
             } finally {
                 // TODO: Clear loading widget
             }
@@ -104,12 +126,10 @@ class MovieDetailsViewModel(
 
     fun setMovieDetailsLivedatas(movieDetailsObservable: MovieDetailsObservable) {
         id.postValue(movieDetailsObservable.id)
-
         movieObservable.postValue(movieDetailsObservable)
     }
 
-    suspend fun insertMovie(movieDetailsObservable: MovieDetailsObservable) {
-
+    private suspend fun insertMovie(movieDetailsObservable: MovieDetailsObservable) {
         repository.insertMovieDb(
             MovieDetails(
                 movieDetailsObservable.id,
@@ -123,8 +143,7 @@ class MovieDetailsViewModel(
         )
     }
 
-    suspend fun deleteMovie(movieDetailsObservable: MovieDetailsObservable) {
-
+    private suspend fun deleteMovie(movieDetailsObservable: MovieDetailsObservable) {
         repository.deleteMovieDb(
             MovieDetails(
                 movieDetailsObservable.id,

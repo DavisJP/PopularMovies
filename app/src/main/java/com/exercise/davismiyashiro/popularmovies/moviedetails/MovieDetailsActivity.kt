@@ -27,32 +27,59 @@ package com.exercise.davismiyashiro.popularmovies.moviedetails
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconToggleButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import coil.compose.SubcomposeAsyncImage
 import com.exercise.davismiyashiro.popularmovies.App
 import com.exercise.davismiyashiro.popularmovies.R
 import com.exercise.davismiyashiro.popularmovies.data.Review
 import com.exercise.davismiyashiro.popularmovies.data.Trailer
-import com.exercise.davismiyashiro.popularmovies.databinding.ActivityMovieDetailsBinding
-import com.squareup.picasso.Picasso
+
 
 const val IMG_BASE_URL = "https://image.tmdb.org/t/p/w500"
 
-class MovieDetailsActivity : AppCompatActivity(), TrailerListAdapter.OnTrailerClickListener,
-    ReviewListAdapter.OnReviewClickListener {
-
-    private var mMovieDetails: MovieDetailsObservable? = null
-
-    private lateinit var binding: ActivityMovieDetailsBinding
-    private lateinit var mTrailersAdapter: TrailerListAdapter
-    private lateinit var mReviewAdapter: ReviewListAdapter
+class MovieDetailsActivity : ComponentActivity() {
 
     private lateinit var viewModel: MovieDetailsViewModel
 
@@ -60,70 +87,28 @@ class MovieDetailsActivity : AppCompatActivity(), TrailerListAdapter.OnTrailerCl
         super.onCreate(savedInstanceState)
 
         val repository = (application as App).repository
-
         val factory = MovieDetailsViewModel.Factory(application, repository)
         viewModel = ViewModelProvider(this, factory)[MovieDetailsViewModel::class.java]
 
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_movie_details)
-        binding.lifecycleOwner = this
-
-        setSupportActionBar(binding.toolbar)
-
         if (intent.hasExtra(MOVIE_DETAILS)) {
-            mMovieDetails = intent.getParcelableExtra(MOVIE_DETAILS)
-        }
-
-        mTrailersAdapter = TrailerListAdapter(ArrayList(), this)
-        val layout = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
-        binding.included.rvTrailersList.layoutManager = layout
-        val itemDecoration = DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
-        binding.included.rvTrailersList.addItemDecoration(itemDecoration)
-        binding.included.rvTrailersList.adapter = mTrailersAdapter
-
-        mReviewAdapter = ReviewListAdapter(ArrayList(), this)
-        val layoutRev = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
-        binding.included.rvReviewsList.layoutManager = layoutRev
-        binding.included.rvReviewsList.addItemDecoration(itemDecoration)
-        binding.included.rvReviewsList.adapter = mReviewAdapter
-        binding.included.favouriteStar.setOnClickListener {
-            viewModel.setFavorite()
-        }
-
-        mMovieDetails?.let {
-            viewModel.setMovieDetailsLivedatas(it)
-            viewModel.movieLiveData.observe(this, Observer { value ->
-                Picasso.get()
-                    .load(IMG_BASE_URL + it.backdropPath)
-                    .placeholder(android.R.drawable.progress_indeterminate_horizontal)
-                    .into(binding.included.movieBackdrop)
-                Picasso.get()
-                    .load(IMG_BASE_URL + it.posterPath)
-                    .placeholder(android.R.drawable.progress_indeterminate_horizontal)
-                    .into(binding.included.imgUrl)
-                binding.included.movieTitle.text = it.title
-                binding.included.movieReleaseDate.text = it.releaseDate
-                binding.included.movieVoteAverage.text = it.voteAverage.toString()
-                binding.included.movieSinopsis.text = it.overview
-            })
-        }
-
-        viewModel.reviews.observe(this, Observer { reviews ->
-            mReviewAdapter.replaceData(reviews)
-        })
-
-        viewModel.trailers.observe(this, Observer { trailers ->
-            if (trailers != null && trailers.isNotEmpty()) {
-                mTrailersAdapter.replaceData(trailers)
+            val movieDetails = intent.getParcelableExtra<MovieDetailsObservable>(MOVIE_DETAILS)
+            movieDetails?.let {
+                viewModel.setMovieDetailsLivedatas(it)
             }
-        })
+        }
 
-        viewModel.favoriteCheckBoxLivedata.observe(this, Observer { value ->
-            binding.included.favouriteStar.isChecked = value
-        })
+        setContent {
+            MaterialTheme {
+                MovieDetailsScreen(
+                    viewModel = viewModel,
+                    onOpenTrailer = { key -> openTrailer(key) }
+                )
+            }
+        }
     }
 
-    fun showDbResultMessage(@StringRes msg: Int) {
-        Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
+    private fun showDbResultMessage(@StringRes msg: Int) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
 
     private fun openTrailer(param: String) {
@@ -132,20 +117,378 @@ class MovieDetailsActivity : AppCompatActivity(), TrailerListAdapter.OnTrailerCl
         if (intent.resolveActivity(packageManager) != null) {
             startActivity(intent)
         } else {
-            Toast.makeText(this, "No app found to open YouTube link", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.no_app_to_open_youtube, Toast.LENGTH_SHORT).show()
         }
     }
 
-    override fun onTrailerClick(trailer: Trailer) {
-        openTrailer(trailer.key)
-    }
-
-    override fun onReviewClick(review: Review) {
-
-    }
-
     companion object {
-
         var MOVIE_DETAILS = "THEMOVIEDBDETAILS"
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MovieDetailsScreen(
+    viewModel: MovieDetailsViewModel,
+    onOpenTrailer: (String) -> Unit
+) {
+    val movieDetails by viewModel.movieLiveData.observeAsState()
+    val reviews by viewModel.reviews.observeAsState(emptyList())
+    val trailers by viewModel.trailers.observeAsState(emptyList())
+    val isFavorite by viewModel.favoriteCheckBoxLivedata.observeAsState(false)
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.toastMessageEvents.collect { messageId ->
+            Toast.makeText(context, messageId, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        movieDetails?.title ?: stringResource(R.string.title_activity_movie_details)
+                    )
+                }
+            )
+        }
+    ) { paddingValues ->
+        val currentMovieDetails = movieDetails
+        if (currentMovieDetails != null) {
+            MovieDetailsContent(
+                modifier = Modifier.padding(paddingValues),
+                movieDetails = currentMovieDetails,
+                trailers = trailers,
+                reviews = reviews,
+                isFavorite = isFavorite,
+                onFavoriteToggle = { viewModel.setFavorite() },
+                onTrailerClick = { trailer -> onOpenTrailer(trailer.key) },
+                onReviewClick = { /* Handle review click if needed in the future */ }
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+    }
+}
+
+@Composable
+fun MovieDetailsContent(
+    modifier: Modifier = Modifier,
+    movieDetails: MovieDetailsObservable,
+    trailers: List<Trailer>,
+    reviews: List<Review>,
+    isFavorite: Boolean,
+    onFavoriteToggle: () -> Unit,
+    onTrailerClick: (Trailer) -> Unit,
+    onReviewClick: (Review) -> Unit
+) {
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+    ) {
+        item { Spacer(modifier = Modifier.height(16.dp)) }
+
+        // Movie Backdrop and Favorite Icon
+        item {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                ImagePlaceholder( // Updated to use Coil's AsyncImage
+                    url = IMG_BASE_URL + movieDetails.backdropPath,
+                    contentDescription = "Movie Backdrop",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                )
+                IconToggleButton(
+                    checked = isFavorite,
+                    onCheckedChange = { onFavoriteToggle() },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        contentDescription = stringResource(R.string.mark_as_favorite),
+                        tint = if (isFavorite) MaterialTheme.colorScheme.primary else Color.Gray
+                    )
+                }
+            }
+        }
+
+        item { Spacer(modifier = Modifier.height(16.dp)) }
+
+        // Movie Poster and Basic Info
+        item {
+            Row(
+                verticalAlignment = Alignment.Top
+            ) {
+                ImagePlaceholder( // Updated to use Coil's AsyncImage
+                    url = IMG_BASE_URL + movieDetails.posterPath,
+                    contentDescription = "Movie Poster",
+                    modifier = Modifier
+                        .width(120.dp)
+                        .height(180.dp) // Maintain aspect ratio roughly
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Column {
+                    Text(text = movieDetails.title, style = MaterialTheme.typography.headlineSmall)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(R.string.release_date, movieDetails.releaseDate),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(
+                            R.string.average_rating,
+                            movieDetails.voteAverage.toString()
+                        ), style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        }
+
+        item { Spacer(modifier = Modifier.height(16.dp)) }
+
+        // Synopsis
+        item {
+            Column {
+                Text(
+                    text = stringResource(R.string.synopsis_title),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(text = movieDetails.overview, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+
+        item { Spacer(modifier = Modifier.height(16.dp)) }
+
+        // Trailers
+        if (trailers.isNotEmpty()) {
+            item {
+                Text(
+                    text = stringResource(R.string.trailers),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+            items(trailers) { trailer ->
+                TrailerItem(trailer = trailer, onClick = { onTrailerClick(trailer) })
+                Divider()
+            }
+        }
+
+        item { Spacer(modifier = Modifier.height(16.dp)) }
+
+        // Reviews
+        if (reviews.isNotEmpty()) {
+            item {
+                Text(
+                    text = stringResource(R.string.reviews),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+            items(reviews) { review ->
+                ReviewItem(review = review, onClick = { onReviewClick(review) })
+                Divider()
+            }
+        }
+        item { Spacer(modifier = Modifier.height(16.dp)) }
+    }
+}
+
+@Composable
+fun ImagePlaceholder(url: String, contentDescription: String?, modifier: Modifier = Modifier) {
+    SubcomposeAsyncImage(
+        modifier = modifier,
+        model = url,
+        contentDescription = contentDescription,
+        contentScale = ContentScale.Crop
+    )
+}
+
+@Composable
+fun TrailerItem(trailer: Trailer, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            Icons.Filled.PlayArrow,
+            contentDescription = stringResource(R.string.play_trailer_desc),
+            modifier = Modifier.size(36.dp),
+            tint = MaterialTheme.colorScheme.primary
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(trailer.name, style = MaterialTheme.typography.bodyLarge)
+    }
+}
+
+@Composable
+fun ReviewItem(review: Review, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp)
+    ) {
+        Text(review.author, style = MaterialTheme.typography.titleSmall)
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            review.content,
+            style = MaterialTheme.typography.bodyMedium,
+            maxLines = 5,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+fun stringResource(@StringRes id: Int, vararg formatArgs: Any): String {
+    return LocalContext.current.getString(id, *formatArgs)
+}
+
+// --- Previews ---
+
+@Preview(showBackground = true)
+@Composable
+fun ImagePlaceholderPreview() {
+    MaterialTheme {
+        ImagePlaceholder(
+            url = "https://example.com/image.jpg",
+            contentDescription = "Sample Image"
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun TrailerItemPreview() {
+    MaterialTheme {
+        val sampleTrailer = Trailer(
+            id = "1",
+            key = "abcdef",
+            name = "Official Trailer",
+            site = "YouTube",
+            size = 1080,
+            type = "Trailer",
+            iso6391 = "iso6391",
+            iso31661 = "iso6391"
+        )
+        TrailerItem(trailer = sampleTrailer, onClick = {})
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ReviewItemPreview() {
+    MaterialTheme {
+        val sampleReview = Review(
+            id = "1",
+            author = "John Doe",
+            content = "This is a great movie! ".repeat(10),
+            url = ""
+        )
+        ReviewItem(review = sampleReview, onClick = {})
+    }
+}
+
+@Preview(showBackground = true, name = "MovieDetailsContent - Populated")
+@Composable
+fun MovieDetailsContentPopulatedPreview() {
+    val sampleMovieDetails = MovieDetailsObservable(
+        id = 1,
+        title = "Awesome Movie Title",
+        posterPath = "/poster.jpg",
+        overview = "This is a really awesome movie that you should definitely watch. ".repeat(5),
+        releaseDate = "2024-01-01",
+        voteAverage = 8.5,
+        backdropPath = "/backdrop.jpg"
+    )
+    val sampleTrailers = listOf(
+        Trailer(
+            id = "1",
+            key = "key1",
+            name = "Trailer 1",
+            site = "YouTube",
+            type = "Trailer",
+            size = 1080,
+            iso6391 = "iso6391",
+            iso31661 = "iso6391"
+        ),
+        Trailer(
+            id = "2",
+            key = "key2",
+            name = "Trailer 2 - Extended Cut",
+            site = "YouTube",
+            type = "Trailer",
+            size = 1080,
+            iso6391 = "iso6391",
+            iso31661 = "iso6391"
+        )
+    )
+    val sampleReviews = listOf(
+        Review(
+            id = "1",
+            author = "Jane Critic",
+            content = "A cinematic masterpiece! ".repeat(3),
+            url = ""
+        ),
+        Review(
+            id = "2",
+            author = "Bob Reviewer",
+            content = "Simply stunning visuals and compelling story. ".repeat(3),
+            url = ""
+        )
+    )
+    MaterialTheme {
+        MovieDetailsContent(
+            movieDetails = sampleMovieDetails,
+            trailers = sampleTrailers,
+            reviews = sampleReviews,
+            isFavorite = true,
+            onFavoriteToggle = {},
+            onTrailerClick = {},
+            onReviewClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "MovieDetailsContent - Empty")
+@Composable
+fun MovieDetailsContentEmptyPreview() {
+    val sampleMovieDetails = MovieDetailsObservable(
+        id = 1,
+        title = "Awesome Movie Title",
+        posterPath = "/poster.jpg",
+        overview = "This is a really awesome movie that you should definitely watch. ".repeat(5),
+        releaseDate = "2024-01-01",
+        voteAverage = 8.5,
+        backdropPath = "/backdrop.jpg"
+    )
+    MaterialTheme {
+        MovieDetailsContent(
+            movieDetails = sampleMovieDetails,
+            trailers = emptyList(),
+            reviews = emptyList(),
+            isFavorite = false,
+            onFavoriteToggle = {},
+            onTrailerClick = {},
+            onReviewClick = {}
+        )
     }
 }

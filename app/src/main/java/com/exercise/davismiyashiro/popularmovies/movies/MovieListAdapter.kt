@@ -27,10 +27,11 @@ package com.exercise.davismiyashiro.popularmovies.movies
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
+import com.exercise.davismiyashiro.popularmovies.R
 import com.exercise.davismiyashiro.popularmovies.databinding.MovieListItemBinding
 import com.exercise.davismiyashiro.popularmovies.moviedetails.IMG_BASE_URL
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
-import com.squareup.picasso.Picasso
 
 /**
  * Created by Davis Miyashiro on 27/01/2017.
@@ -71,10 +72,10 @@ class MovieListAdapter(
 
         fun bind(movieDetails: MovieDetailsObservable) {
             if (movieDetails.posterPath.isNotEmpty()) {
-                Picasso.get()
-                    .load(IMG_BASE_URL + movieDetails.posterPath)
-                    .placeholder(android.R.drawable.progress_indeterminate_horizontal)
-                    .into(binding.imgUrl)
+                binding.imgUrl.load(IMG_BASE_URL + movieDetails.posterPath) {
+                    placeholder(android.R.drawable.progress_indeterminate_horizontal)
+                    error(android.R.drawable.stat_notify_error)
+                }
             }
             binding.imgUrl.setOnClickListener { mClickListener.getMovieClicked(movieDetails) }
         }
