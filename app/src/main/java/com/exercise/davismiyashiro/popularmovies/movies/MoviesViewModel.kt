@@ -31,6 +31,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
 import com.exercise.davismiyashiro.popularmovies.data.Repository
+import com.exercise.davismiyashiro.popularmovies.moviedetails.IMG_BASE_URL
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -94,8 +95,8 @@ class MoviesViewModel(application: Application, private val repository: Reposito
                     MovieDetailsObservable(
                         movieId,
                         title,
-                        backdropPath,
-                        posterPath,
+                        IMG_BASE_URL + backdropPath,
+                        IMG_BASE_URL + posterPath,
                         overview,
                         releaseDate,
                         voteAverage
