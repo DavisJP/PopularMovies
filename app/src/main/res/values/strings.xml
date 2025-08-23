@@ -47,4 +47,5 @@
     <string name="favorite_movies">Favorite Movies</string>
     <string name="please_check_your_network_status_or_try_again_later">Please check your network status or try again later.</string>
     <string name="backdrop_description">Screenshot of the movie</string>
+    <string name="movie_poster_description">Movie Poster</string>
 </resources>

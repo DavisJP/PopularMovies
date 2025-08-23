@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -45,11 +46,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
@@ -68,6 +71,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModelProvider
 import coil3.compose.SubcomposeAsyncImage
@@ -105,10 +110,6 @@ class MovieDetailsActivity : ComponentActivity() {
                 )
             }
         }
-    }
-
-    private fun showDbResultMessage(@StringRes msg: Int) {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
 
     private fun openTrailer(param: String) {
@@ -194,94 +195,117 @@ fun MovieDetailsContent(
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp)
     ) {
-        item { Spacer(modifier = Modifier.height(16.dp)) }
-
-        // Movie Backdrop and Favorite Icon
+        // Movie Poster and Basic Info
         item {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                val headerImage = if (LocalInspectionMode.current) {
-                    R.drawable.header
-                } else {
-                    movieDetails.backdropPath
-                }
+            ConstraintLayout(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            ) {
+                val (
+                    backdropRef, posterRef, titleRef, favoriteRef,
+                    releaseDateRef,
+                    voteAverageRef,
+                ) = createRefs()
+
+                val leftGuideline = createGuidelineFromStart(16.dp)
+                val rightGuideline = createGuidelineFromEnd(16.dp)
+
+                // Backdrop Image
+                val backdropModel =
+                    if (LocalInspectionMode.current) {
+                        R.drawable.header
+                    } else {
+                        movieDetails.backdropPath
+                    }
                 ImagePlaceholder(
-                    model = headerImage,
-                    contentDescription = "Movie Backdrop",
+                    model = backdropModel,
+                    contentDescription = "Backdrop",
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
+                        .constrainAs(backdropRef) {
+                            top.linkTo(parent.top)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                            width = Dimension.fillToConstraints
+                        }
+                        .aspectRatio(16f / 9f)
                 )
+
+                // Poster Image
+                val posterModel =
+                    if (LocalInspectionMode.current) {
+                        R.drawable.poster
+                    } else {
+                        movieDetails.posterPath
+                    }
+                ImagePlaceholder(
+                    model = posterModel,
+                    contentDescription = stringResource(R.string.movie_poster_description),
+                    modifier = Modifier
+                        .constrainAs(posterRef) {
+                            top.linkTo(backdropRef.bottom)
+                            bottom.linkTo(backdropRef.bottom)
+                            start.linkTo(leftGuideline)
+                            width = Dimension.value(100.dp)
+                            height = Dimension.value(150.dp)
+                        }
+                )
+
+                // Movie Title
+                Text(
+                    text = movieDetails.title,
+                    style = MaterialTheme.typography.headlineSmall,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.constrainAs(titleRef) {
+                        top.linkTo(backdropRef.bottom, margin = 8.dp) // Below backdrop
+                        start.linkTo(posterRef.end, margin = 16.dp) // To the right of the poster
+                        end.linkTo(favoriteRef.start, margin = 8.dp)
+                        width = Dimension.fillToConstraints
+                    }
+                )
+
+                // Favorite Toggle Button
                 IconToggleButton(
                     checked = isFavorite,
                     onCheckedChange = { onFavoriteToggle() },
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(8.dp)
+                    modifier = Modifier.constrainAs(favoriteRef) {
+                        top.linkTo(titleRef.top)
+                        end.linkTo(rightGuideline)
+                    }
                 ) {
                     Icon(
-                        imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                         contentDescription = stringResource(R.string.mark_as_favorite),
                         tint = if (isFavorite) MaterialTheme.colorScheme.primary else Color.Gray
                     )
                 }
-            }
-        }
 
-        item { Spacer(modifier = Modifier.height(16.dp)) }
-
-        // Movie Poster and Basic Info
-        item {
-            Row(
-                verticalAlignment = Alignment.Top
-            ) {
-                val poster = if (LocalInspectionMode.current) {
-                    R.drawable.poster
-                } else {
-                    movieDetails.posterPath
-                }
-                ImagePlaceholder(
-                    model = poster,
-                    contentDescription = "Movie Poster",
-                    modifier = Modifier
-                        .width(120.dp)
-                        .height(180.dp)
-                )
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Text(text = movieDetails.title, style = MaterialTheme.typography.headlineSmall)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = stringResource(R.string.release_date, movieDetails.releaseDate),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
+                // Release Date & Average Rating
+                if (movieDetails.releaseDate.isNotEmpty()) {
                     Text(
                         text = stringResource(
-                            R.string.average_rating,
-                            movieDetails.voteAverage.toString()
-                        ), style = MaterialTheme.typography.bodyMedium
+                            R.string.release_date,
+                            movieDetails.releaseDate
+                        ),
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.constrainAs(releaseDateRef) {
+                            top.linkTo(titleRef.bottom, margin = 8.dp)
+                            start.linkTo(titleRef.start) // Align with title's start
+                        }
+                    )
+                    Text(
+                        text = stringResource(R.string.average_rating, movieDetails.voteAverage),
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.constrainAs(voteAverageRef) {
+                            top.linkTo(releaseDateRef.bottom, margin = 8.dp)
+                            start.linkTo(titleRef.start)
+                        }
                     )
                 }
             }
         }
-
-        item { Spacer(modifier = Modifier.height(16.dp)) }
-
-        // Synopsis
-        item {
-            Column {
-                Text(
-                    text = stringResource(R.string.synopsis_title),
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = movieDetails.overview, style = MaterialTheme.typography.bodyMedium)
-            }
-        }
-
-        item { Spacer(modifier = Modifier.height(16.dp)) }
 
         // Trailers
         if (trailers.isNotEmpty()) {
@@ -289,16 +313,23 @@ fun MovieDetailsContent(
                 Text(
                     text = stringResource(R.string.trailers),
                     style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 16.dp,
+                        bottom = 8.dp
+                    )
                 )
             }
             items(trailers) { trailer ->
                 TrailerItem(trailer = trailer, onClick = { onTrailerClick(trailer) })
-                Divider()
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    thickness = DividerDefaults.Thickness,
+                    color = DividerDefaults.color
+                )
             }
         }
-
-        item { Spacer(modifier = Modifier.height(16.dp)) }
 
         // Reviews
         if (reviews.isNotEmpty()) {
@@ -306,12 +337,21 @@ fun MovieDetailsContent(
                 Text(
                     text = stringResource(R.string.reviews),
                     style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 16.dp,
+                        bottom = 8.dp
+                    )
                 )
             }
             items(reviews) { review ->
                 ReviewItem(review = review, onClick = { onReviewClick(review) })
-                Divider()
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    thickness = DividerDefaults.Thickness,
+                    color = DividerDefaults.color
+                )
             }
         }
         item { Spacer(modifier = Modifier.height(16.dp)) }
@@ -326,10 +366,18 @@ fun ImagePlaceholder(model: Any, contentDescription: String?, modifier: Modifier
         contentDescription = contentDescription,
         contentScale = ContentScale.Crop,
         loading = {
-            CircularProgressIndicator()
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                CircularProgressIndicator()
+            }
         },
         error = {
-
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                Icon(
+                    imageVector = Icons.Filled.Warning,
+                    contentDescription = "Error loading image",
+                    modifier = Modifier.size(48.dp)
+                )
+            }
         }
     )
 }
@@ -340,7 +388,7 @@ fun TrailerItem(trailer: Trailer, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -360,9 +408,13 @@ fun ReviewItem(review: Review, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(vertical = 12.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        Text(review.author, style = MaterialTheme.typography.titleSmall)
+        Text(
+            review.author,
+            style = MaterialTheme.typography.titleSmall,
+            overflow = TextOverflow.Ellipsis
+        )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             review.content,

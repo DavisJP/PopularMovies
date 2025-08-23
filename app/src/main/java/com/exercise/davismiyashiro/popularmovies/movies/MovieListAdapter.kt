@@ -28,6 +28,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import coil3.load
+import coil3.request.placeholder
 import com.exercise.davismiyashiro.popularmovies.databinding.MovieListItemBinding
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
 
@@ -70,7 +71,10 @@ class MovieListAdapter(
 
         fun bind(movieDetails: MovieDetailsObservable) {
             if (movieDetails.posterPath.isNotEmpty()) {
-                binding.imgUrl.load(movieDetails.posterPath)
+                binding.imgUrl.load(movieDetails.posterPath) {
+                    placeholder(android.R.drawable.progress_indeterminate_horizontal)
+//                    error(android.R.drawable.stat_notify_error)
+                }
             }
             binding.imgUrl.setOnClickListener { mClickListener.getMovieClicked(movieDetails) }
         }
