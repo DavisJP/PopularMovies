@@ -24,7 +24,11 @@
 
 package com.exercise.davismiyashiro.popularmovies.data.remote
 
+import androidx.lifecycle.LiveData
 import com.exercise.davismiyashiro.popularmovies.BuildConfig
+import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
+import com.exercise.davismiyashiro.popularmovies.data.Review
+import com.exercise.davismiyashiro.popularmovies.data.Trailer
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -109,30 +113,19 @@ class MovieDbApiClient {
     class UnexpectedApiException(message: String, cause: Throwable? = null) :
         RuntimeException(message, cause)
 
-    open class BaseNetworkHandler {
-        suspend fun <T : Any> apiCall(
-            call: suspend () -> Response<T>,
-            errorMessage: String
-        ): Result<Exception, T> {
-            try {
-                val response = call()
-                return if (response.isSuccessful)
-                    response.body()?.let { body ->
-                        Result.Success(body)
-                    } ?: Result.Error(ApiException(errorMessage))
-                else {
-                    when (response.code()) {
-                        401 -> Result.Error(ApiException(errorMessage.plus("onRequestUnauthenticated: ${response.message()}")))
-                        in 400..499 -> Result.Error(ApiException(errorMessage.plus("onRequestClientError: ${response.message()}")))
-                        in 500..599 -> Result.Error(ApiException(errorMessage.plus("onRequestServerError: ${response.message()}")))
-                        else -> Result.Error(ApiException(errorMessage.plus("UnknownError: ${response.code()} ${response.message()}")))
-                    }
-                }
-            } catch (e: IOException) {
-                return Result.Error(NetworkException(errorMessage, e))
-            } catch (e: Exception) {
-                return Result.Error(UnexpectedApiException(errorMessage, e))
-            }
-        }
+    interface MovieRepository {
+        suspend fun loadMoviesFromNetwork(sortingOption: String): Result<Exception, List<MovieDetails>>
+
+        suspend fun loadMoviesFromDb(): Result<Exception, List<MovieDetails>>
+
+        fun getMovieFromDb(movieId: Int): LiveData<MovieDetails>
+
+        suspend fun findTrailersByMovieId(movieId: Int?): LiveData<List<Trailer>>
+
+        suspend fun findReviewsByMovieId(movieId: Int?): LiveData<List<Review>>
+
+        suspend fun insertMovieDb(movieDetails: MovieDetails)
+
+        suspend fun deleteMovieDb(movieDetails: MovieDetails)
     }
 }

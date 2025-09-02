@@ -45,13 +45,16 @@ interface TheMovieDb {
 
     @GET("/3/movie/{sorting}")
     suspend fun getPopular(
-            @Path(API_SORTING_PARAM) sort: String): retrofit2.Response<Response<MovieDetails>>
+        @Path(API_SORTING_PARAM) sort: String
+    ): retrofit2.Response<Response<List<MovieDetails>>>
 
     @GET("/3/movie/{id}/videos")
     suspend fun getTrailers(
-            @Path(API_MOVIE_ID_PARAM) movieId: String): retrofit2.Response<Response<Trailer>>
+        @Path(API_MOVIE_ID_PARAM) movieId: String
+    ): retrofit2.Response<Response<List<Trailer>>>
 
     @GET("/3/movie/{id}/reviews")
     suspend fun getReviews(
-            @Path(API_MOVIE_ID_PARAM) movieId: String): retrofit2.Response<Response<Review>>
+        @Path(API_MOVIE_ID_PARAM) movieId: String
+    ): retrofit2.Response<Response<List<Review>>>
 }

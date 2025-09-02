@@ -38,9 +38,9 @@ import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
 import com.exercise.davismiyashiro.popularmovies.R
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
-import com.exercise.davismiyashiro.popularmovies.data.Repository
 import com.exercise.davismiyashiro.popularmovies.data.Review
 import com.exercise.davismiyashiro.popularmovies.data.Trailer
+import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -54,7 +54,7 @@ import timber.log.Timber
 
 class MovieDetailsViewModel(
     application: Application,
-    private val repository: Repository
+    private val repository: MovieDbApiClient.MovieRepository
 ) :
     AndroidViewModel(application) {
 
@@ -158,7 +158,7 @@ class MovieDetailsViewModel(
     }
 
     @Suppress("UNCHECKED_CAST")
-    class Factory(private val application: Application, private val repository: Repository) :
+    class Factory(private val application: Application, private val repository: MovieDbApiClient.MovieRepository) :
         ViewModelProvider.NewInstanceFactory() {
 
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

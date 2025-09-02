@@ -43,7 +43,10 @@ import kotlinx.coroutines.launch
  * Created by Davis Miyashiro.
  */
 
-class MoviesViewModel(application: Application, private val repository: Repository) :
+class MoviesViewModel(
+    application: Application,
+    private val repository: MovieDbApiClient.MovieRepository
+) :
     AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(MovieListUI())
@@ -79,7 +82,10 @@ class MoviesViewModel(application: Application, private val repository: Reposito
         }
     }
 
-    class Factory(private val application: Application, private val repository: Repository) :
+    class Factory(
+        private val application: Application,
+        private val repository: MovieDbApiClient.MovieRepository
+    ) :
         ViewModelProvider.NewInstanceFactory() {
 
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

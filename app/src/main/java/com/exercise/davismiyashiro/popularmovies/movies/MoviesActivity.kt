@@ -28,6 +28,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -83,20 +84,24 @@ const val FAVORITES_PARAM = "favorites"
 
 class MoviesActivity : ComponentActivity() {
 
-    private lateinit var viewModel: MoviesViewModel
+    private val viewModel: MoviesViewModel by viewModels {
+        val repository = (application as App).repository
+        MoviesViewModel.Factory(application, repository)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val repository = (application as App).repository
-        val factory = MoviesViewModel.Factory(application, repository)
-        viewModel = ViewModelProvider(this, factory)[MoviesViewModel::class.java]
 
         setContent {
             MaterialTheme {
                 MoviesScreen(viewModel = viewModel)
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.loadMovieListBySortingOption()
     }
 }
 
