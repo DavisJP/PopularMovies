@@ -30,7 +30,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
-import com.exercise.davismiyashiro.popularmovies.data.Repository
+import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient
 import com.exercise.davismiyashiro.popularmovies.moviedetails.IMG_BASE_URL
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,7 +52,7 @@ class MoviesViewModel(
     private val _uiState = MutableStateFlow(MovieListUI())
     val uiState: StateFlow<MovieListUI> = _uiState.asStateFlow()
 
-    fun loadMovieListBySortingOption(sortingOption: String) {
+    fun loadMovieListBySortingOption(sortingOption: String = POPULARITY_DESC_PARAM) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             val movieList = if (sortingOption == FAVORITES_PARAM) {
