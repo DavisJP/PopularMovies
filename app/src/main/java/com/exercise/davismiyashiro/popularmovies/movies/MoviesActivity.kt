@@ -70,24 +70,21 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.SubcomposeAsyncImage
-import com.exercise.davismiyashiro.popularmovies.App
 import com.exercise.davismiyashiro.popularmovies.R
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsActivity
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
+import dagger.hilt.android.AndroidEntryPoint
 
 const val POPULARITY_DESC_PARAM = "popular"
 const val HIGHEST_RATED_PARAM = "top_rated"
 const val FAVORITES_PARAM = "favorites"
 
+@AndroidEntryPoint
 class MoviesActivity : ComponentActivity() {
 
-    private val viewModel: MoviesViewModel by viewModels {
-        val repository = (application as App).repository
-        MoviesViewModel.Factory(application, repository)
-    }
+    private val viewModel: MoviesViewModel by viewModels ()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

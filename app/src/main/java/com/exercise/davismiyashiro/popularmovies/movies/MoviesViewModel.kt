@@ -33,19 +33,22 @@ import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
 import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient
 import com.exercise.davismiyashiro.popularmovies.moviedetails.IMG_BASE_URL
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * Created by Davis Miyashiro.
  */
 
-class MoviesViewModel(
+@HiltViewModel
+class MoviesViewModel @Inject constructor(
     application: Application,
-    private val repository: MovieDbApiClient.MovieRepository
+    val repository: MovieDbApiClient.MovieRepository
 ) :
     AndroidViewModel(application) {
 

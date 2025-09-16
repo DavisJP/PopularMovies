@@ -36,12 +36,16 @@ import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb
 import retrofit2.Response
 import timber.log.Timber
 import java.io.IOException
+import javax.inject.Inject
 
 /**
  * Created by Davis Miyashiro.
  */
 
-class Repository(private val theMovieDb: TheMovieDb, private val moviesDao: MoviesDao) :
+class Repository @Inject constructor(
+    private val theMovieDb: TheMovieDb,
+    private val moviesDao: MoviesDao
+) :
     MovieRepository {
 
     override suspend fun loadMoviesFromNetwork(sortingOption: String): MovieDbApiClient.Result<Exception, List<MovieDetails>> {
