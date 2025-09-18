@@ -9,28 +9,29 @@ class MockServerDispatcher {
     fun successDispatcher(map: Map<String, String>): Dispatcher {
         return object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
-                return when (request.path) {
-                    "/3/movie/popular" -> {
-                        var json = ""
-                        if (map.containsKey("/3/movie/popular")) {
-                            json = map["/3/movie/popular"]!!
-                        }
+                val popularMoviesPath = "/3/movie/popular"
+                return if (request.path?.startsWith(popularMoviesPath) == true) {
+                    if (map.containsKey(popularMoviesPath)) {
                         MockResponse().setResponseCode(200).setBody(
                             JsonFileReaderHelper.getStringFromFile(
                                 InstrumentationRegistry.getInstrumentation().context,
-                                json
+                                map[popularMoviesPath]!!
                             )
                         )
+                    } else {
+                        responseNotFound()
                     }
-
-                    else -> MockResponse().setResponseCode(404).setBody(
-                        JsonFileReaderHelper.getStringFromFile(
-                            InstrumentationRegistry.getInstrumentation().context,
-                            "not_foundJSON.json"
-                        )
-                    )
+                } else {
+                    responseNotFound()
                 }
             }
         }
     }
+
+    private fun responseNotFound() = MockResponse().setResponseCode(404).setBody(
+        JsonFileReaderHelper.getStringFromFile(
+            InstrumentationRegistry.getInstrumentation().context,
+            "not_foundJSON.json"
+        )
+    )
 }

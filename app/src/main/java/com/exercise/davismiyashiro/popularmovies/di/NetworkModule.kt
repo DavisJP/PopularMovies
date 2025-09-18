@@ -18,22 +18,17 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
-import javax.inject.Named
 import javax.inject.Singleton
 
 private const val API_KEY_PARAM = "api_key"
 private const val THEMOVIEDB_API = "https://api.themoviedb.org"
 private const val DATABASE_NAME = "moviesdatabase.db"
 
-@InstallIn(SingletonComponent::class)
 @Module
-class NetworkModule {
+@InstallIn(SingletonComponent::class)
+open class NetworkModule {
 
-    @Provides
-    @Singleton
-    @Named("BaseUrl")
-    fun baseUrl() = THEMOVIEDB_API
-
+    protected open fun baseUrl() = THEMOVIEDB_API
 
     @Singleton
     @Provides
@@ -68,10 +63,9 @@ class NetworkModule {
     @Singleton
     fun provideRetrofit(
         client: OkHttpClient,
-        @Named("BaseUrl") baseUrl: String
     ): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(baseUrl)
+            .baseUrl(baseUrl())
             .addConverterFactory(MoshiConverterFactory.create())
             .client(client)
             .build()
