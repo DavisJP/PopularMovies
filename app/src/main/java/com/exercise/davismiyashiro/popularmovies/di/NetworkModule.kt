@@ -3,21 +3,24 @@ package com.exercise.davismiyashiro.popularmovies.di
 import android.content.Context
 import androidx.room.Room
 import com.exercise.davismiyashiro.popularmovies.BuildConfig
+import com.exercise.davismiyashiro.popularmovies.data.MovieRepository
 import com.exercise.davismiyashiro.popularmovies.data.Repository
 import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDao
 import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDb
-import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient.MovieRepository
 import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import javax.inject.Qualifier
 import javax.inject.Singleton
 
 private const val API_KEY_PARAM = "api_key"
@@ -82,8 +85,8 @@ open class NetworkModule {
     fun provideRemoteRepository(
         theMovieDb: TheMovieDb,
         moviesDao: MoviesDao,
-    ): MovieRepository {
-        return Repository(theMovieDb, moviesDao)
+    ): Repository {
+        return MovieRepository(theMovieDb, moviesDao)
     }
 
     @Provides
@@ -101,4 +104,26 @@ open class NetworkModule {
     fun provideMoviesDao(appDatabase: MoviesDb): MoviesDao {
         return appDatabase.moviesDao()
     }
+
+    @Provides
+    @Singleton
+    @IoDispatcher
+    fun provideIODispatcher(): CoroutineDispatcher {
+        return Dispatchers.IO
+    }
+
+    @Provides
+    @Singleton
+    @MainDispatcher
+    fun provideMainDispatcher(): CoroutineDispatcher {
+        return Dispatchers.Main
+    }
 }
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class IoDispatcher
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class MainDispatcher

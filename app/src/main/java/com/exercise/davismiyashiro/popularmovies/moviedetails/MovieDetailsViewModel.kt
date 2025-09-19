@@ -38,9 +38,9 @@ import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
 import com.exercise.davismiyashiro.popularmovies.R
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
+import com.exercise.davismiyashiro.popularmovies.data.Repository
 import com.exercise.davismiyashiro.popularmovies.data.Review
 import com.exercise.davismiyashiro.popularmovies.data.Trailer
-import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -57,7 +57,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MovieDetailsViewModel @Inject constructor(
     application: Application,
-    val repository: MovieDbApiClient.MovieRepository
+    val repository: Repository
 ) :
     AndroidViewModel(application) {
 
@@ -161,7 +161,7 @@ class MovieDetailsViewModel @Inject constructor(
     }
 
     @Suppress("UNCHECKED_CAST")
-    class Factory(private val application: Application, private val repository: MovieDbApiClient.MovieRepository) :
+    class Factory(private val application: Application, private val repository: Repository) :
         ViewModelProvider.NewInstanceFactory() {
 
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

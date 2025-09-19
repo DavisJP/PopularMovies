@@ -24,21 +24,24 @@
 
 package com.exercise.davismiyashiro.popularmovies.movies
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
-import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient
+import com.exercise.davismiyashiro.popularmovies.data.Repository
+import com.exercise.davismiyashiro.popularmovies.di.IoDispatcher
+import com.exercise.davismiyashiro.popularmovies.di.MainDispatcher
 import com.exercise.davismiyashiro.popularmovies.moviedetails.IMG_BASE_URL
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 /**
@@ -47,52 +50,55 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MoviesViewModel @Inject constructor(
-    application: Application,
-    val repository: MovieDbApiClient.MovieRepository
+    private val repository: Repository,
+    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    @param:MainDispatcher private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main
 ) :
-    AndroidViewModel(application) {
+    ViewModel() {
 
     private val _uiState = MutableStateFlow(MovieListUI())
     val uiState: StateFlow<MovieListUI> = _uiState.asStateFlow()
 
     fun loadMovieListBySortingOption(sortingOption: String = POPULARITY_DESC_PARAM) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+        _uiState.update { it.copy(isLoading = true, error = null) }
+        viewModelScope.launch(ioDispatcher) {
             val movieList = if (sortingOption == FAVORITES_PARAM) {
                 repository.loadMoviesFromDb()
             } else {
                 repository.loadMoviesFromNetwork(sortingOption)
             }
 
-            movieList.fold(
-                ex = { exception ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = exception.message
-                        )
-                    }
-                },
-                success = { movieList ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            movieList = convertMovieDetailsToUImodel(movieList)
-                        )
-                    }
-                },
-            )
+            withContext(mainDispatcher) {
+                movieList.fold(
+                    ex = { exception ->
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                error = exception.message
+                            )
+                        }
+                    },
+                    success = { movieList ->
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                movieList = convertMovieDetailsToUImodel(movieList)
+                            )
+                        }
+                    },
+                )
+            }
+
         }
     }
 
     class Factory(
-        private val application: Application,
-        private val repository: MovieDbApiClient.MovieRepository
+        private val repository: Repository
     ) :
         ViewModelProvider.NewInstanceFactory() {
 
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return MoviesViewModel(application, repository) as T
+            return MoviesViewModel(repository) as T
         }
     }
 

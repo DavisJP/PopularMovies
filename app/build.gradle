@@ -27,7 +27,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
-    id 'kotlin-kapt'
     id 'kotlin-parcelize'
     id 'com.google.devtools.ksp'
     id 'org.jetbrains.kotlin.plugin.compose'
@@ -81,6 +80,7 @@ android {
     namespace 'com.exercise.davismiyashiro.popularmovies'
     kotlinOptions {
         jvmTarget = '17'
+        freeCompilerArgs = ['-XXLanguage:+PropertyParamAnnotationDefaultTargetMode']
     }
 }
 
@@ -148,7 +148,7 @@ dependencies {
     kspAndroidTest "com.google.dagger:hilt-android-compiler:$hilt_version"
 //    kspTest "com.google.dagger:hilt-android-compiler:$hilt_version"
 
-    testImplementation 'org.mockito:mockito-core:5.18.0'
+    testImplementation 'org.mockito:mockito-core:5.19.0'
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2"
     testImplementation 'junit:junit:4.13.2'
 

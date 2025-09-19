@@ -112,20 +112,4 @@ class MovieDbApiClient {
     class NetworkException(message: String, cause: Throwable? = null) : IOException(message, cause)
     class UnexpectedApiException(message: String, cause: Throwable? = null) :
         RuntimeException(message, cause)
-
-    interface MovieRepository {
-        suspend fun loadMoviesFromNetwork(sortingOption: String): Result<Exception, List<MovieDetails>>
-
-        suspend fun loadMoviesFromDb(): Result<Exception, List<MovieDetails>>
-
-        fun getMovieFromDb(movieId: Int): LiveData<MovieDetails>
-
-        suspend fun findTrailersByMovieId(movieId: Int?): LiveData<List<Trailer>>
-
-        suspend fun findReviewsByMovieId(movieId: Int?): LiveData<List<Review>>
-
-        suspend fun insertMovieDb(movieDetails: MovieDetails)
-
-        suspend fun deleteMovieDb(movieDetails: MovieDetails)
-    }
 }
