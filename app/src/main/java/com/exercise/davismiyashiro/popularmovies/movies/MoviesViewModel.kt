@@ -56,11 +56,11 @@ class MoviesViewModel @Inject constructor(
 ) :
     ViewModel() {
 
-    private val _uiState = MutableStateFlow(MovieListUI())
-    val uiState: StateFlow<MovieListUI> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow<MovieListState>(MovieListState.Loading)
+    val uiState: StateFlow<MovieListState> = _uiState.asStateFlow()
 
     fun loadMovieListBySortingOption(sortingOption: String = POPULARITY_DESC_PARAM) {
-        _uiState.update { it.copy(isLoading = true, error = null) }
+        _uiState.update { MovieListState.Loading }
         viewModelScope.launch(ioDispatcher) {
             val movieList = if (sortingOption == FAVORITES_PARAM) {
                 repository.loadMoviesFromDb()
@@ -72,23 +72,20 @@ class MoviesViewModel @Inject constructor(
                 movieList.fold(
                     ex = { exception ->
                         _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                error = exception.message
+                            MovieListState.Error(
+                                message = exception.message.toString()
                             )
                         }
                     },
                     success = { movieList ->
                         _uiState.update {
-                            it.copy(
-                                isLoading = false,
+                            MovieListState.Success(
                                 movieList = convertMovieDetailsToUImodel(movieList)
                             )
                         }
-                    },
+                    }
                 )
             }
-
         }
     }
 

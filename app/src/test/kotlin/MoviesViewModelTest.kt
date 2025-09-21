@@ -2,7 +2,7 @@ import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
 import com.exercise.davismiyashiro.popularmovies.data.MovieRepository
 import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient
 import com.exercise.davismiyashiro.popularmovies.movies.FAVORITES_PARAM
-import com.exercise.davismiyashiro.popularmovies.movies.MovieListUI
+import com.exercise.davismiyashiro.popularmovies.movies.MovieListState
 import com.exercise.davismiyashiro.popularmovies.movies.MoviesViewModel
 import com.exercise.davismiyashiro.popularmovies.movies.POPULARITY_DESC_PARAM
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -68,9 +68,8 @@ class MoviesViewModelTest {
         verify(repository, times(1)).loadMoviesFromNetwork(POPULARITY_DESC_PARAM)
         verify(repository, never()).loadMoviesFromDb()
         Assert.assertEquals(
-            MovieListUI(
-                isLoading = false,
-                error = "Error loading popular movies"
+            MovieListState.Error(
+                message = "Error loading popular movies"
             ), moviesViewModel.uiState.value
         )
     }

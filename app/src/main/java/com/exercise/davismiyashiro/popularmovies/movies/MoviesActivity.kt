@@ -84,7 +84,7 @@ const val FAVORITES_PARAM = "favorites"
 @AndroidEntryPoint
 class MoviesActivity : ComponentActivity() {
 
-    private val viewModel: MoviesViewModel by viewModels ()
+    private val viewModel: MoviesViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,18 +95,13 @@ class MoviesActivity : ComponentActivity() {
             }
         }
     }
-
-    override fun onResume() {
-        super.onResume()
-        viewModel.loadMovieListBySortingOption()
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MoviesScreen(viewModel: MoviesViewModel) {
     var currentSortOption by rememberSaveable { mutableStateOf(POPULARITY_DESC_PARAM) }
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val currentState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     LaunchedEffect(currentSortOption) {
@@ -128,24 +123,37 @@ fun MoviesScreen(viewModel: MoviesViewModel) {
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            when {
-                uiState.isLoading -> {
+            val state = currentState
+            when (state) {
+                is MovieListState.Loading -> {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
 
-                uiState.movieList.isNotEmpty() -> {
-                    MovieListGrid(
-                        movies = uiState.movieList,
-                        onMovieClick = { movie ->
-                            val intent = Intent(context, MovieDetailsActivity::class.java).apply {
-                                putExtra(MovieDetailsActivity.MOVIE_DETAILS, movie)
+                is MovieListState.Success -> {
+                    if (!state.movieList.isEmpty()) {
+                        MovieListGrid(
+                            movies = state.movieList,
+                            onMovieClick = { movie ->
+                                val intent =
+                                    Intent(context, MovieDetailsActivity::class.java).apply {
+                                        putExtra(MovieDetailsActivity.MOVIE_DETAILS, movie)
+                                    }
+                                context.startActivity(intent)
                             }
-                            context.startActivity(intent)
-                        }
-                    )
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(R.string.no_movies_found),
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .padding(16.dp),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
                 }
 
-                else -> {
+                is MovieListState.Error -> {
                     Text(
                         text = stringResource(R.string.please_check_your_network_status_or_try_again_later),
                         modifier = Modifier
