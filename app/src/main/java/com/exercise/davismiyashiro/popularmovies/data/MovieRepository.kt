@@ -32,6 +32,8 @@ import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient.Ap
 import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient.NetworkException
 import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient.UnexpectedApiException
 import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import retrofit2.Response
 import timber.log.Timber
 import java.io.IOException
@@ -70,6 +72,9 @@ class MovieRepository @Inject constructor(
     override fun getMovieFromDb(movieId: Int): LiveData<MovieDetails> {
         return moviesDao.getMovieById(movieId)
     }
+
+    override fun getFavoriteMoviesIds(): Flow<Set<Int>> =
+        moviesDao.getFavoriteMoviesIds().map { it.toSet() }
 
     override suspend fun findTrailersByMovieId(movieId: Int?): LiveData<List<Trailer>> {
 

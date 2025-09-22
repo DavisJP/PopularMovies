@@ -2,6 +2,7 @@ package com.exercise.davismiyashiro.popularmovies.data
 
 import androidx.lifecycle.LiveData
 import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient
+import kotlinx.coroutines.flow.Flow
 
 interface Repository {
     suspend fun loadMoviesFromNetwork(sortingOption: String): MovieDbApiClient.Result<Exception, List<MovieDetails>>
@@ -9,6 +10,8 @@ interface Repository {
     suspend fun loadMoviesFromDb(): MovieDbApiClient.Result<Exception, List<MovieDetails>>
 
     fun getMovieFromDb(movieId: Int): LiveData<MovieDetails>
+
+    fun getFavoriteMoviesIds(): Flow<Set<Int>>
 
     suspend fun findTrailersByMovieId(movieId: Int?): LiveData<List<Trailer>>
 
