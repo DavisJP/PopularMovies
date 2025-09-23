@@ -28,13 +28,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
 import com.exercise.davismiyashiro.popularmovies.data.Repository
-import com.exercise.davismiyashiro.popularmovies.di.IoDispatcher
-import com.exercise.davismiyashiro.popularmovies.di.MainDispatcher
 import com.exercise.davismiyashiro.popularmovies.moviedetails.IMG_BASE_URL
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -53,12 +49,9 @@ import javax.inject.Inject
 @HiltViewModel
 class MoviesViewModel @Inject constructor(
     private val repository: Repository,
-    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-    @param:MainDispatcher private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main
 ) :
     ViewModel() {
 
-    private val _uiState = MutableStateFlow<MovieListState>(MovieListState.Loading)
     private val _currentSortingOption = MutableStateFlow(POPULARITY_DESC_PARAM)
 
     @OptIn(ExperimentalCoroutinesApi::class)
