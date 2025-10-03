@@ -82,15 +82,6 @@ open class NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRemoteRepository(
-        theMovieDb: TheMovieDb,
-        moviesDao: MoviesDao,
-    ): Repository {
-        return MovieRepository(theMovieDb, moviesDao)
-    }
-
-    @Provides
-    @Singleton
     fun provideAppDatabase(@ApplicationContext appContext: Context): MoviesDb {
         return Room.databaseBuilder(
             appContext,

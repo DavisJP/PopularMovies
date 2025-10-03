@@ -76,11 +76,14 @@ android {
         kotlinCompilerExtensionVersion '1.5.14' // Updated to a more compatible version
     }
 
-    useLibrary 'android.test.runner'
     namespace 'com.exercise.davismiyashiro.popularmovies'
     kotlinOptions {
         jvmTarget = '17'
         freeCompilerArgs = ['-XXLanguage:+PropertyParamAnnotationDefaultTargetMode']
+    }
+
+    testOptions {
+        execution 'ANDROIDX_TEST_ORCHESTRATOR'
     }
 }
 
@@ -169,6 +172,7 @@ dependencies {
     //Experimental
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:1.9.1"
     debugImplementation "androidx.compose.ui:ui-test-manifest:1.9.1"
+    androidTestUtil 'androidx.test:orchestrator:1.6.1'
 }
 
 java {

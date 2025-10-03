@@ -32,6 +32,7 @@ import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient.Ap
 import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient.NetworkException
 import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient.UnexpectedApiException
 import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb
+import dagger.Lazy
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import retrofit2.Response
@@ -44,10 +45,14 @@ import javax.inject.Inject
  */
 
 class MovieRepository @Inject constructor(
-    private val theMovieDb: TheMovieDb,
+    private val theMovieDbLazy: Lazy<TheMovieDb>,
     private val moviesDao: MoviesDao
 ) :
     Repository {
+
+    private val theMovieDb: TheMovieDb by lazy {
+        theMovieDbLazy.get()
+    }
 
     override suspend fun loadMoviesFromNetwork(sortingOption: String): MovieDbApiClient.Result<Exception, List<MovieDetails>> {
         val moviesResponse = apiCall(

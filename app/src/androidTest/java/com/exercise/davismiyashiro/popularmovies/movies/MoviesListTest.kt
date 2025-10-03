@@ -5,7 +5,9 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.exercise.davismiyashiro.popularmovies.MockServerDispatcher
@@ -13,6 +15,7 @@ import com.exercise.davismiyashiro.popularmovies.R
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import okhttp3.mockwebserver.MockWebServer
+import org.junit.After
 import org.junit.AfterClass
 import org.junit.Assert
 import org.junit.Before
@@ -26,7 +29,6 @@ import java.util.concurrent.TimeUnit
 /**
  * Instrumentation test, which will execute on an Android device.
  *
- * TODO: Dispatcher response needs to be setup for each test
  */
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
@@ -50,7 +52,6 @@ class MoviesListTest {
         @AfterClass()
         @JvmStatic
         fun tearDown() {
-            server.shutdown()
         }
     }
 
@@ -66,6 +67,11 @@ class MoviesListTest {
         hiltRule.inject()
     }
 
+    @After
+    fun tearDownAfter() {
+        server.shutdown()
+    }
+
     @Test
     @Throws(Exception::class)
     fun useAppContext() {
@@ -78,6 +84,10 @@ class MoviesListTest {
     @Test
     @Throws(Exception::class)
     fun onSuccessNoErrorDisplayed() {
+
+        composeTestRule.onNodeWithContentDescription("Settings").performClick()
+        composeTestRule.onNodeWithText("Popular").performClick()
+
         val request = server.takeRequest(5, TimeUnit.SECONDS)
         Assert.assertNotNull("MockWebServer did not receive a request", request)
         if (request != null) {
@@ -88,23 +98,29 @@ class MoviesListTest {
             composeTestRule.activity.getString(R.string.popular_movies)
         val errorMessage =
             composeTestRule.activity.getString(R.string.please_check_your_network_status_or_try_again_later)
+
+        composeTestRule.waitUntil(5000) {
+            composeTestRule.onAllNodesWithText(expectedMessage).fetchSemanticsNodes().isNotEmpty()
+        }
+
         composeTestRule.onNodeWithText(expectedMessage).assertIsDisplayed()
         composeTestRule.onNodeWithText(errorMessage).assertIsNotDisplayed()
     }
 
     @Test
     fun whenNetworkErrorThenErrorIsDisplayed() {
-        val expectedMessage =
-            composeTestRule.activity.getString(R.string.popular_movies)
+
+        composeTestRule.onNodeWithContentDescription("Settings").performClick()
+        composeTestRule.onNodeWithText("Highest Ratings").performClick()
         val expectedErrorMessage =
             composeTestRule.activity.getString(R.string.please_check_your_network_status_or_try_again_later)
-        composeTestRule.onNodeWithText(expectedMessage).assertIsDisplayed()
 
         val request = server.takeRequest(5, TimeUnit.SECONDS) // Wait for 5s
         Assert.assertNotNull("MockWebServer did not receive a request", request)
         if (request != null) {
             println("MockWebServer received request: ${request.path}")
         }
+        composeTestRule.onNodeWithText(expectedErrorMessage).assertIsDisplayed()
 
         val errorMessageFound = try {
             composeTestRule.waitUntil(timeoutMillis = 5000) {
