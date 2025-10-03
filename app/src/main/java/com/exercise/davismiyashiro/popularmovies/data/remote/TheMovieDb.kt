@@ -24,12 +24,10 @@
 
 package com.exercise.davismiyashiro.popularmovies.data.remote
 
-import androidx.room.Dao
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
 import com.exercise.davismiyashiro.popularmovies.data.Response
 import com.exercise.davismiyashiro.popularmovies.data.Review
 import com.exercise.davismiyashiro.popularmovies.data.Trailer
-
 import retrofit2.http.GET
 import retrofit2.http.Path
 
@@ -42,7 +40,6 @@ import retrofit2.http.Path
 private const val API_SORTING_PARAM = "sorting"
 private const val API_MOVIE_ID_PARAM = "id"
 
-@Dao
 interface TheMovieDb {
 
     @GET("/3/movie/{sorting}")

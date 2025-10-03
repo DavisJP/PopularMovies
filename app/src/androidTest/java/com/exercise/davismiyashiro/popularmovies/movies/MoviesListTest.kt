@@ -1,8 +1,10 @@
 package com.exercise.davismiyashiro.popularmovies.movies
 
 import androidx.compose.ui.test.ComposeTimeoutException
+import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -81,6 +83,7 @@ class MoviesListTest {
         Assert.assertEquals("com.exercise.davismiyashiro.popularmovies", appContext.packageName)
     }
 
+    @OptIn(ExperimentalTestApi::class)
     @Test
     @Throws(Exception::class)
     fun onSuccessNoErrorDisplayed() {
@@ -99,9 +102,7 @@ class MoviesListTest {
         val errorMessage =
             composeTestRule.activity.getString(R.string.please_check_your_network_status_or_try_again_later)
 
-        composeTestRule.waitUntil(5000) {
-            composeTestRule.onAllNodesWithText(expectedMessage).fetchSemanticsNodes().isNotEmpty()
-        }
+        composeTestRule.waitUntilAtLeastOneExists(hasText(expectedMessage), 1000 )
 
         composeTestRule.onNodeWithText(expectedMessage).assertIsDisplayed()
         composeTestRule.onNodeWithText(errorMessage).assertIsNotDisplayed()

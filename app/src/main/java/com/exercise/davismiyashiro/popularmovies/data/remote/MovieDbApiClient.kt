@@ -24,21 +24,7 @@
 
 package com.exercise.davismiyashiro.popularmovies.data.remote
 
-import androidx.lifecycle.LiveData
-import com.exercise.davismiyashiro.popularmovies.BuildConfig
-import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
-import com.exercise.davismiyashiro.popularmovies.data.Review
-import com.exercise.davismiyashiro.popularmovies.data.Trailer
-import okhttp3.Interceptor
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
 import java.io.IOException
-
-private const val API_KEY_PARAM = "api_key"
-private const val THEMOVIEDB_API = "https://api.themoviedb.org"
 
 /**
  * Retrofit client
@@ -46,48 +32,6 @@ private const val THEMOVIEDB_API = "https://api.themoviedb.org"
  * Created by Davis Miyashiro on 20/02/2017.
  */
 class MovieDbApiClient {
-
-    private var service: TheMovieDb? = null
-
-    private val authInterceptor = Interceptor { chain ->
-        val newUrl = chain.request().url
-            .newBuilder()
-            .addQueryParameter(API_KEY_PARAM, BuildConfig.API_KEY)
-            .build()
-
-        val newRequest = chain.request()
-            .newBuilder()
-            .url(newUrl)
-            .build()
-        chain.proceed(newRequest)
-    }
-
-    private val okHttp: OkHttpClient
-        get() {
-            val logging = HttpLoggingInterceptor()
-            if (BuildConfig.DEBUG) {
-                logging.level = HttpLoggingInterceptor.Level.BODY
-            } else {
-                logging.level = HttpLoggingInterceptor.Level.NONE
-            }
-
-            return OkHttpClient.Builder()
-                .addInterceptor(logging)
-                .addInterceptor(authInterceptor)
-                .build()
-        }
-
-    fun getService(): TheMovieDb? {
-        if (service == null) {
-            val retrofitSingle = Retrofit.Builder()
-                .baseUrl(THEMOVIEDB_API)
-                .client(okHttp)
-                .addConverterFactory(MoshiConverterFactory.create())
-                .build()
-            service = retrofitSingle.create(TheMovieDb::class.java)
-        }
-        return service
-    }
 
     sealed class Result<out E, out S> {
         data class Error(val exception: Exception) : Result<Exception, Nothing>()

@@ -41,7 +41,6 @@
                 android:scheme="https" />
         </intent>
 
-<!--        <package android:name="com.google.android.youtube" />-->
     </queries>
 
     <application
