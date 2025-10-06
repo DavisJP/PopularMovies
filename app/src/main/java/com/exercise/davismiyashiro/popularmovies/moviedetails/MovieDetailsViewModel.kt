@@ -24,13 +24,10 @@
 
 package com.exercise.davismiyashiro.popularmovies.moviedetails
 
-import android.app.Application
 import androidx.annotation.StringRes
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.liveData
 import androidx.lifecycle.map
@@ -56,10 +53,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MovieDetailsViewModel @Inject constructor(
-    application: Application,
     val repository: Repository
 ) :
-    AndroidViewModel(application) {
+    ViewModel() {
 
     private val movieObservable = MutableLiveData<MovieDetailsObservable>()
     val movieLiveData: LiveData<MovieDetailsObservable> = movieObservable
@@ -158,14 +154,5 @@ class MovieDetailsViewModel @Inject constructor(
                 movieDetailsObservable.voteAverage
             )
         )
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    class Factory(private val application: Application, private val repository: Repository) :
-        ViewModelProvider.NewInstanceFactory() {
-
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return MovieDetailsViewModel(application, repository) as T
-        }
     }
 }

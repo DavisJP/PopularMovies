@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -64,7 +65,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -250,7 +250,6 @@ fun MovieGridItem(
     onMovieClick: (MovieDetailsObservable) -> Unit
 ) {
 
-    val errorImage = rememberVectorPainter(Icons.Filled.Warning)
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -268,7 +267,13 @@ fun MovieGridItem(
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth(0.8f))
             },
             error = {
-                errorImage
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                    Icon(
+                        imageVector = Icons.Filled.Warning,
+                        contentDescription = "Error loading image",
+                        modifier = Modifier.size(48.dp)
+                    )
+                }
             }
         )
     }
