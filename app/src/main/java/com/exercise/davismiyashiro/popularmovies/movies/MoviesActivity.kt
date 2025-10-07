@@ -24,164 +24,256 @@
 
 package com.exercise.davismiyashiro.popularmovies.movies
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
-import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import androidx.recyclerview.widget.GridLayoutManager
-import com.exercise.davismiyashiro.popularmovies.App
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.SubcomposeAsyncImage
 import com.exercise.davismiyashiro.popularmovies.R
-import com.exercise.davismiyashiro.popularmovies.databinding.ActivityMoviesBinding
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsActivity
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
-import kotlinx.coroutines.launch
-import java.util.LinkedList
+import dagger.hilt.android.AndroidEntryPoint
 
 const val POPULARITY_DESC_PARAM = "popular"
 const val HIGHEST_RATED_PARAM = "top_rated"
 const val FAVORITES_PARAM = "favorites"
 
-class MoviesActivity : AppCompatActivity(), MovieListAdapter.OnMovieClickListener {
-
-    private var mSortOpt: String = POPULARITY_DESC_PARAM
-    private val SORT_KEY = "SORT_KEY"
-
-    private lateinit var binding: ActivityMoviesBinding
-    private lateinit var mMovieListAdapter: MovieListAdapter
-
-    private lateinit var viewModel: MoviesViewModel
+@AndroidEntryPoint
+class MoviesActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val repository = (application as App).repository
-
-        val factory = MoviesViewModel.Factory(application, repository)
-
-        viewModel = ViewModelProvider(this, factory)[MoviesViewModel::class.java]
-
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_movies)
-        binding.lifecycleOwner = this
-
-        if (savedInstanceState != null) {
-            mSortOpt = savedInstanceState.getString(SORT_KEY) ?: POPULARITY_DESC_PARAM
-        }
-
-        val layout = GridLayoutManager(this, calculateNoOfColumns(this))
-        binding.rvMovieList.layoutManager = layout
-        binding.rvMovieList.setHasFixedSize(true)
-
-        mMovieListAdapter = MovieListAdapter(LinkedList(), this)
-        binding.rvMovieList.adapter = mMovieListAdapter
-
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect { uiState ->
-                    if (uiState.isLoading) {
-                        showLoading()
-                    } else {
-                        if (uiState.movieList.isNotEmpty()) {
-                            updateMovieData(uiState.movieList)
-                            showMovieList()
-                        } else {
-                            showErrorMsg()
-                        }
-                    }
-                }
+        setContent {
+            MaterialTheme {
+                MoviesScreen(viewModel = hiltViewModel())
             }
-            setTitleBar(mSortOpt)
         }
-        viewModel.loadMovieListBySortingOption(mSortOpt)
-    }
-
-    private fun setTitleBar(favoritesParam: String) {
-        when (favoritesParam) {
-            FAVORITES_PARAM -> supportActionBar?.setTitle(R.string.favorites)
-
-            HIGHEST_RATED_PARAM -> supportActionBar?.setTitle(R.string.highest_rated_movies)
-
-            POPULARITY_DESC_PARAM -> supportActionBar?.setTitle(R.string.popular_movies)
-
-            else -> supportActionBar?.setTitle(R.string.popular_movies)
-        }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putString(SORT_KEY, mSortOpt)
-        super.onSaveInstanceState(outState)
-    }
-
-    private fun showLoading() {
-        binding.progressBar.visibility = View.VISIBLE
-        binding.tvErrorMessageDisplay.visibility = View.INVISIBLE
-        binding.rvMovieList.visibility = View.INVISIBLE
-    }
-
-    private fun showErrorMsg() {
-        binding.progressBar.visibility = View.GONE
-        binding.tvErrorMessageDisplay.visibility = View.VISIBLE
-        binding.rvMovieList.visibility = View.INVISIBLE
-    }
-
-    private fun showMovieList() {
-        binding.progressBar.visibility = View.GONE
-        binding.tvErrorMessageDisplay.visibility = View.INVISIBLE
-        binding.rvMovieList.visibility = View.VISIBLE
-    }
-
-    private fun updateMovieData(listMovies: List<MovieDetailsObservable>?) {
-        mMovieListAdapter.replaceData(listMovies)
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.movies_menu, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.action_popular -> {
-                mSortOpt = POPULARITY_DESC_PARAM
-                viewModel.loadMovieListBySortingOption(mSortOpt)
-                setTitleBar(mSortOpt)
-                return true
-            }
-
-            R.id.action_highest_rated -> {
-                mSortOpt = HIGHEST_RATED_PARAM
-                viewModel.loadMovieListBySortingOption(mSortOpt)
-                setTitleBar(mSortOpt)
-                return true
-            }
-
-            R.id.action_favorites -> {
-                mSortOpt = FAVORITES_PARAM
-                viewModel.loadMovieListBySortingOption(mSortOpt)
-                setTitleBar(mSortOpt)
-                return true
-            }
-
-            else -> return super.onOptionsItemSelected(item)
-        }
-    }
-
-    override fun getMovieClicked(movieDetails: MovieDetailsObservable) {
-        val intent = Intent(this, MovieDetailsActivity::class.java)
-        intent.putExtra(MovieDetailsActivity.MOVIE_DETAILS, movieDetails)
-        startActivity(intent)
-    }
-
-    private fun calculateNoOfColumns(context: Context): Int {
-        val displayMetrics = context.resources.displayMetrics
-        val dpWidth = displayMetrics.widthPixels / displayMetrics.density
-        return (dpWidth / 180).toInt()
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MoviesScreen(viewModel: MoviesViewModel) {
+    var currentSortOption by rememberSaveable { mutableStateOf(POPULARITY_DESC_PARAM) }
+    val currentState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    LaunchedEffect(currentSortOption) {
+        viewModel.loadMovieListBySortingOption(currentSortOption)
+    }
+
+    Scaffold(
+        topBar = {
+            MoviesTopAppBar(
+                currentSortOption = currentSortOption,
+                onSortChanged = { newSortOption ->
+                    currentSortOption = newSortOption
+                }
+            )
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            val state = currentState
+            when (state) {
+                is MovieListState.Loading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+
+                is MovieListState.Success -> {
+                    if (!state.movieList.isEmpty()) {
+                        MovieListGrid(
+                            movies = state.movieList,
+                            onMovieClick = { movie ->
+                                val intent =
+                                    Intent(context, MovieDetailsActivity::class.java).apply {
+                                        putExtra(MovieDetailsActivity.MOVIE_DETAILS, movie)
+                                    }
+                                context.startActivity(intent)
+                            }
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(R.string.no_movies_found),
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .padding(16.dp),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
+
+                is MovieListState.Error -> {
+                    Text(
+                        text = stringResource(R.string.please_check_your_network_status_or_try_again_later),
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(16.dp),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MoviesTopAppBar(
+    currentSortOption: String,
+    onSortChanged: (String) -> Unit
+) {
+    var menuExpanded by remember { mutableStateOf(false) }
+
+    val titleResId = when (currentSortOption) {
+        POPULARITY_DESC_PARAM -> R.string.popular_movies
+        HIGHEST_RATED_PARAM -> R.string.highest_rated_movies
+        FAVORITES_PARAM -> R.string.favorites
+        else -> R.string.app_name
+    }
+
+    TopAppBar(
+        title = { Text(stringResource(id = titleResId)) },
+        actions = {
+            Box {
+                IconButton(onClick = { menuExpanded = true }) {
+                    Icon(
+                        Icons.Filled.MoreVert,
+                        contentDescription = stringResource(R.string.action_settings)
+                    )
+                }
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { menuExpanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.popular)) },
+                        onClick = {
+                            onSortChanged(POPULARITY_DESC_PARAM)
+                            menuExpanded = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.rating)) },
+                        onClick = {
+                            onSortChanged(HIGHEST_RATED_PARAM)
+                            menuExpanded = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.favorites)) },
+                        onClick = {
+                            onSortChanged(FAVORITES_PARAM)
+                            menuExpanded = false
+                        }
+                    )
+                }
+            }
+        }
+    )
+}
+
+@Composable
+fun MovieListGrid(
+    movies: List<MovieDetailsObservable>,
+    onMovieClick: (MovieDetailsObservable) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(minSize = 180.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        items(movies, key = { movie -> movie.id }) { movie ->
+            MovieGridItem(movie = movie, onMovieClick = onMovieClick)
+        }
+    }
+}
+
+@Composable
+fun MovieGridItem(
+    movie: MovieDetailsObservable,
+    onMovieClick: (MovieDetailsObservable) -> Unit
+) {
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onMovieClick(movie) },
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        SubcomposeAsyncImage(
+            model = movie.posterPath,
+            contentDescription = movie.title,
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(2f / 3f),
+            contentScale = ContentScale.Crop,
+            loading = {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth(0.8f))
+            },
+            error = {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                    Icon(
+                        imageVector = Icons.Filled.Warning,
+                        contentDescription = "Error loading image",
+                        modifier = Modifier.size(48.dp)
+                    )
+                }
+            }
+        )
+    }
+}
+

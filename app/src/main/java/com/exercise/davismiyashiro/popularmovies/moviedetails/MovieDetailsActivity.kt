@@ -29,6 +29,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -74,26 +75,23 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.core.net.toUri
-import androidx.lifecycle.ViewModelProvider
 import coil3.compose.SubcomposeAsyncImage
-import com.exercise.davismiyashiro.popularmovies.App
 import com.exercise.davismiyashiro.popularmovies.R
 import com.exercise.davismiyashiro.popularmovies.data.Review
 import com.exercise.davismiyashiro.popularmovies.data.Trailer
+import dagger.hilt.android.AndroidEntryPoint
+import kotlin.getValue
 
 
 const val IMG_BASE_URL = "https://image.tmdb.org/t/p/w500"
 
+@AndroidEntryPoint
 class MovieDetailsActivity : ComponentActivity() {
 
-    private lateinit var viewModel: MovieDetailsViewModel
+    private val viewModel: MovieDetailsViewModel by viewModels ()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val repository = (application as App).repository
-        val factory = MovieDetailsViewModel.Factory(application, repository)
-        viewModel = ViewModelProvider(this, factory)[MovieDetailsViewModel::class.java]
 
         if (intent.hasExtra(MOVIE_DETAILS)) {
             val movieDetails = intent.getParcelableExtra<MovieDetailsObservable>(MOVIE_DETAILS)

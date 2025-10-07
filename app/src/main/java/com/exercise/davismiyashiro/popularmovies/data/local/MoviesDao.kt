@@ -32,10 +32,14 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Created by Davis Miyashiro.
  */
+
+const val TABLE_NAME = "movies"
+
 @Dao
 interface MoviesDao {
 
@@ -57,4 +61,6 @@ interface MoviesDao {
     @Query("SELECT * FROM $TABLE_NAME WHERE movieid = :id")
     fun getMovieById(id: Int?): LiveData<MovieDetails>
 
+    @Query("SELECT movieid FROM $TABLE_NAME")
+    fun getFavoriteMoviesIds(): Flow<List<Int>>
 }
