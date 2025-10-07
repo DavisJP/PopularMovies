@@ -24,66 +24,76 @@
 
 package com.exercise.davismiyashiro.popularmovies.movies
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
 import com.exercise.davismiyashiro.popularmovies.data.Repository
+import com.exercise.davismiyashiro.popularmovies.moviedetails.IMG_BASE_URL
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
+import javax.inject.Inject
 
 /**
  * Created by Davis Miyashiro.
  */
 
-class MoviesViewModel(application: Application, private val repository: Repository) :
-    AndroidViewModel(application) {
+@HiltViewModel
+class MoviesViewModel @Inject constructor(
+    private val repository: Repository,
+) :
+    ViewModel() {
 
-    private val _uiState = MutableStateFlow(MovieListUI())
-    val uiState: StateFlow<MovieListUI> = _uiState.asStateFlow()
+    private val _currentSortingOption = MutableStateFlow(POPULARITY_DESC_PARAM)
 
-    fun loadMovieListBySortingOption(sortingOption: String) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-            val movieList = if (sortingOption == FAVORITES_PARAM) {
-                repository.loadMoviesFromDb()
-            } else {
-                repository.loadMoviesFromNetwork(sortingOption)
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val uiState: StateFlow<MovieListState> = _currentSortingOption.combine(
+        repository.getFavoriteMoviesIds()
+            .distinctUntilChanged()
+    ) { sortingOption, favoriteMoviesIds ->
+        Pair(sortingOption, favoriteMoviesIds)
+    }.flatMapLatest { (sortingOption, favoriteMoviesIds) ->
+        flow {
+            try {
+                val movieList = if (sortingOption == FAVORITES_PARAM) {
+                    repository.loadMoviesFromDb()
+                } else {
+                    repository.loadMoviesFromNetwork(sortingOption)
+                }
+
+                emit(
+                    movieList.fold(
+                        ex = { exception ->
+                            MovieListState.Error(
+                                message = exception.message.toString()
+                            )
+                        },
+                        success = { movieList ->
+                            MovieListState.Success(
+                                movieList = convertMovieDetailsToUImodel(movieList)
+                            )
+                        }
+                    ))
+            } catch (ex: Exception) {
+                emit(MovieListState.Error(ex.message.toString()))
             }
-
-            movieList.fold(
-                ex = { exception ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = exception.message
-                        )
-                    }
-                },
-                success = { movieList ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            movieList = convertMovieDetailsToUImodel(movieList)
-                        )
-                    }
-                },
-            )
         }
-    }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = MovieListState.Loading
+    )
 
-    class Factory(private val application: Application, private val repository: Repository) :
-        ViewModelProvider.NewInstanceFactory() {
-
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return MoviesViewModel(application, repository) as T
-        }
+    fun loadMovieListBySortingOption(sortingOption: String = POPULARITY_DESC_PARAM) {
+        _currentSortingOption.value = sortingOption
     }
 
     private fun convertMovieDetailsToUImodel(movies: List<MovieDetails>): List<MovieDetailsObservable> {
@@ -94,8 +104,8 @@ class MoviesViewModel(application: Application, private val repository: Reposito
                     MovieDetailsObservable(
                         movieId,
                         title,
-                        backdropPath,
-                        posterPath,
+                        IMG_BASE_URL + backdropPath,
+                        IMG_BASE_URL + posterPath,
                         overview,
                         releaseDate,
                         voteAverage
