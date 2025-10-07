@@ -34,7 +34,7 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class Response<T>(
         @field:Json(name = "page") var page: Int = 0,
-        @field:Json(name = "results") var results: List<T>,
+        @field:Json(name = "results") var results: T,
         @field:Json(name = "total_results") var totalResults: Int = 0,
         @field:Json(name = "total_pages") var totalPages: Int = 0
 )

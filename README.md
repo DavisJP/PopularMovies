@@ -1,6 +1,6 @@
 # Popular Movies
 
-This is the project 2 for Udacity's Associate Android Developer Fast Track Nanodegree Program.
+Project for Udacity's Associate Android Developer Fast Track Nanodegree Program (Updated for 2025).
 
 In this project we had to implement an app that would fetch and display data of popular movies from The Movie Database website (https://www.themoviedb.org). Other requirements:
 
@@ -13,7 +13,7 @@ In this project we had to implement an app that would fetch and display data of 
 
 # Final Results
 
-<img src="https://github.com/DavisJP/PopularMovies/blob/master/Screenshot_1570387145.png" width="40%" height="40%"> <img src="https://github.com/DavisJP/PopularMovies/blob/master/Screenshot_1570387097.png" width="40%" height="40%">
+<img src="https://github.com/DavisJP/PopularMovies/blob/master/Screenshot_20251003_163900.png" width="40%" height="40%" alt="Movie List"> <img src="https://github.com/DavisJP/PopularMovies/blob/master/Screenshot_20251003_163945.png" width="40%" height="40%" alt="Movie details">
 
 # Notes
 
