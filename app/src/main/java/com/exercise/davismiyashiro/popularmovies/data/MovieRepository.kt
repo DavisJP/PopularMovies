@@ -24,8 +24,6 @@
 
 package com.exercise.davismiyashiro.popularmovies.data
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
 import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDao
 import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient
 import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient.ApiException
@@ -33,7 +31,10 @@ import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient.Ne
 import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient.UnexpectedApiException
 import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb
 import dagger.Lazy
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import retrofit2.Response
 import timber.log.Timber
@@ -65,78 +66,61 @@ class MovieRepository @Inject constructor(
         }
     }
 
-    override suspend fun loadMoviesFromDb(): MovieDbApiClient.Result<Exception, List<MovieDetails>> {
-        return try {
-            val movies = moviesDao.getAllMovies()
-            MovieDbApiClient.Result.Success(movies)
-        } catch (e: Exception) {
-            MovieDbApiClient.Result.Error(e)
-        }
+    override fun loadMoviesFromDb(): Flow<List<MovieDetails>> {
+        return moviesDao.getAllMovies()
     }
 
-    override fun getMovieFromDb(movieId: Int): LiveData<MovieDetails> {
+    override fun getMovieFromDb(movieId: Int): Flow<MovieDetails?> {
         return moviesDao.getMovieById(movieId)
     }
 
     override fun getFavoriteMoviesIds(): Flow<Set<Int>> =
         moviesDao.getFavoriteMoviesIds().map { it.toSet() }
 
-    override suspend fun findTrailersByMovieId(movieId: Int?): LiveData<List<Trailer>> {
-
-        val trailersObservable = MediatorLiveData<List<Trailer>>()
-
+    override fun findTrailersByMovieId(movieId: Int): Flow<List<Trailer>> = flow {
         val trailersResponse = apiCall(
             call = { theMovieDb.getTrailers(movieId.toString()) },
             errorMessage = "Error Fetching Trailers"
         )
 
-        val result = trailersResponse.map { response -> response.results }
-
-        result.fold(
-            success = {
-                if (it.isNotEmpty()) {
-                    trailersObservable.postValue(it)
+        emit(
+            trailersResponse.fold(
+                success = {
+                    it.results
+                },
+                ex = {
+                    Timber.e(it)
+                    emptyList()
                 }
-            },
-            ex = {
-                Timber.e(it)
-            }
-        )
-        return trailersObservable
-    }
+            ))
+    }.flowOn(Dispatchers.IO)
 
-    override suspend fun findReviewsByMovieId(movieId: Int?): LiveData<List<Review>> {
-
-        val reviewsObservable = MediatorLiveData<List<Review>>()
+    override fun findReviewsByMovieId(movieId: Int): Flow<List<Review>> = flow {
 
         val reviewsResponse = apiCall(
             call = { theMovieDb.getReviews(movieId.toString()) },
             errorMessage = "Error Fetching Reviews"
         )
 
-        val result = reviewsResponse.map { response -> response.results }
-
-        result.fold(
-            success = {
-                if (it.isNotEmpty()) {
-                    reviewsObservable.postValue(it)
+        emit(
+            reviewsResponse.fold(
+                success = {
+                    it.results
+                },
+                ex = {
+                    Timber.e(it)
+                    emptyList()
                 }
-            },
-            ex = {
-                Timber.e(it)
-            }
+            )
         )
-        return reviewsObservable
-    }
+    }.flowOn(Dispatchers.IO)
 
     override suspend fun insertMovieDb(movieDetails: MovieDetails) {
         moviesDao.insert(movieDetails)
-        loadMoviesFromDb()
     }
 
     override suspend fun deleteMovieDb(movieDetails: MovieDetails) {
         moviesDao.deleteMovies(movieDetails)
-        loadMoviesFromDb()
     }
 
     private suspend fun <T : Any> apiCall(

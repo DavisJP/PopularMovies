@@ -24,7 +24,6 @@
 
 package com.exercise.davismiyashiro.popularmovies.data.local
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -44,7 +43,7 @@ const val TABLE_NAME = "movies"
 interface MoviesDao {
 
     @Query("SELECT * FROM $TABLE_NAME")
-    suspend fun getAllMovies(): List<MovieDetails>
+    fun getAllMovies(): Flow<List<MovieDetails>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(movie: MovieDetails)
@@ -59,7 +58,7 @@ interface MoviesDao {
     suspend fun deleteMovies(vararg movies: MovieDetails)
 
     @Query("SELECT * FROM $TABLE_NAME WHERE movieid = :id")
-    fun getMovieById(id: Int?): LiveData<MovieDetails>
+    fun getMovieById(id: Int): Flow<MovieDetails?>
 
     @Query("SELECT movieid FROM $TABLE_NAME")
     fun getFavoriteMoviesIds(): Flow<List<Int>>

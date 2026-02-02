@@ -24,14 +24,7 @@
 
 package com.exercise.davismiyashiro.popularmovies.moviedetails
 
-import androidx.annotation.StringRes
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.distinctUntilChanged
-import androidx.lifecycle.liveData
-import androidx.lifecycle.map
-import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
 import com.exercise.davismiyashiro.popularmovies.R
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
@@ -39,12 +32,21 @@ import com.exercise.davismiyashiro.popularmovies.data.Repository
 import com.exercise.davismiyashiro.popularmovies.data.Review
 import com.exercise.davismiyashiro.popularmovies.data.Trailer
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 /**
@@ -57,75 +59,60 @@ class MovieDetailsViewModel @Inject constructor(
 ) :
     ViewModel() {
 
-    private val movieObservable = MutableLiveData<MovieDetailsObservable>()
-    val movieLiveData: LiveData<MovieDetailsObservable> = movieObservable
+    private val _movieObservable = MutableStateFlow<MovieDetailsObservable?>(null)
+    val movieObservable: StateFlow<MovieDetailsObservable?> = _movieObservable.asStateFlow()
 
-    private val id = MutableLiveData<Int>()
+    private val id: Flow<Int> = movieObservable.mapNotNull { it?.id }.distinctUntilChanged()
 
-    val reviews: LiveData<List<Review>> = id.switchMap { value ->
-        liveData(context = viewModelScope.coroutineContext + Dispatchers.IO) {
-            emitSource(repository.findReviewsByMovieId(value))
-        }
-    }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val reviews: StateFlow<List<Review>> = id.flatMapLatest { id ->
+        repository.findReviewsByMovieId(id)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = emptyList(),
+    )
 
-    val trailers: LiveData<List<Trailer>> = id.switchMap { value ->
-        liveData(context = viewModelScope.coroutineContext + Dispatchers.IO) {
-            emitSource(repository.findTrailersByMovieId(value))
-        }
-    }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val trailers: StateFlow<List<Trailer>> = id.flatMapLatest { id ->
+        repository.findTrailersByMovieId(id)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = emptyList(),
+    )
 
-    val favoriteCheckBoxLivedata: LiveData<Boolean> = id.switchMap { id ->
-        if (id == 0) {
-            MutableLiveData(false)
-        } else {
-            repository.getMovieFromDb(id).map { movie: MovieDetails? ->
-                movie != null
-            }
-        }
-    }.distinctUntilChanged()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val isFavorite: StateFlow<Boolean> = id.flatMapLatest { id ->
+        repository.getMovieFromDb(id)
+    }.map { movieDetails ->
+        movieDetails != null
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = false
+    )
 
     private val _toastMessageEvents = MutableSharedFlow<Int>()
     val toastMessageEvents: SharedFlow<Int> = _toastMessageEvents.asSharedFlow()
 
     fun setFavorite() {
-        val currentIsFavorite = favoriteCheckBoxLivedata.value ?: return
-        val movieObs = movieObservable.value ?: return
-        if (currentIsFavorite) {
-            executeDbOperation(
-                operation = { deleteMovie(movieObs) },
-                successMessage = R.string.movie_deleted_msg,
-                failureMessage = R.string.error_movie_deleted_msg
-            )
-        } else {
-            executeDbOperation(
-                operation = { insertMovie(movieObs) },
-                successMessage = R.string.movie_added_msg,
-                failureMessage = R.string.error_movie_added_msg
-            )
-        }
-    }
+        val currentIsFavorite = isFavorite.value
+        val movieObs = _movieObservable.value ?: return
 
-    private fun executeDbOperation(
-        operation: suspend () -> Unit,
-        @StringRes successMessage: Int,
-        @StringRes failureMessage: Int
-    ) {
         viewModelScope.launch {
-            try {
-                operation()
-                _toastMessageEvents.emit(successMessage)
-            } catch (error: Exception) {
-                Timber.e(error)
-                _toastMessageEvents.emit(failureMessage)
-            } finally {
-                // TODO: Clear loading widget
+            if (currentIsFavorite) {
+                deleteMovie(movieObs)
+                _toastMessageEvents.emit(R.string.movie_deleted_msg)
+            } else {
+                insertMovie(movieObs)
+                _toastMessageEvents.emit(R.string.movie_added_msg)
             }
         }
     }
 
-    fun setMovieDetailsLivedatas(movieDetailsObservable: MovieDetailsObservable) {
-        id.postValue(movieDetailsObservable.id)
-        movieObservable.postValue(movieDetailsObservable)
+    fun setMovieDetails(movieDetailsObservable: MovieDetailsObservable) {
+        _movieObservable.value = movieDetailsObservable
     }
 
     private suspend fun insertMovie(movieDetailsObservable: MovieDetailsObservable) {

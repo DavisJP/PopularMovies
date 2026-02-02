@@ -109,11 +109,7 @@ class MoviesViewModelTest {
         val response = listOf<MovieDetails>()
         `when`(repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM))
             .thenReturn(MovieDbApiClient.Result.Success(fakeMovies))
-        `when`(repository.loadMoviesFromDb()).thenReturn(
-            MovieDbApiClient.Result.Success(
-                response
-            )
-        )
+        `when`(repository.loadMoviesFromDb()).thenReturn(flowOf(response))
         moviesViewModel = MoviesViewModel(repository)
 
         moviesViewModel.uiState.test {
