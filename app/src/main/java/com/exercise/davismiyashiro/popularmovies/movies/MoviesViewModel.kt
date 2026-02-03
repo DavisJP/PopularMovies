@@ -39,6 +39,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
@@ -55,36 +56,39 @@ class MoviesViewModel @Inject constructor(
     private val _currentSortingOption = MutableStateFlow(POPULARITY_DESC_PARAM)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val uiState: StateFlow<MovieListState> = _currentSortingOption.combine(
+    val uiState: StateFlow<MovieListState> = combine(
+        _currentSortingOption,
         repository.getFavoriteMoviesIds()
             .distinctUntilChanged()
-    ) { sortingOption, favoriteMoviesIds ->
-        Pair(sortingOption, favoriteMoviesIds)
-    }.flatMapLatest { (sortingOption, favoriteMoviesIds) ->
-        flow {
-            try {
-                val movieList = if (sortingOption == FAVORITES_PARAM) {
-                    repository.loadMoviesFromDb()
-                } else {
-                    repository.loadMoviesFromNetwork(sortingOption)
+    ) { sortingOption, _ ->
+        sortingOption
+    }.flatMapLatest { sortingOption ->
+        when (sortingOption) {
+            FAVORITES_PARAM -> repository.loadMoviesFromDb()
+                .map { movieDetails ->
+                    MovieListState.Success(
+                        convertMovieDetailsToUImodel(movieDetails)
+                    )
                 }
 
-                emit(
-                    movieList.fold(
-                        ex = { exception ->
-                            MovieListState.Error(
-                                message = exception.message.toString()
-                            )
-                        },
-                        success = { movieList ->
-                            MovieListState.Success(
-                                movieList = convertMovieDetailsToUImodel(movieList)
-                            )
-                        }
-                    ))
-            } catch (ex: Exception) {
-                emit(MovieListState.Error(ex.message.toString()))
-            }
+            else ->
+                flow<MovieListState> {
+                    val result = repository.loadMoviesFromNetwork(sortingOption)
+                    emit(
+                        result.fold(
+                            ex = { exception ->
+                                MovieListState.Error(
+                                    message = exception.message.toString()
+                                )
+                            },
+                            success = { movieList ->
+                                MovieListState.Success(
+                                    movieList = convertMovieDetailsToUImodel(movieList)
+                                )
+                            }
+                        )
+                    )
+                }
         }
     }.stateIn(
         scope = viewModelScope,

@@ -63,7 +63,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -75,12 +74,12 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.core.net.toUri
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.SubcomposeAsyncImage
 import com.exercise.davismiyashiro.popularmovies.R
 import com.exercise.davismiyashiro.popularmovies.data.Review
 import com.exercise.davismiyashiro.popularmovies.data.Trailer
 import dagger.hilt.android.AndroidEntryPoint
-import kotlin.getValue
 
 
 const val IMG_BASE_URL = "https://image.tmdb.org/t/p/w500"
@@ -88,7 +87,7 @@ const val IMG_BASE_URL = "https://image.tmdb.org/t/p/w500"
 @AndroidEntryPoint
 class MovieDetailsActivity : ComponentActivity() {
 
-    private val viewModel: MovieDetailsViewModel by viewModels ()
+    private val viewModel: MovieDetailsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,7 +95,7 @@ class MovieDetailsActivity : ComponentActivity() {
         if (intent.hasExtra(MOVIE_DETAILS)) {
             val movieDetails = intent.getParcelableExtra<MovieDetailsObservable>(MOVIE_DETAILS)
             movieDetails?.let {
-                viewModel.setMovieDetailsLivedatas(it)
+                viewModel.setMovieDetails(it)
             }
         }
 
@@ -131,10 +130,10 @@ fun MovieDetailsScreen(
     viewModel: MovieDetailsViewModel,
     onOpenTrailer: (String) -> Unit
 ) {
-    val movieDetails by viewModel.movieLiveData.observeAsState()
-    val reviews by viewModel.reviews.observeAsState(emptyList())
-    val trailers by viewModel.trailers.observeAsState(emptyList())
-    val isFavorite by viewModel.favoriteCheckBoxLivedata.observeAsState(false)
+    val movieDetails by viewModel.movieObservable.collectAsStateWithLifecycle()
+    val reviews by viewModel.reviews.collectAsStateWithLifecycle()
+    val trailers by viewModel.trailers.collectAsStateWithLifecycle()
+    val isFavorite by viewModel.isFavorite.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {

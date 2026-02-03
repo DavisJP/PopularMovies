@@ -1,21 +1,20 @@
 package com.exercise.davismiyashiro.popularmovies.data
 
-import androidx.lifecycle.LiveData
 import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient
 import kotlinx.coroutines.flow.Flow
 
 interface Repository {
     suspend fun loadMoviesFromNetwork(sortingOption: String): MovieDbApiClient.Result<Exception, List<MovieDetails>>
 
-    suspend fun loadMoviesFromDb(): MovieDbApiClient.Result<Exception, List<MovieDetails>>
+    fun loadMoviesFromDb(): Flow<List<MovieDetails>>
 
-    fun getMovieFromDb(movieId: Int): LiveData<MovieDetails>
+    fun getMovieFromDb(movieId: Int): Flow<MovieDetails?>
 
     fun getFavoriteMoviesIds(): Flow<Set<Int>>
 
-    suspend fun findTrailersByMovieId(movieId: Int?): LiveData<List<Trailer>>
+    fun findTrailersByMovieId(movieId: Int): Flow<List<Trailer>>
 
-    suspend fun findReviewsByMovieId(movieId: Int?): LiveData<List<Review>>
+    fun findReviewsByMovieId(movieId: Int): Flow<List<Review>>
 
     suspend fun insertMovieDb(movieDetails: MovieDetails)
 
