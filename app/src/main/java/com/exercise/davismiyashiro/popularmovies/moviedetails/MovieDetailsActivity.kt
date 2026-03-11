@@ -24,12 +24,6 @@
 
 package com.exercise.davismiyashiro.popularmovies.moviedetails
 
-import android.content.Intent
-import android.os.Bundle
-import android.widget.Toast
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -73,57 +67,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.SubcomposeAsyncImage
 import com.exercise.davismiyashiro.popularmovies.R
 import com.exercise.davismiyashiro.popularmovies.data.Review
 import com.exercise.davismiyashiro.popularmovies.data.Trailer
-import dagger.hilt.android.AndroidEntryPoint
 import androidx.compose.ui.res.stringResource
-
+import android.widget.Toast
 
 const val IMG_BASE_URL = "https://image.tmdb.org/t/p/w500"
-
-@AndroidEntryPoint
-class MovieDetailsActivity : ComponentActivity() {
-
-    private val viewModel: MovieDetailsViewModel by viewModels()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        if (intent.hasExtra(MOVIE_DETAILS)) {
-            val movieDetails = intent.getParcelableExtra<MovieDetailsObservable>(MOVIE_DETAILS)
-            movieDetails?.let {
-                viewModel.setMovieDetails(it)
-            }
-        }
-
-        setContent {
-            MaterialTheme {
-                MovieDetailsScreen(
-                    viewModel = viewModel,
-                    onOpenTrailer = { key -> openTrailer(key) }
-                )
-            }
-        }
-    }
-
-    private fun openTrailer(param: String) {
-        val videoLink = "https://m.youtube.com/watch?v=$param".toUri()
-        val intent = Intent(Intent.ACTION_VIEW, videoLink)
-        if (intent.resolveActivity(packageManager) != null) {
-            startActivity(intent)
-        } else {
-            Toast.makeText(this, R.string.no_app_to_open_youtube, Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    companion object {
-        var MOVIE_DETAILS = "THEMOVIEDBDETAILS"
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -425,5 +377,5 @@ fun ReviewItem(review: Review, onClick: () -> Unit) {
 
 @Composable
 fun stringResource(@StringRes id: Int, vararg formatArgs: Any): String {
-    return stringResource(id, *formatArgs)
+    return androidx.compose.ui.res.stringResource(id, *formatArgs)
 }

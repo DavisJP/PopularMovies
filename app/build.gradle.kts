@@ -27,6 +27,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     id("kotlin-parcelize")
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose)
     alias(libs.plugins.hilt)
@@ -141,6 +142,12 @@ dependencies {
 
     implementation(libs.constraintlayout.compose)
     implementation(libs.activity.compose)
+    
+    // Navigation 3
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.dagger)
     ksp(libs.dagger.compiler)

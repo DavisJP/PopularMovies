@@ -14,6 +14,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.exercise.davismiyashiro.popularmovies.MockServerDispatcher
 import com.exercise.davismiyashiro.popularmovies.R
+import com.exercise.davismiyashiro.popularmovies.MainActivity
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import okhttp3.mockwebserver.MockWebServer
@@ -61,7 +62,7 @@ class MoviesListTest {
     var hiltRule = HiltAndroidRule(this)
 
     @get:Rule(order = 1)
-    val composeTestRule = createAndroidComposeRule<MoviesActivity>()
+    val composeTestRule = createAndroidComposeRule<MainActivity>()
 
     @Before
     @Throws(Exception::class)
