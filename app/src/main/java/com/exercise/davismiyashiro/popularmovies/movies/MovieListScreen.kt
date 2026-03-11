@@ -64,14 +64,27 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavEntry
 import coil3.compose.SubcomposeAsyncImage
+import com.exercise.davismiyashiro.popularmovies.Navigator
 import com.exercise.davismiyashiro.popularmovies.R
+import com.exercise.davismiyashiro.popularmovies.Route
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
 
 const val POPULARITY_DESC_PARAM = "popular"
 const val HIGHEST_RATED_PARAM = "top_rated"
 const val FAVORITES_PARAM = "favorites"
+
+fun movieListEntry(navigator: Navigator) = NavEntry(Route.MovieList) {
+    MoviesScreen(
+        viewModel = hiltViewModel(),
+        onMovieClick = { movie ->
+            navigator.navigate(Route.MovieDetails(movie))
+        }
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
