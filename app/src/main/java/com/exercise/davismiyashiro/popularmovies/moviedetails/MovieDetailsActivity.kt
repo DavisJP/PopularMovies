@@ -80,6 +80,7 @@ import com.exercise.davismiyashiro.popularmovies.R
 import com.exercise.davismiyashiro.popularmovies.data.Review
 import com.exercise.davismiyashiro.popularmovies.data.Trailer
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.compose.ui.res.stringResource
 
 
 const val IMG_BASE_URL = "https://image.tmdb.org/t/p/w500"
@@ -424,5 +425,5 @@ fun ReviewItem(review: Review, onClick: () -> Unit) {
 
 @Composable
 fun stringResource(@StringRes id: Int, vararg formatArgs: Any): String {
-    return LocalContext.current.getString(id, *formatArgs)
+    return stringResource(id, *formatArgs)
 }
