@@ -25,24 +25,9 @@
 package com.exercise.davismiyashiro.popularmovies.moviedetails
 
 import android.content.Intent
-import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.viewModels
-import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -69,59 +54,39 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.core.net.toUri
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavEntry
 import coil3.compose.SubcomposeAsyncImage
 import com.exercise.davismiyashiro.popularmovies.R
+import com.exercise.davismiyashiro.popularmovies.Route
 import com.exercise.davismiyashiro.popularmovies.data.Review
 import com.exercise.davismiyashiro.popularmovies.data.Trailer
-import dagger.hilt.android.AndroidEntryPoint
-
 
 const val IMG_BASE_URL = "https://image.tmdb.org/t/p/w500"
 
-@AndroidEntryPoint
-class MovieDetailsActivity : ComponentActivity() {
-
-    private val viewModel: MovieDetailsViewModel by viewModels()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        if (intent.hasExtra(MOVIE_DETAILS)) {
-            val movieDetails = intent.getParcelableExtra<MovieDetailsObservable>(MOVIE_DETAILS)
-            movieDetails?.let {
-                viewModel.setMovieDetails(it)
+fun movieDetailsEntry(key: Route.MovieDetails) = NavEntry(key) {
+    val viewModel: MovieDetailsViewModel = hiltViewModel()
+    viewModel.setMovieDetails(key.movie)
+    val context = LocalContext.current
+    MovieDetailsScreen(
+        viewModel = viewModel,
+        onOpenTrailer = { trailerKey ->
+            val videoLink = "https://m.youtube.com/watch?v=$trailerKey".toUri()
+            val intent = Intent(Intent.ACTION_VIEW, videoLink)
+            if (intent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(intent)
+            } else {
+                Toast.makeText(context, R.string.no_app_to_open_youtube, Toast.LENGTH_SHORT).show()
             }
         }
-
-        setContent {
-            MaterialTheme {
-                MovieDetailsScreen(
-                    viewModel = viewModel,
-                    onOpenTrailer = { key -> openTrailer(key) }
-                )
-            }
-        }
-    }
-
-    private fun openTrailer(param: String) {
-        val videoLink = "https://m.youtube.com/watch?v=$param".toUri()
-        val intent = Intent(Intent.ACTION_VIEW, videoLink)
-        if (intent.resolveActivity(packageManager) != null) {
-            startActivity(intent)
-        } else {
-            Toast.makeText(this, R.string.no_app_to_open_youtube, Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    companion object {
-        var MOVIE_DETAILS = "THEMOVIEDBDETAILS"
-    }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -420,9 +385,4 @@ fun ReviewItem(review: Review, onClick: () -> Unit) {
             overflow = TextOverflow.Ellipsis
         )
     }
-}
-
-@Composable
-fun stringResource(@StringRes id: Int, vararg formatArgs: Any): String {
-    return LocalContext.current.getString(id, *formatArgs)
 }

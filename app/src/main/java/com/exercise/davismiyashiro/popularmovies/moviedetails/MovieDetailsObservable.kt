@@ -26,11 +26,13 @@ package com.exercise.davismiyashiro.popularmovies.moviedetails
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
 /**
  *
  * Created by Davis Miyashiro.
  */
+@Serializable
 @Parcelize
 data class MovieDetailsObservable(
     val id: Int,

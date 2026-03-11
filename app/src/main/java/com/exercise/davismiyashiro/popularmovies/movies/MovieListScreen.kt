@@ -24,10 +24,6 @@
 
 package com.exercise.davismiyashiro.popularmovies.movies
 
-import android.content.Intent
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -65,42 +61,39 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavEntry
 import coil3.compose.SubcomposeAsyncImage
+import com.exercise.davismiyashiro.popularmovies.Navigator
 import com.exercise.davismiyashiro.popularmovies.R
-import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsActivity
+import com.exercise.davismiyashiro.popularmovies.Route
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
-import dagger.hilt.android.AndroidEntryPoint
 
 const val POPULARITY_DESC_PARAM = "popular"
 const val HIGHEST_RATED_PARAM = "top_rated"
 const val FAVORITES_PARAM = "favorites"
 
-@AndroidEntryPoint
-class MoviesActivity : ComponentActivity() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        setContent {
-            MaterialTheme {
-                MoviesScreen(viewModel = hiltViewModel())
-            }
+fun movieListEntry(navigator: Navigator) = NavEntry(Route.MovieList) {
+    MoviesScreen(
+        viewModel = hiltViewModel(),
+        onMovieClick = { movie ->
+            navigator.navigate(Route.MovieDetails(movie))
         }
-    }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MoviesScreen(viewModel: MoviesViewModel) {
+fun MoviesScreen(
+    viewModel: MoviesViewModel,
+    onMovieClick: (MovieDetailsObservable) -> Unit
+) {
     var currentSortOption by rememberSaveable { mutableStateOf(POPULARITY_DESC_PARAM) }
     val currentState by viewModel.uiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
 
     LaunchedEffect(currentSortOption) {
         viewModel.loadMovieListBySortingOption(currentSortOption)
@@ -131,13 +124,7 @@ fun MoviesScreen(viewModel: MoviesViewModel) {
                     if (!state.movieList.isEmpty()) {
                         MovieListGrid(
                             movies = state.movieList,
-                            onMovieClick = { movie ->
-                                val intent =
-                                    Intent(context, MovieDetailsActivity::class.java).apply {
-                                        putExtra(MovieDetailsActivity.MOVIE_DETAILS, movie)
-                                    }
-                                context.startActivity(intent)
-                            }
+                            onMovieClick = onMovieClick
                         )
                     } else {
                         Text(
@@ -276,4 +263,3 @@ fun MovieGridItem(
         )
     }
 }
-
