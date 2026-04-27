@@ -149,7 +149,8 @@ fun MoviesScreen(
 @Composable
 fun MoviesTopAppBar(
     currentSortOption: String,
-    onSortChanged: (String) -> Unit
+    onSortChanged: (String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
@@ -161,6 +162,7 @@ fun MoviesTopAppBar(
     }
 
     TopAppBar(
+        modifier = modifier,
         title = { Text(stringResource(id = titleResId)) },
         actions = {
             Box {
@@ -224,11 +226,12 @@ fun MovieListGrid(
 @Composable
 fun MovieGridItem(
     movie: MovieDetailsObservable,
-    onMovieClick: (MovieDetailsObservable) -> Unit
+    onMovieClick: (MovieDetailsObservable) -> Unit,
+    modifier: Modifier = Modifier
 ) {
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable { onMovieClick(movie) },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)

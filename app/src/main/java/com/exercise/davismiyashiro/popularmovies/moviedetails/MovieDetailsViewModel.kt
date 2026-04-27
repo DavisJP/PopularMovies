@@ -33,6 +33,7 @@ import com.exercise.davismiyashiro.popularmovies.data.Review
 import com.exercise.davismiyashiro.popularmovies.data.Trailer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -93,7 +94,10 @@ class MovieDetailsViewModel @Inject constructor(
         initialValue = false
     )
 
-    private val _toastMessageEvents = MutableSharedFlow<Int>()
+    private val _toastMessageEvents = MutableSharedFlow<Int>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
     val toastMessageEvents: SharedFlow<Int> = _toastMessageEvents.asSharedFlow()
 
     fun setFavorite() {

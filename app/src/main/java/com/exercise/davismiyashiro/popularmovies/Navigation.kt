@@ -2,13 +2,11 @@ package com.exercise.davismiyashiro.popularmovies
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSerializable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.runtime.toMutableStateList
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
@@ -70,12 +68,13 @@ class NavigationState(
 @Composable
 fun NavigationState.toEntries(
     entryProvider: (Route) -> NavEntry<out Route>
-): SnapshotStateList<NavEntry<out Route>> {
+): List<NavEntry<out Route>> {
+    val saveableStateHolderDecorator = rememberSaveableStateHolderNavEntryDecorator<NavKey>()
+    val decorators = remember(saveableStateHolderDecorator) {
+        listOf(saveableStateHolderDecorator)
+    }
 
     val decoratedEntries = backStacks.mapValues { (_, stack) ->
-        val decorators = listOf(
-            rememberSaveableStateHolderNavEntryDecorator<NavKey>(),
-        )
         @Suppress("UNCHECKED_CAST")
         rememberDecoratedNavEntries(
             backStack = stack as NavBackStack<NavKey>,
@@ -85,9 +84,7 @@ fun NavigationState.toEntries(
     }
 
     @Suppress("UNCHECKED_CAST")
-    return stacksInUse
-        .flatMap { decoratedEntries[it] ?: emptyList() }
-        .toMutableStateList() as SnapshotStateList<NavEntry<out Route>>
+    return stacksInUse.flatMap { decoratedEntries[it] ?: emptyList() } as List<NavEntry<out Route>>
 }
 
 class Navigator(val state: NavigationState) {

@@ -353,9 +353,9 @@ fun ImagePlaceholder(model: Any, contentDescription: String?, modifier: Modifier
 }
 
 @Composable
-fun TrailerItem(trailer: Trailer, onClick: () -> Unit) {
+fun TrailerItem(trailer: Trailer, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 12.dp),
@@ -373,9 +373,9 @@ fun TrailerItem(trailer: Trailer, onClick: () -> Unit) {
 }
 
 @Composable
-fun ReviewItem(review: Review, onClick: () -> Unit) {
+fun ReviewItem(review: Review, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 12.dp)
