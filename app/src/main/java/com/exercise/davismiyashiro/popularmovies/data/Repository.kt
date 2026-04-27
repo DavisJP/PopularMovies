@@ -12,9 +12,9 @@ interface Repository {
 
     fun getFavoriteMoviesIds(): Flow<Set<Int>>
 
-    fun findTrailersByMovieId(movieId: Int): Flow<List<Trailer>>
+    suspend fun findTrailersByMovieId(movieId: Int): List<Trailer>
 
-    fun findReviewsByMovieId(movieId: Int): Flow<List<Review>>
+    suspend fun findReviewsByMovieId(movieId: Int): List<Review>
 
     suspend fun insertMovieDb(movieDetails: MovieDetails)
 

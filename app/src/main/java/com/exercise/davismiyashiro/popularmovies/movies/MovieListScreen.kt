@@ -52,11 +52,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -92,20 +90,14 @@ fun MoviesScreen(
     viewModel: MoviesViewModel,
     onMovieClick: (MovieDetailsObservable) -> Unit
 ) {
-    var currentSortOption by rememberSaveable { mutableStateOf(POPULARITY_DESC_PARAM) }
+    val currentSortOption by viewModel.currentSortingOption.collectAsStateWithLifecycle()
     val currentState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    LaunchedEffect(currentSortOption) {
-        viewModel.loadMovieListBySortingOption(currentSortOption)
-    }
 
     Scaffold(
         topBar = {
             MoviesTopAppBar(
                 currentSortOption = currentSortOption,
-                onSortChanged = { newSortOption ->
-                    currentSortOption = newSortOption
-                }
+                onSortChanged = viewModel::loadMovieListBySortingOption
             )
         }
     ) { paddingValues ->
@@ -157,7 +149,8 @@ fun MoviesScreen(
 @Composable
 fun MoviesTopAppBar(
     currentSortOption: String,
-    onSortChanged: (String) -> Unit
+    onSortChanged: (String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
@@ -169,6 +162,7 @@ fun MoviesTopAppBar(
     }
 
     TopAppBar(
+        modifier = modifier,
         title = { Text(stringResource(id = titleResId)) },
         actions = {
             Box {
@@ -232,11 +226,12 @@ fun MovieListGrid(
 @Composable
 fun MovieGridItem(
     movie: MovieDetailsObservable,
-    onMovieClick: (MovieDetailsObservable) -> Unit
+    onMovieClick: (MovieDetailsObservable) -> Unit,
+    modifier: Modifier = Modifier
 ) {
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable { onMovieClick(movie) },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)

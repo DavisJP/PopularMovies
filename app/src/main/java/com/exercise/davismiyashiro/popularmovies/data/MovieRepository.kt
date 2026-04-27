@@ -31,10 +31,7 @@ import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient.Ne
 import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient.UnexpectedApiException
 import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb
 import dagger.Lazy
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import retrofit2.Response
 import timber.log.Timber
@@ -77,43 +74,40 @@ class MovieRepository @Inject constructor(
     override fun getFavoriteMoviesIds(): Flow<Set<Int>> =
         moviesDao.getFavoriteMoviesIds().map { it.toSet() }
 
-    override fun findTrailersByMovieId(movieId: Int): Flow<List<Trailer>> = flow {
+    override suspend fun findTrailersByMovieId(movieId: Int): List<Trailer> {
         val trailersResponse = apiCall(
             call = { theMovieDb.getTrailers(movieId.toString()) },
             errorMessage = "Error Fetching Trailers"
         )
 
-        emit(
-            trailersResponse.fold(
-                success = {
-                    it.results
-                },
-                ex = {
-                    Timber.e(it)
-                    emptyList()
-                }
-            ))
-    }.flowOn(Dispatchers.IO)
+        return trailersResponse.fold(
+            success = {
+                it.results
+            },
+            ex = {
+                Timber.e(it)
+                emptyList()
+            }
+        )
+    }
 
-    override fun findReviewsByMovieId(movieId: Int): Flow<List<Review>> = flow {
+    override suspend fun findReviewsByMovieId(movieId: Int): List<Review> {
 
         val reviewsResponse = apiCall(
             call = { theMovieDb.getReviews(movieId.toString()) },
             errorMessage = "Error Fetching Reviews"
         )
 
-        emit(
-            reviewsResponse.fold(
-                success = {
-                    it.results
-                },
-                ex = {
-                    Timber.e(it)
-                    emptyList()
-                }
-            )
+        return reviewsResponse.fold(
+            success = {
+                it.results
+            },
+            ex = {
+                Timber.e(it)
+                emptyList()
+            }
         )
-    }.flowOn(Dispatchers.IO)
+    }
 
     override suspend fun insertMovieDb(movieDetails: MovieDetails) {
         moviesDao.insert(movieDetails)
