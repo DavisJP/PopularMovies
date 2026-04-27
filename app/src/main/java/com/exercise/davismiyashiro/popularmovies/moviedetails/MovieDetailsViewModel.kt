@@ -32,21 +32,14 @@ import com.exercise.davismiyashiro.popularmovies.data.Repository
 import com.exercise.davismiyashiro.popularmovies.data.Review
 import com.exercise.davismiyashiro.popularmovies.data.Trailer
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.Flow
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -60,63 +53,31 @@ class MovieDetailsViewModel @Inject constructor(
 ) :
     ViewModel() {
 
-    private val _movieObservable = MutableStateFlow<MovieDetailsObservable?>(null)
-    val movieObservable: StateFlow<MovieDetailsObservable?> = _movieObservable.asStateFlow()
-
-    private val id: Flow<Int> = movieObservable.mapNotNull { it?.id }.distinctUntilChanged()
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val reviews: StateFlow<List<Review>> = id.flatMapLatest { id ->
-        repository.findReviewsByMovieId(id)
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = emptyList(),
-    )
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val trailers: StateFlow<List<Trailer>> = id.flatMapLatest { id ->
-        repository.findTrailersByMovieId(id)
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = emptyList(),
-    )
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val isFavorite: StateFlow<Boolean> = id.flatMapLatest { id ->
-        repository.getMovieFromDb(id)
-    }.map { movieDetails ->
-        movieDetails != null
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = false
-    )
-
     private val _toastMessageEvents = MutableSharedFlow<Int>(
         extraBufferCapacity = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
     val toastMessageEvents: SharedFlow<Int> = _toastMessageEvents.asSharedFlow()
 
-    fun setFavorite() {
-        val currentIsFavorite = isFavorite.value
-        val movieObs = _movieObservable.value ?: return
+    suspend fun reviews(movieId: Int): ImmutableList<Review> =
+        repository.findReviewsByMovieId(movieId).toImmutableList()
 
+    suspend fun trailers(movieId: Int): ImmutableList<Trailer> =
+        repository.findTrailersByMovieId(movieId).toImmutableList()
+
+    fun isFavorite(movieId: Int): Flow<Boolean> =
+        repository.getMovieFromDb(movieId).map { movieDetails -> movieDetails != null }
+
+    fun setFavorite(movieDetailsObservable: MovieDetailsObservable, isFavorite: Boolean) {
         viewModelScope.launch {
-            if (currentIsFavorite) {
-                deleteMovie(movieObs)
+            if (isFavorite) {
+                deleteMovie(movieDetailsObservable)
                 _toastMessageEvents.emit(R.string.movie_deleted_msg)
             } else {
-                insertMovie(movieObs)
+                insertMovie(movieDetailsObservable)
                 _toastMessageEvents.emit(R.string.movie_added_msg)
             }
         }
-    }
-
-    fun setMovieDetails(movieDetailsObservable: MovieDetailsObservable) {
-        _movieObservable.value = movieDetailsObservable
     }
 
     private suspend fun insertMovie(movieDetailsObservable: MovieDetailsObservable) {

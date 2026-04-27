@@ -48,6 +48,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -68,16 +70,16 @@ import com.exercise.davismiyashiro.popularmovies.R
 import com.exercise.davismiyashiro.popularmovies.Route
 import com.exercise.davismiyashiro.popularmovies.data.Review
 import com.exercise.davismiyashiro.popularmovies.data.Trailer
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 const val IMG_BASE_URL = "https://image.tmdb.org/t/p/w500"
 
 fun movieDetailsEntry(key: Route.MovieDetails) = NavEntry(key) {
     val viewModel: MovieDetailsViewModel = hiltViewModel()
     val context = LocalContext.current
-    LaunchedEffect(key.movie.id) {
-        viewModel.setMovieDetails(key.movie)
-    }
     MovieDetailsScreen(
+        movieDetails = key.movie,
         viewModel = viewModel,
         onOpenTrailer = { trailerKey ->
             val videoLink = "https://m.youtube.com/watch?v=$trailerKey".toUri()
@@ -94,13 +96,18 @@ fun movieDetailsEntry(key: Route.MovieDetails) = NavEntry(key) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MovieDetailsScreen(
+    movieDetails: MovieDetailsObservable,
     viewModel: MovieDetailsViewModel,
     onOpenTrailer: (String) -> Unit
 ) {
-    val movieDetails by viewModel.movieObservable.collectAsStateWithLifecycle()
-    val reviews by viewModel.reviews.collectAsStateWithLifecycle()
-    val trailers by viewModel.trailers.collectAsStateWithLifecycle()
-    val isFavorite by viewModel.isFavorite.collectAsStateWithLifecycle()
+    val reviews by produceState(initialValue = persistentListOf(), movieDetails.id, viewModel) {
+        value = viewModel.reviews(movieDetails.id)
+    }
+    val trailers by produceState(initialValue = persistentListOf(), movieDetails.id, viewModel) {
+        value = viewModel.trailers(movieDetails.id)
+    }
+    val isFavoriteFlow = remember(movieDetails.id, viewModel) { viewModel.isFavorite(movieDetails.id) }
+    val isFavorite by isFavoriteFlow.collectAsStateWithLifecycle(initialValue = false)
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
@@ -114,34 +121,22 @@ fun MovieDetailsScreen(
             TopAppBar(
                 title = {
                     Text(
-                        movieDetails?.title ?: stringResource(R.string.title_activity_movie_details)
+                        movieDetails.title
                     )
                 }
             )
         }
     ) { paddingValues ->
-        val currentMovieDetails = movieDetails
-        if (currentMovieDetails != null) {
-            MovieDetailsContent(
-                modifier = Modifier.padding(paddingValues),
-                movieDetails = currentMovieDetails,
-                trailers = trailers,
-                reviews = reviews,
-                isFavorite = isFavorite,
-                onFavoriteToggle = { viewModel.setFavorite() },
-                onTrailerClick = { trailer -> onOpenTrailer(trailer.key) },
-                onReviewClick = { /* Handle review click if needed in the future */ }
-            )
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        }
+        MovieDetailsContent(
+            modifier = Modifier.padding(paddingValues),
+            movieDetails = movieDetails,
+            trailers = trailers,
+            reviews = reviews,
+            isFavorite = isFavorite,
+            onFavoriteToggle = { viewModel.setFavorite(movieDetails, isFavorite) },
+            onTrailerClick = { trailer -> onOpenTrailer(trailer.key) },
+            onReviewClick = { /* Handle review click if needed in the future */ }
+        )
     }
 }
 
@@ -149,8 +144,8 @@ fun MovieDetailsScreen(
 fun MovieDetailsContent(
     modifier: Modifier = Modifier,
     movieDetails: MovieDetailsObservable,
-    trailers: List<Trailer>,
-    reviews: List<Review>,
+    trailers: ImmutableList<Trailer>,
+    reviews: ImmutableList<Review>,
     isFavorite: Boolean,
     onFavoriteToggle: () -> Unit,
     onTrailerClick: (Trailer) -> Unit,

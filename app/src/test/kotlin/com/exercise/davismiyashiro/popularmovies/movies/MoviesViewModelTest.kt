@@ -1,13 +1,10 @@
+package com.exercise.davismiyashiro.popularmovies.movies
+
 import app.cash.turbine.test
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
 import com.exercise.davismiyashiro.popularmovies.data.MovieRepository
 import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient
-import com.exercise.davismiyashiro.popularmovies.movies.FAVORITES_PARAM
-import com.exercise.davismiyashiro.popularmovies.movies.MovieListState
-import com.exercise.davismiyashiro.popularmovies.movies.MoviesViewModel
-import com.exercise.davismiyashiro.popularmovies.movies.POPULARITY_DESC_PARAM
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertTrue
+import junit.framework.TestCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
@@ -16,7 +13,6 @@ import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import okio.IOException
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -25,10 +21,7 @@ import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.Mockito.never
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when`
+import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnitRunner
 
 @RunWith(MockitoJUnitRunner::class)
@@ -58,90 +51,93 @@ class MoviesViewModelTest {
     @Before
     fun setup() {
         testDispatcher = StandardTestDispatcher()
-        `when`(repository.getFavoriteMoviesIds()).thenReturn(flowOf(emptySet()))
+        Mockito.`when`(repository.getFavoriteMoviesIds()).thenReturn(flowOf(emptySet()))
     }
 
     @Test
     fun load_popular_movies_calls_remote_success() = runTest {
-        `when`(repository.getFavoriteMoviesIds()).thenReturn(flowOf(emptySet()))
-        `when`(repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM))
+        Mockito.`when`(repository.getFavoriteMoviesIds()).thenReturn(flowOf(emptySet()))
+        Mockito.`when`(repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM))
             .thenReturn(MovieDbApiClient.Result.Success(fakeMovies))
 
         moviesViewModel = MoviesViewModel(repository)
 
         moviesViewModel.uiState.test {
-            assertEquals(MovieListState.Loading, awaitItem()) // initial state
+            TestCase.assertEquals(MovieListState.Loading, awaitItem()) // initial state
             val successState = awaitItem()
-            assertTrue(successState is MovieListState.Success)
-            assertEquals(1, (successState as MovieListState.Success).movieList.size)
+            TestCase.assertTrue(successState is MovieListState.Success)
+            TestCase.assertEquals(1, (successState as MovieListState.Success).movieList.size)
 
-            verify(repository).loadMoviesFromNetwork(POPULARITY_DESC_PARAM)
-            verify(repository, never()).loadMoviesFromDb()
+            Mockito.verify(repository).loadMoviesFromNetwork(POPULARITY_DESC_PARAM)
+            Mockito.verify(repository, Mockito.never()).loadMoviesFromDb()
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
     fun load_popular_movies_calls_remote_error() = runTest(testDispatcher) {
-        `when`(repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM)).thenReturn(
-            MovieDbApiClient.Result.Error(IOException("Error loading popular movies"))
+        Mockito.`when`(repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM)).thenReturn(
+            MovieDbApiClient.Result.Error(okio.IOException("Error loading popular movies"))
         )
 
         moviesViewModel = MoviesViewModel(repository)
 
         moviesViewModel.uiState.test {
-            assertEquals(MovieListState.Loading, awaitItem()) // initial state
+            TestCase.assertEquals(MovieListState.Loading, awaitItem()) // initial state
             val errorState = awaitItem()
-            assertTrue(errorState is MovieListState.Error)
+            TestCase.assertTrue(errorState is MovieListState.Error)
             Assert.assertEquals(
                 MovieListState.Error(
                     message = "Error loading popular movies"
                 ), moviesViewModel.uiState.value
             )
 
-            verify(repository, times(1)).loadMoviesFromNetwork(POPULARITY_DESC_PARAM)
-            verify(repository, never()).loadMoviesFromDb()
+            Mockito.verify(repository, Mockito.times(1))
+                .loadMoviesFromNetwork(POPULARITY_DESC_PARAM)
+            Mockito.verify(repository, Mockito.never()).loadMoviesFromDb()
         }
     }
 
     @Test
     fun load_favorite_movies_calls_db() = runTest(testDispatcher) {
         val response = listOf<MovieDetails>()
-        `when`(repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM))
+        Mockito.`when`(repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM))
             .thenReturn(MovieDbApiClient.Result.Success(fakeMovies))
-        `when`(repository.loadMoviesFromDb()).thenReturn(flowOf(response))
+        Mockito.`when`(repository.loadMoviesFromDb()).thenReturn(flowOf(response))
         moviesViewModel = MoviesViewModel(repository)
 
         moviesViewModel.uiState.test {
-            assertEquals(MovieListState.Loading, awaitItem()) // initial state
+            TestCase.assertEquals(MovieListState.Loading, awaitItem()) // initial state
             val successState = awaitItem()
-            assertTrue(successState is MovieListState.Success)
-            assertEquals(1, (successState as MovieListState.Success).movieList.size)
-            verify(repository, times(1)).loadMoviesFromNetwork(POPULARITY_DESC_PARAM)
+            TestCase.assertTrue(successState is MovieListState.Success)
+            TestCase.assertEquals(1, (successState as MovieListState.Success).movieList.size)
+            Mockito.verify(repository, Mockito.times(1))
+                .loadMoviesFromNetwork(POPULARITY_DESC_PARAM)
 
             moviesViewModel.loadMovieListBySortingOption(FAVORITES_PARAM)
 
             val dbSuccess = awaitItem()
-            assertTrue(dbSuccess is MovieListState.Success)
-            verify(repository, times(1)).loadMoviesFromDb()
+            TestCase.assertTrue(dbSuccess is MovieListState.Success)
+            Mockito.verify(repository, Mockito.times(1)).loadMoviesFromDb()
         }
     }
 
     @Test
     fun selecting_same_sort_option_does_not_reload_movies() = runTest(testDispatcher) {
-        `when`(repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM))
+        Mockito.`when`(repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM))
             .thenReturn(MovieDbApiClient.Result.Success(fakeMovies))
 
         moviesViewModel = MoviesViewModel(repository)
 
         moviesViewModel.uiState.test {
-            assertEquals(MovieListState.Loading, awaitItem())
+            TestCase.assertEquals(MovieListState.Loading, awaitItem())
             awaitItem()
 
             moviesViewModel.loadMovieListBySortingOption(POPULARITY_DESC_PARAM)
 
             expectNoEvents()
-            verify(repository, times(1)).loadMoviesFromNetwork(POPULARITY_DESC_PARAM)
+            Mockito.verify(repository, Mockito.times(1))
+                .loadMoviesFromNetwork(POPULARITY_DESC_PARAM)
             cancelAndIgnoreRemainingEvents()
         }
     }

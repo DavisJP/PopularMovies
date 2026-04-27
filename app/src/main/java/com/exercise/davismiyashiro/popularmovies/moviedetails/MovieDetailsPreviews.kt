@@ -7,6 +7,8 @@ import coil3.annotation.ExperimentalCoilApi
 import com.exercise.davismiyashiro.popularmovies.R
 import com.exercise.davismiyashiro.popularmovies.data.Review
 import com.exercise.davismiyashiro.popularmovies.data.Trailer
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 
 @OptIn(ExperimentalCoilApi::class)
 @Preview(showBackground = true)
@@ -85,7 +87,7 @@ fun MovieDetailsContentPopulatedPreview() {
             iso6391 = "iso6391",
             iso31661 = "iso6391"
         )
-    )
+    ).toImmutableList()
     val sampleReviews = listOf(
         Review(
             id = "1",
@@ -99,7 +101,7 @@ fun MovieDetailsContentPopulatedPreview() {
             content = "Simply stunning visuals and compelling story. ".repeat(3),
             url = ""
         )
-    )
+    ).toImmutableList()
     MaterialTheme {
         MovieDetailsContent(
             movieDetails = sampleMovieDetails,
@@ -128,8 +130,8 @@ fun MovieDetailsContentEmptyPreview() {
     MaterialTheme {
         MovieDetailsContent(
             movieDetails = sampleMovieDetails,
-            trailers = emptyList(),
-            reviews = emptyList(),
+            trailers = persistentListOf(),
+            reviews = persistentListOf(),
             isFavorite = false,
             onFavoriteToggle = {},
             onTrailerClick = {},
