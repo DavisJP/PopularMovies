@@ -1,11 +1,11 @@
 [versions]
 
-android-gradle-plugin = "9.1.0"
-kotlin = "2.3.10"
+android-gradle-plugin = "9.2.0"
+kotlin = "2.3.21"
 hilt = "2.59.2"
-ksp = "2.3.6"
-compose = "2.3.10"
-compose-runtime = "1.10.4"
+ksp = "2.3.7"
+compose = "2.3.21"
+compose-runtime = "1.11.0"
 appcompat = "1.7.1"
 material = "1.13.0"
 room = "2.8.4"
@@ -17,11 +17,11 @@ moshi = "1.15.2"
 coil = "3.4.0"
 timber = "5.0.1"
 coroutines = "1.10.2"
-compose-bom = "2026.02.01"
+compose-bom = "2026.04.01"
 constraintlayout-compose = "1.1.1"
-activity-compose = "1.12.4"
+activity-compose = "1.13.0"
 hilt-navigation-compose = "1.3.0"
-mockito = "5.22.0"
+mockito = "5.23.0"
 junit = "4.13.2"
 turbine = "1.2.1"
 androidx-test-core = "1.7.0"
@@ -31,9 +31,8 @@ androidx-test-runner = "1.7.0"
 androidx-test-rules = "1.7.0"
 espresso-core = "3.7.0"
 arch-core-testing = "2.2.0"
-compose-ui-test = "1.10.4"
-nav3 = "1.0.1"
-kotlinx-serialization = "1.10.0"
+nav3 = "1.1.1"
+kotlinx-serialization = "1.11.0"
 
 [libraries]
 
@@ -101,8 +100,8 @@ espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref =
 arch-core-testing = { module = "androidx.arch.core:core-testing", version.ref = "arch-core-testing" }
 room-testing = { module = "androidx.room:room-testing", version.ref = "room" }
 
-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "compose-ui-test" }
-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "compose-ui-test" }
+compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "compose-runtime" }
+compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "compose-runtime" }
 
 androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "nav3" }
 androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "nav3" }
