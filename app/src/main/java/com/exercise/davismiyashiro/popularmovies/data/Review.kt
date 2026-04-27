@@ -24,6 +24,7 @@
 
 package com.exercise.davismiyashiro.popularmovies.data
 
+import androidx.compose.runtime.Immutable
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
@@ -31,10 +32,11 @@ import com.squareup.moshi.JsonClass
  * Created by Davis Miyashiro on 26/02/2017.
  */
 
+@Immutable
 @JsonClass(generateAdapter = true)
 data class Review(
-        @field:Json(name = "id") var id: String,
-        @field:Json(name = "author") var author: String,
-        @field:Json(name = "content") var content: String,
-        @field:Json(name = "url") var url: String
-)
+        @field:Json(name = "id") val id: String,
+        @field:Json(name = "author") val author: String,
+        @field:Json(name = "content") val content: String,
+        @field:Json(name = "url") val url: String
+) 

@@ -63,7 +63,8 @@ android {
 
         getByName("release") {
             buildConfigField("String", "API_KEY", apiKey!!)
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -116,6 +117,7 @@ dependencies {
     //Kotlin Coroutines
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.collections.immutable)
 
     // Lifecycle components for integration of coroutines and ViewModelScope
     implementation(libs.lifecycle.viewmodel.ktx)
