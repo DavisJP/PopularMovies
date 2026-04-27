@@ -27,19 +27,21 @@ package com.exercise.davismiyashiro.popularmovies.moviedetails
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import javax.annotation.concurrent.Immutable
 
 /**
  *
  * Created by Davis Miyashiro.
  */
 @Serializable
+@Immutable
 @Parcelize
 data class MovieDetailsObservable(
     val id: Int,
-    var title: String,
-    var backdropPath: String,
-    var posterPath: String,
-    var overview: String,
-    var releaseDate: String,
-    var voteAverage: Double
+    val title: String,
+    val backdropPath: String,
+    val posterPath: String,
+    val overview: String,
+    val releaseDate: String,
+    val voteAverage: Double
 ) : Parcelable

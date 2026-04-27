@@ -33,6 +33,7 @@ import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObserv
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -54,6 +55,7 @@ class MoviesViewModel @Inject constructor(
     ViewModel() {
 
     private val _currentSortingOption = MutableStateFlow(POPULARITY_DESC_PARAM)
+    val currentSortingOption: StateFlow<String> = _currentSortingOption.asStateFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<MovieListState> = combine(
@@ -97,7 +99,9 @@ class MoviesViewModel @Inject constructor(
     )
 
     fun loadMovieListBySortingOption(sortingOption: String = POPULARITY_DESC_PARAM) {
-        _currentSortingOption.value = sortingOption
+        if (_currentSortingOption.value != sortingOption) {
+            _currentSortingOption.value = sortingOption
+        }
     }
 
     private fun convertMovieDetailsToUImodel(movies: List<MovieDetails>): List<MovieDetailsObservable> {

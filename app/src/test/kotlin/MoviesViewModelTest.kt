@@ -127,6 +127,25 @@ class MoviesViewModelTest {
         }
     }
 
+    @Test
+    fun selecting_same_sort_option_does_not_reload_movies() = runTest(testDispatcher) {
+        `when`(repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM))
+            .thenReturn(MovieDbApiClient.Result.Success(fakeMovies))
+
+        moviesViewModel = MoviesViewModel(repository)
+
+        moviesViewModel.uiState.test {
+            assertEquals(MovieListState.Loading, awaitItem())
+            awaitItem()
+
+            moviesViewModel.loadMovieListBySortingOption(POPULARITY_DESC_PARAM)
+
+            expectNoEvents()
+            verify(repository, times(1)).loadMoviesFromNetwork(POPULARITY_DESC_PARAM)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
     @ExperimentalCoroutinesApi
     class MainDispatcherRule(
         private val dispatcher: TestDispatcher = StandardTestDispatcher()

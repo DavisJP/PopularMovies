@@ -73,8 +73,10 @@ const val IMG_BASE_URL = "https://image.tmdb.org/t/p/w500"
 
 fun movieDetailsEntry(key: Route.MovieDetails) = NavEntry(key) {
     val viewModel: MovieDetailsViewModel = hiltViewModel()
-    viewModel.setMovieDetails(key.movie)
     val context = LocalContext.current
+    LaunchedEffect(key.movie.id) {
+        viewModel.setMovieDetails(key.movie)
+    }
     MovieDetailsScreen(
         viewModel = viewModel,
         onOpenTrailer = { trailerKey ->
@@ -283,7 +285,10 @@ fun MovieDetailsContent(
                     )
                 )
             }
-            items(trailers) { trailer ->
+            items(
+                items = trailers,
+                key = { trailer -> trailer.id }
+            ) { trailer ->
                 TrailerItem(trailer = trailer, onClick = { onTrailerClick(trailer) })
                 HorizontalDivider(
                     modifier = Modifier.padding(horizontal = 16.dp),
@@ -307,7 +312,10 @@ fun MovieDetailsContent(
                     )
                 )
             }
-            items(reviews) { review ->
+            items(
+                items = reviews,
+                key = { review -> review.id }
+            ) { review ->
                 ReviewItem(review = review, onClick = { onReviewClick(review) })
                 HorizontalDivider(
                     modifier = Modifier.padding(horizontal = 16.dp),
