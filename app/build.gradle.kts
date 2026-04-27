@@ -26,7 +26,7 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
-    id("kotlin-parcelize")
+    alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose)
@@ -62,6 +62,7 @@ android {
         }
 
         getByName("release") {
+            buildConfigField("String", "API_KEY", apiKey!!)
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -71,7 +72,6 @@ android {
     }
 
     buildFeatures {
-        viewBinding = true
         buildConfig = true
         compose = true
     }
@@ -92,19 +92,13 @@ dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
     implementation(libs.appcompat)
-    implementation(libs.recyclerview)
-    implementation(libs.constraintlayout)
     implementation(libs.material)
 
     // Room components
     implementation(libs.room.ktx)
-    implementation(libs.compose.runtime.livedata)
     ksp(libs.room.compiler)
 
     implementation(libs.stetho)
-
-    // Lifecycle components
-    implementation(libs.lifecycle.extensions)
 
     implementation(libs.okhttp.logging.interceptor)
     implementation(libs.okhttp)
@@ -123,12 +117,10 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.core)
 
-    //For integration of coroutines and ViewModelScope
+    // Lifecycle components for integration of coroutines and ViewModelScope
     implementation(libs.lifecycle.viewmodel.ktx)
     //For LifecycleScope
     implementation(libs.lifecycle.runtime.ktx)
-    //For liveData
-    implementation(libs.lifecycle.livedata.ktx)
 
     // Jetpack Compose
     val composeBom = platform(libs.compose.bom)
@@ -139,9 +131,9 @@ dependencies {
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.ui.graphics)
     implementation(libs.compose.material.icons.extended)
-
-    implementation(libs.constraintlayout.compose)
-    implementation(libs.activity.compose)
+    implementation(libs.compose.runtime)
+    implementation(libs.compose.constraintlayout)
+    implementation(libs.compose.activity)
     
     // Navigation 3
     implementation(libs.androidx.navigation3.runtime)
@@ -180,7 +172,7 @@ dependencies {
     //Experimental
     androidTestImplementation(libs.compose.ui.test.junit4)
     debugImplementation(libs.compose.ui.test.manifest)
-    androidTestUtil("androidx.test:orchestrator:1.6.1")
+    androidTestUtil(libs.androidx.test.orchestrator)
 }
 
 java {
