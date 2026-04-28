@@ -13,7 +13,7 @@ In this project we had to implement an app that would fetch and display data of 
 
 # Final Results
 
-<img src="https://github.com/DavisJP/PopularMovies/blob/master/Screenshot_20251003_163900.png" width="40%" height="40%" alt="Movie List"> <img src="https://github.com/DavisJP/PopularMovies/blob/master/Screenshot_20251003_163945.png" width="40%" height="40%" alt="Movie details">
+<img src="./screenshots/movie_list.png" width="40%" height="40%" alt="Movie List"> <img src="./screenshots/movie_details.png" width="40%" height="40%" alt="Movie details">
 
 # Notes
 

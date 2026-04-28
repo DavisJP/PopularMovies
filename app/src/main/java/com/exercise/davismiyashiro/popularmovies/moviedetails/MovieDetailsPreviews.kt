@@ -1,7 +1,7 @@
 package com.exercise.davismiyashiro.popularmovies.moviedetails
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import com.exercise.davismiyashiro.popularmovies.ui.theme.PopularMoviesTheme
 import androidx.compose.ui.tooling.preview.Preview
 import coil3.annotation.ExperimentalCoilApi
 import com.exercise.davismiyashiro.popularmovies.R
@@ -14,7 +14,7 @@ import kotlinx.collections.immutable.toImmutableList
 @Preview(showBackground = true)
 @Composable
 fun ImagePlaceholderPreview() {
-    MaterialTheme {
+    PopularMoviesTheme {
         ImagePlaceholder(
             model = R.drawable.header,
             contentDescription = "Sample Image Preview"
@@ -25,7 +25,7 @@ fun ImagePlaceholderPreview() {
 @Preview(showBackground = true)
 @Composable
 fun TrailerItemPreview() {
-    MaterialTheme {
+    PopularMoviesTheme {
         val sampleTrailer = Trailer(
             id = "1",
             key = "abcdef",
@@ -43,7 +43,7 @@ fun TrailerItemPreview() {
 @Preview(showBackground = true)
 @Composable
 fun ReviewItemPreview() {
-    MaterialTheme {
+    PopularMoviesTheme {
         val sampleReview = Review(
             id = "1",
             author = "John Doe",
@@ -102,7 +102,7 @@ fun MovieDetailsContentPopulatedPreview() {
             url = ""
         )
     ).toImmutableList()
-    MaterialTheme {
+    PopularMoviesTheme {
         MovieDetailsContent(
             movieDetails = sampleMovieDetails,
             trailers = sampleTrailers,
@@ -127,7 +127,7 @@ fun MovieDetailsContentEmptyPreview() {
         voteAverage = 8.5,
         backdropPath = "/backdrop.jpg"
     )
-    MaterialTheme {
+    PopularMoviesTheme {
         MovieDetailsContent(
             movieDetails = sampleMovieDetails,
             trailers = persistentListOf(),

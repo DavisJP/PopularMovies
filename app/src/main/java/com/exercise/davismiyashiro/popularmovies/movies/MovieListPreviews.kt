@@ -7,6 +7,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import com.exercise.davismiyashiro.popularmovies.ui.theme.PopularMoviesTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,7 +45,7 @@ private val sampleMovieList = listOf(sampleMovie1, sampleMovie2, sampleMovie1.co
 @Preview(showBackground = true, widthDp = 200)
 @Composable
 fun MovieGridItemPreview() {
-    MaterialTheme {
+    PopularMoviesTheme {
         MovieGridItem(movie = sampleMovie1, onMovieClick = {})
     }
 }
@@ -53,7 +54,7 @@ fun MovieGridItemPreview() {
 @Preview(showBackground = true, widthDp = 380, heightDp = 600)
 @Composable
 fun MovieListGridPopulatedPreview() {
-    MaterialTheme {
+    PopularMoviesTheme {
         MovieListGrid(movies = sampleMovieList, onMovieClick = {})
     }
 }
@@ -61,7 +62,7 @@ fun MovieListGridPopulatedPreview() {
 @Preview(showBackground = true, widthDp = 380, heightDp = 200)
 @Composable
 fun MovieListGridEmptyPreview() {
-    MaterialTheme {
+    PopularMoviesTheme {
         MovieListGrid(movies = emptyList(), onMovieClick = {})
     }
 }
@@ -70,7 +71,7 @@ fun MovieListGridEmptyPreview() {
 @Preview(showBackground = true, widthDp = 360)
 @Composable
 fun MoviesTopAppBarPopularPreview() {
-    MaterialTheme {
+    PopularMoviesTheme {
         MoviesTopAppBar(currentSortOption = POPULARITY_DESC_PARAM, onSortChanged = {})
     }
 }
@@ -78,7 +79,7 @@ fun MoviesTopAppBarPopularPreview() {
 @Preview(showBackground = true, widthDp = 360)
 @Composable
 fun MoviesTopAppBarHighestRatedPreview() {
-    MaterialTheme {
+    PopularMoviesTheme {
         MoviesTopAppBar(currentSortOption = HIGHEST_RATED_PARAM, onSortChanged = {})
     }
 }
@@ -86,7 +87,7 @@ fun MoviesTopAppBarHighestRatedPreview() {
 @Preview(showBackground = true, widthDp = 360)
 @Composable
 fun MoviesTopAppBarFavoritesPreview() {
-    MaterialTheme {
+    PopularMoviesTheme {
         MoviesTopAppBar(currentSortOption = FAVORITES_PARAM, onSortChanged = {})
     }
 }
@@ -96,7 +97,7 @@ fun MoviesTopAppBarFavoritesPreview() {
 @Preview(showBackground = true, name = "Movies Screen - Loading State")
 @Composable
 fun MoviesScreenLoadingPreview() {
-    MaterialTheme {
+    PopularMoviesTheme {
         Scaffold(
             topBar = { MoviesTopAppBar(currentSortOption = POPULARITY_DESC_PARAM, onSortChanged = {}) }
         ) { paddingValues ->
@@ -115,7 +116,7 @@ fun MoviesScreenLoadingPreview() {
 @Preview(showBackground = true, name = "Movies Screen - Error State")
 @Composable
 fun MoviesScreenErrorPreview() {
-    MaterialTheme {
+    PopularMoviesTheme {
         Scaffold(
             topBar = { MoviesTopAppBar(currentSortOption = POPULARITY_DESC_PARAM, onSortChanged = {}) }
         ) { paddingValues ->
@@ -139,7 +140,7 @@ fun MoviesScreenErrorPreview() {
 @Preview(showBackground = true, name = "Movies Screen - Content Loaded")
 @Composable
 fun MoviesScreenContentLoadedPreview() {
-    MaterialTheme {
+    PopularMoviesTheme {
         Scaffold(
             topBar = { MoviesTopAppBar(currentSortOption = POPULARITY_DESC_PARAM, onSortChanged = {}) }
         ) { paddingValues ->

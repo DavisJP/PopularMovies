@@ -3,7 +3,8 @@ package com.exercise.davismiyashiro.popularmovies
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material3.MaterialTheme
+import androidx.activity.enableEdgeToEdge
+import com.exercise.davismiyashiro.popularmovies.ui.theme.PopularMoviesTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.navigation3.runtime.NavEntry
@@ -16,8 +17,9 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContent {
-            MaterialTheme {
+            PopularMoviesTheme {
                 MainScreen()
             }
         }
