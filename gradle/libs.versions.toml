@@ -4,8 +4,6 @@ android-gradle-plugin = "9.2.0"
 kotlin = "2.3.21"
 hilt = "2.59.2"
 ksp = "2.3.7"
-compose = "2.3.21"
-compose-runtime = "1.11.0"
 appcompat = "1.7.1"
 material = "1.13.0"
 room = "2.8.4"
@@ -72,7 +70,7 @@ compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 compose-ui-graphics = { module = "androidx.compose.ui:ui-graphics" }
 compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
-compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "compose-runtime" }
+compose-runtime = { module = "androidx.compose.runtime:runtime" }
 
 compose-constraintlayout = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayout-compose" }
 compose-activity = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
@@ -101,8 +99,8 @@ espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref =
 arch-core-testing = { module = "androidx.arch.core:core-testing", version.ref = "arch-core-testing" }
 room-testing = { module = "androidx.room:room-testing", version.ref = "room" }
 
-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "compose-runtime" }
-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "compose-runtime" }
+compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
+compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 
 androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "nav3" }
 androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "nav3" }
@@ -117,5 +115,5 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-parcelize = { id = "kotlin-parcelize" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "compose" }
+compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
