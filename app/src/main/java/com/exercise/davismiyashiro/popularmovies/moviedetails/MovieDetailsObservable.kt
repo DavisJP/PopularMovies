@@ -43,5 +43,5 @@ data class MovieDetailsObservable(
     val posterPath: String,
     val overview: String,
     val releaseDate: String,
-    val voteAverage: Double
+    val voteAverage: Double,
 ) : Parcelable

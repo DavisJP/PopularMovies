@@ -80,16 +80,13 @@ fun movieListEntry(navigator: Navigator) = NavEntry(Route.MovieList) {
         viewModel = hiltViewModel(),
         onMovieClick = { movie ->
             navigator.navigate(Route.MovieDetails(movie))
-        }
+        },
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MoviesScreen(
-    viewModel: MoviesViewModel,
-    onMovieClick: (MovieDetailsObservable) -> Unit
-) {
+fun MoviesScreen(viewModel: MoviesViewModel, onMovieClick: (MovieDetailsObservable) -> Unit) {
     val currentSortOption by viewModel.currentSortingOption.collectAsStateWithLifecycle()
     val currentState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -97,14 +94,14 @@ fun MoviesScreen(
         topBar = {
             MoviesTopAppBar(
                 currentSortOption = currentSortOption,
-                onSortChanged = viewModel::loadMovieListBySortingOption
+                onSortChanged = viewModel::loadMovieListBySortingOption,
             )
-        }
+        },
     ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(paddingValues),
         ) {
             val state = currentState
             when (state) {
@@ -116,7 +113,7 @@ fun MoviesScreen(
                     if (!state.movieList.isEmpty()) {
                         MovieListGrid(
                             movies = state.movieList,
-                            onMovieClick = onMovieClick
+                            onMovieClick = onMovieClick,
                         )
                     } else {
                         Text(
@@ -125,7 +122,7 @@ fun MoviesScreen(
                                 .align(Alignment.Center)
                                 .padding(16.dp),
                             textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.bodyLarge
+                            style = MaterialTheme.typography.bodyLarge,
                         )
                     }
                 }
@@ -137,7 +134,7 @@ fun MoviesScreen(
                             .align(Alignment.Center)
                             .padding(16.dp),
                         textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.bodyLarge
+                        style = MaterialTheme.typography.bodyLarge,
                     )
                 }
             }
@@ -147,11 +144,7 @@ fun MoviesScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MoviesTopAppBar(
-    currentSortOption: String,
-    onSortChanged: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
+fun MoviesTopAppBar(currentSortOption: String, onSortChanged: (String) -> Unit, modifier: Modifier = Modifier) {
     var menuExpanded by remember { mutableStateOf(false) }
 
     val titleResId = when (currentSortOption) {
@@ -169,37 +162,37 @@ fun MoviesTopAppBar(
                 IconButton(onClick = { menuExpanded = true }) {
                     Icon(
                         Icons.Filled.MoreVert,
-                        contentDescription = stringResource(R.string.action_settings)
+                        contentDescription = stringResource(R.string.action_settings),
                     )
                 }
                 DropdownMenu(
                     expanded = menuExpanded,
-                    onDismissRequest = { menuExpanded = false }
+                    onDismissRequest = { menuExpanded = false },
                 ) {
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.popular)) },
                         onClick = {
                             onSortChanged(POPULARITY_DESC_PARAM)
                             menuExpanded = false
-                        }
+                        },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.rating)) },
                         onClick = {
                             onSortChanged(HIGHEST_RATED_PARAM)
                             menuExpanded = false
-                        }
+                        },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.favorites)) },
                         onClick = {
                             onSortChanged(FAVORITES_PARAM)
                             menuExpanded = false
-                        }
+                        },
                     )
                 }
             }
-        }
+        },
     )
 }
 
@@ -207,7 +200,7 @@ fun MoviesTopAppBar(
 fun MovieListGrid(
     movies: List<MovieDetailsObservable>,
     onMovieClick: (MovieDetailsObservable) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 180.dp),
@@ -215,9 +208,13 @@ fun MovieListGrid(
             .fillMaxSize()
             .padding(4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        items(movies, key = { movie -> movie.id }) { movie ->
+        items(
+            items = movies,
+            key = { movie -> movie.id },
+            contentType = { "movie" },
+        ) { movie ->
             MovieGridItem(movie = movie, onMovieClick = onMovieClick)
         }
     }
@@ -227,14 +224,13 @@ fun MovieListGrid(
 fun MovieGridItem(
     movie: MovieDetailsObservable,
     onMovieClick: (MovieDetailsObservable) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-
     Card(
         modifier = modifier
             .fillMaxWidth()
             .clickable { onMovieClick(movie) },
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         SubcomposeAsyncImage(
             model = movie.posterPath,
@@ -251,10 +247,10 @@ fun MovieGridItem(
                     Icon(
                         imageVector = Icons.Filled.Warning,
                         contentDescription = "Error loading image",
-                        modifier = Modifier.size(48.dp)
+                        modifier = Modifier.size(48.dp),
                     )
                 }
-            }
+            },
         )
     }
 }

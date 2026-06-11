@@ -7,7 +7,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import com.exercise.davismiyashiro.popularmovies.ui.theme.PopularMoviesTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,6 +16,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.exercise.davismiyashiro.popularmovies.R
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
+import com.exercise.davismiyashiro.popularmovies.ui.theme.PopularMoviesTheme
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 
 // Sample Data for Previews
 private val sampleMovie1 = MovieDetailsObservable(
@@ -26,7 +28,7 @@ private val sampleMovie1 = MovieDetailsObservable(
     overview = "This is a great movie about popular things happening.",
     backdropPath = "/5A4sRQA8sE6C5fhRen9rmaL3ypr.jpg",
     releaseDate = "2023-01-01",
-    voteAverage = 8.5
+    voteAverage = 8.5,
 )
 
 private val sampleMovie2 = MovieDetailsObservable(
@@ -36,15 +38,20 @@ private val sampleMovie2 = MovieDetailsObservable(
     overview = "This is a critically acclaimed movie with lots of action and adventure for everyone to enjoy.",
     backdropPath = "/5A4sRQA8sE6C5fhRen9rmaL3ypr.jpg",
     releaseDate = "2023-02-15",
-    voteAverage = 9.1
+    voteAverage = 9.1,
 )
 
-private val sampleMovieList = listOf(sampleMovie1, sampleMovie2, sampleMovie1.copy(id = 3, title = "Another Movie 3"), sampleMovie2.copy(id = 4, title = "Sequel to the Adventure 4"))
+private val sampleMovieList = listOf(
+    sampleMovie1,
+    sampleMovie2,
+    sampleMovie1.copy(id = 3, title = "Another Movie 3"),
+    sampleMovie2.copy(id = 4, title = "Sequel to the Adventure 4"),
+).toImmutableList()
 
 // Previews for MovieGridItem
 @Preview(showBackground = true, widthDp = 200)
 @Composable
-fun MovieGridItemPreview() {
+private fun MovieGridItemPreview() {
     PopularMoviesTheme {
         MovieGridItem(movie = sampleMovie1, onMovieClick = {})
     }
@@ -53,7 +60,7 @@ fun MovieGridItemPreview() {
 // Previews for MovieListGrid
 @Preview(showBackground = true, widthDp = 380, heightDp = 600)
 @Composable
-fun MovieListGridPopulatedPreview() {
+private fun MovieListGridPopulatedPreview() {
     PopularMoviesTheme {
         MovieListGrid(movies = sampleMovieList, onMovieClick = {})
     }
@@ -61,16 +68,16 @@ fun MovieListGridPopulatedPreview() {
 
 @Preview(showBackground = true, widthDp = 380, heightDp = 200)
 @Composable
-fun MovieListGridEmptyPreview() {
+private fun MovieListGridEmptyPreview() {
     PopularMoviesTheme {
-        MovieListGrid(movies = emptyList(), onMovieClick = {})
+        MovieListGrid(movies = persistentListOf(), onMovieClick = {})
     }
 }
 
 // Previews for MoviesTopAppBar
 @Preview(showBackground = true, widthDp = 360)
 @Composable
-fun MoviesTopAppBarPopularPreview() {
+private fun MoviesTopAppBarPopularPreview() {
     PopularMoviesTheme {
         MoviesTopAppBar(currentSortOption = POPULARITY_DESC_PARAM, onSortChanged = {})
     }
@@ -78,7 +85,7 @@ fun MoviesTopAppBarPopularPreview() {
 
 @Preview(showBackground = true, widthDp = 360)
 @Composable
-fun MoviesTopAppBarHighestRatedPreview() {
+private fun MoviesTopAppBarHighestRatedPreview() {
     PopularMoviesTheme {
         MoviesTopAppBar(currentSortOption = HIGHEST_RATED_PARAM, onSortChanged = {})
     }
@@ -86,7 +93,7 @@ fun MoviesTopAppBarHighestRatedPreview() {
 
 @Preview(showBackground = true, widthDp = 360)
 @Composable
-fun MoviesTopAppBarFavoritesPreview() {
+private fun MoviesTopAppBarFavoritesPreview() {
     PopularMoviesTheme {
         MoviesTopAppBar(currentSortOption = FAVORITES_PARAM, onSortChanged = {})
     }
@@ -96,16 +103,16 @@ fun MoviesTopAppBarFavoritesPreview() {
 
 @Preview(showBackground = true, name = "Movies Screen - Loading State")
 @Composable
-fun MoviesScreenLoadingPreview() {
+private fun MoviesScreenLoadingPreview() {
     PopularMoviesTheme {
         Scaffold(
-            topBar = { MoviesTopAppBar(currentSortOption = POPULARITY_DESC_PARAM, onSortChanged = {}) }
+            topBar = { MoviesTopAppBar(currentSortOption = POPULARITY_DESC_PARAM, onSortChanged = {}) },
         ) { paddingValues ->
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator()
             }
@@ -115,22 +122,22 @@ fun MoviesScreenLoadingPreview() {
 
 @Preview(showBackground = true, name = "Movies Screen - Error State")
 @Composable
-fun MoviesScreenErrorPreview() {
+private fun MoviesScreenErrorPreview() {
     PopularMoviesTheme {
         Scaffold(
-            topBar = { MoviesTopAppBar(currentSortOption = POPULARITY_DESC_PARAM, onSortChanged = {}) }
+            topBar = { MoviesTopAppBar(currentSortOption = POPULARITY_DESC_PARAM, onSortChanged = {}) },
         ) { paddingValues ->
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = stringResource(R.string.please_check_your_network_status_or_try_again_later),
                     modifier = Modifier.padding(16.dp),
                     textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.bodyLarge
+                    style = MaterialTheme.typography.bodyLarge,
                 )
             }
         }
@@ -139,15 +146,15 @@ fun MoviesScreenErrorPreview() {
 
 @Preview(showBackground = true, name = "Movies Screen - Content Loaded")
 @Composable
-fun MoviesScreenContentLoadedPreview() {
+private fun MoviesScreenContentLoadedPreview() {
     PopularMoviesTheme {
         Scaffold(
-            topBar = { MoviesTopAppBar(currentSortOption = POPULARITY_DESC_PARAM, onSortChanged = {}) }
+            topBar = { MoviesTopAppBar(currentSortOption = POPULARITY_DESC_PARAM, onSortChanged = {}) },
         ) { paddingValues ->
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
+                    .padding(paddingValues),
             ) {
                 MovieListGrid(movies = sampleMovieList, onMovieClick = {})
             }

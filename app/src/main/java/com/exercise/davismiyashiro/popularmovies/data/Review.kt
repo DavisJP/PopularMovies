@@ -35,8 +35,8 @@ import com.squareup.moshi.JsonClass
 @Immutable
 @JsonClass(generateAdapter = true)
 data class Review(
-        @field:Json(name = "id") val id: String,
-        @field:Json(name = "author") val author: String,
-        @field:Json(name = "content") val content: String,
-        @field:Json(name = "url") val url: String
-) 
+    @field:Json(name = "id") val id: String,
+    @field:Json(name = "author") val author: String,
+    @field:Json(name = "content") val content: String,
+    @field:Json(name = "url") val url: String,
+)

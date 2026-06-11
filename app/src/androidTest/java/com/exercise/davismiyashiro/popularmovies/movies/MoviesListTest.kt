@@ -12,9 +12,9 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.exercise.davismiyashiro.popularmovies.MainActivity
 import com.exercise.davismiyashiro.popularmovies.MockServerDispatcher
 import com.exercise.davismiyashiro.popularmovies.R
-import com.exercise.davismiyashiro.popularmovies.MainActivity
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import okhttp3.mockwebserver.MockWebServer
@@ -41,7 +41,7 @@ class MoviesListTest {
         private lateinit var server: MockWebServer
 
         var serviceMap: Map<String, String> = mapOf(
-            Pair("/3/movie/popular", "popularJSON.json")
+            Pair("/3/movie/popular", "popularJSON.json"),
         )
 
         @BeforeClass
@@ -88,7 +88,6 @@ class MoviesListTest {
     @Test
     @Throws(Exception::class)
     fun onSuccessNoErrorDisplayed() {
-
         composeTestRule.onNodeWithContentDescription("Settings").performClick()
         composeTestRule.onNodeWithText("Popular").performClick()
 
@@ -103,7 +102,7 @@ class MoviesListTest {
         val errorMessage =
             composeTestRule.activity.getString(R.string.please_check_your_network_status_or_try_again_later)
 
-        composeTestRule.waitUntilAtLeastOneExists(hasText(expectedMessage), 1000 )
+        composeTestRule.waitUntilAtLeastOneExists(hasText(expectedMessage), 1000)
 
         composeTestRule.onNodeWithText(expectedMessage).assertIsDisplayed()
         composeTestRule.onNodeWithText(errorMessage).assertIsNotDisplayed()
@@ -111,7 +110,6 @@ class MoviesListTest {
 
     @Test
     fun whenNetworkErrorThenErrorIsDisplayed() {
-
         composeTestRule.onNodeWithContentDescription("Settings").performClick()
         composeTestRule.onNodeWithText("Highest Ratings").performClick()
         val expectedErrorMessage =

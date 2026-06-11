@@ -24,12 +24,10 @@
 
 package com.exercise.davismiyashiro.popularmovies.data
 
-import androidx.room.Entity
-
-import androidx.room.PrimaryKey
 import android.os.Parcelable
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.exercise.davismiyashiro.popularmovies.data.local.TABLE_NAME
-
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import kotlinx.parcelize.Parcelize
@@ -41,11 +39,11 @@ import kotlinx.parcelize.Parcelize
 @JsonClass(generateAdapter = true)
 @Entity(tableName = TABLE_NAME)
 data class MovieDetails(
-        @field:Json(name = "id") @PrimaryKey var movieid: Int,
-        @field:Json(name = "title") var title: String,
-        @field:Json(name = "backdrop_path") var backdropPath: String?,
-        @field:Json(name = "poster_path") var posterPath: String,
-        @field:Json(name = "overview") var overview: String,
-        @field:Json(name = "release_date") var releaseDate: String,
-        @field:Json(name = "vote_average") var voteAverage: Double
+    @field:Json(name = "id") @PrimaryKey var movieid: Int,
+    @field:Json(name = "title") var title: String,
+    @field:Json(name = "backdrop_path") var backdropPath: String?,
+    @field:Json(name = "poster_path") var posterPath: String,
+    @field:Json(name = "overview") var overview: String,
+    @field:Json(name = "release_date") var releaseDate: String,
+    @field:Json(name = "vote_average") var voteAverage: Double,
 ) : Parcelable

@@ -27,7 +27,17 @@ package com.exercise.davismiyashiro.popularmovies.moviedetails
 import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -89,7 +99,7 @@ fun movieDetailsEntry(key: Route.MovieDetails) = NavEntry(key) {
             } else {
                 Toast.makeText(context, R.string.no_app_to_open_youtube, Toast.LENGTH_SHORT).show()
             }
-        }
+        },
     )
 }
 
@@ -98,7 +108,7 @@ fun movieDetailsEntry(key: Route.MovieDetails) = NavEntry(key) {
 fun MovieDetailsScreen(
     movieDetails: MovieDetailsObservable,
     viewModel: MovieDetailsViewModel,
-    onOpenTrailer: (String) -> Unit
+    onOpenTrailer: (String) -> Unit,
 ) {
     val reviews by produceState(initialValue = persistentListOf(), movieDetails.id, viewModel) {
         value = viewModel.reviews(movieDetails.id)
@@ -106,7 +116,8 @@ fun MovieDetailsScreen(
     val trailers by produceState(initialValue = persistentListOf(), movieDetails.id, viewModel) {
         value = viewModel.trailers(movieDetails.id)
     }
-    val isFavoriteFlow = remember(movieDetails.id, viewModel) { viewModel.isFavorite(movieDetails.id) }
+    val isFavoriteFlow =
+        remember(movieDetails.id, viewModel) { viewModel.isFavorite(movieDetails.id) }
     val isFavorite by isFavoriteFlow.collectAsStateWithLifecycle(initialValue = false)
     val context = LocalContext.current
 
@@ -121,11 +132,11 @@ fun MovieDetailsScreen(
             TopAppBar(
                 title = {
                     Text(
-                        movieDetails.title
+                        movieDetails.title,
                     )
-                }
+                },
             )
-        }
+        },
     ) { paddingValues ->
         MovieDetailsContent(
             modifier = Modifier.padding(paddingValues),
@@ -135,7 +146,7 @@ fun MovieDetailsScreen(
             isFavorite = isFavorite,
             onFavoriteToggle = { viewModel.setFavorite(movieDetails, isFavorite) },
             onTrailerClick = { trailer -> onOpenTrailer(trailer.key) },
-            onReviewClick = { /* Handle review click if needed in the future */ }
+            onReviewClick = { /* Handle review click if needed in the future */ },
         )
     }
 }
@@ -149,18 +160,18 @@ fun MovieDetailsContent(
     isFavorite: Boolean,
     onFavoriteToggle: () -> Unit,
     onTrailerClick: (Trailer) -> Unit,
-    onReviewClick: (Review) -> Unit
+    onReviewClick: (Review) -> Unit,
 ) {
     LazyColumn(
         modifier = modifier
-            .fillMaxSize()
+            .fillMaxSize(),
     ) {
         // Movie Poster and Basic Info
         item {
             ConstraintLayout(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp)
+                    .padding(bottom = 16.dp),
             ) {
                 val (
                     backdropRef, posterRef, titleRef, favoriteRef,
@@ -188,7 +199,7 @@ fun MovieDetailsContent(
                             end.linkTo(parent.end)
                             width = Dimension.fillToConstraints
                         }
-                        .aspectRatio(16f / 9f)
+                        .aspectRatio(16f / 9f),
                 )
 
                 // Poster Image
@@ -208,7 +219,7 @@ fun MovieDetailsContent(
                             start.linkTo(leftGuideline)
                             width = Dimension.value(100.dp)
                             height = Dimension.value(150.dp)
-                        }
+                        },
                 )
 
                 // Movie Title
@@ -222,7 +233,7 @@ fun MovieDetailsContent(
                         start.linkTo(posterRef.end, margin = 16.dp) // To the right of the poster
                         end.linkTo(favoriteRef.start, margin = 8.dp)
                         width = Dimension.fillToConstraints
-                    }
+                    },
                 )
 
                 // Favorite Toggle Button
@@ -232,12 +243,12 @@ fun MovieDetailsContent(
                     modifier = Modifier.constrainAs(favoriteRef) {
                         top.linkTo(titleRef.top)
                         end.linkTo(rightGuideline)
-                    }
+                    },
                 ) {
                     Icon(
                         imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                         contentDescription = stringResource(R.string.mark_as_favorite),
-                        tint = if (isFavorite) MaterialTheme.colorScheme.primary else Color.Gray
+                        tint = if (isFavorite) MaterialTheme.colorScheme.primary else Color.Gray,
                     )
                 }
 
@@ -246,13 +257,13 @@ fun MovieDetailsContent(
                     Text(
                         text = stringResource(
                             R.string.release_date,
-                            movieDetails.releaseDate
+                            movieDetails.releaseDate,
                         ),
                         style = MaterialTheme.typography.labelMedium,
                         modifier = Modifier.constrainAs(releaseDateRef) {
                             top.linkTo(titleRef.bottom, margin = 8.dp)
                             start.linkTo(titleRef.start) // Align with title's start
-                        }
+                        },
                     )
                     Text(
                         text = stringResource(R.string.average_rating, movieDetails.voteAverage),
@@ -260,7 +271,7 @@ fun MovieDetailsContent(
                         modifier = Modifier.constrainAs(voteAverageRef) {
                             top.linkTo(releaseDateRef.bottom, margin = 8.dp)
                             start.linkTo(titleRef.start)
-                        }
+                        },
                     )
                 }
             }
@@ -276,19 +287,20 @@ fun MovieDetailsContent(
                         start = 16.dp,
                         end = 16.dp,
                         top = 16.dp,
-                        bottom = 8.dp
-                    )
+                        bottom = 8.dp,
+                    ),
                 )
             }
             items(
                 items = trailers,
-                key = { trailer -> trailer.id }
+                key = { trailer -> trailer.id },
+                contentType = { "trailer" },
             ) { trailer ->
-                TrailerItem(trailer = trailer, onClick = { onTrailerClick(trailer) })
+                TrailerItem(trailer = trailer, onClick = onTrailerClick)
                 HorizontalDivider(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     thickness = DividerDefaults.Thickness,
-                    color = DividerDefaults.color
+                    color = DividerDefaults.color,
                 )
             }
         }
@@ -303,19 +315,20 @@ fun MovieDetailsContent(
                         start = 16.dp,
                         end = 16.dp,
                         top = 16.dp,
-                        bottom = 8.dp
-                    )
+                        bottom = 8.dp,
+                    ),
                 )
             }
             items(
                 items = reviews,
-                key = { review -> review.id }
+                key = { review -> review.id },
+                contentType = { "review" },
             ) { review ->
-                ReviewItem(review = review, onClick = { onReviewClick(review) })
+                ReviewItem(review = review, onClick = onReviewClick)
                 HorizontalDivider(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     thickness = DividerDefaults.Thickness,
-                    color = DividerDefaults.color
+                    color = DividerDefaults.color,
                 )
             }
         }
@@ -340,27 +353,27 @@ fun ImagePlaceholder(model: Any, contentDescription: String?, modifier: Modifier
                 Icon(
                     imageVector = Icons.Filled.Warning,
                     contentDescription = "Error loading image",
-                    modifier = Modifier.size(48.dp)
+                    modifier = Modifier.size(48.dp),
                 )
             }
-        }
+        },
     )
 }
 
 @Composable
-fun TrailerItem(trailer: Trailer, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun TrailerItem(trailer: Trailer, onClick: (Trailer) -> Unit, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable { onClick(trailer) }
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
             Icons.Filled.PlayArrow,
             contentDescription = stringResource(R.string.play_trailer_desc),
             modifier = Modifier.size(36.dp),
-            tint = MaterialTheme.colorScheme.primary
+            tint = MaterialTheme.colorScheme.primary,
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(trailer.name, style = MaterialTheme.typography.bodyLarge)
@@ -368,24 +381,24 @@ fun TrailerItem(trailer: Trailer, onClick: () -> Unit, modifier: Modifier = Modi
 }
 
 @Composable
-fun ReviewItem(review: Review, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun ReviewItem(review: Review, onClick: (Review) -> Unit, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .clickable { onClick(review) }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         Text(
             review.author,
             style = MaterialTheme.typography.titleSmall,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             review.content,
             style = MaterialTheme.typography.bodyMedium,
             maxLines = 5,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }

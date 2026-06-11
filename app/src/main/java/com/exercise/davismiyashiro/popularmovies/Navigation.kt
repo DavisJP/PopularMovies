@@ -2,9 +2,9 @@ package com.exercise.davismiyashiro.popularmovies
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSerializable
 import androidx.compose.runtime.setValue
 import androidx.navigation3.runtime.NavBackStack
@@ -15,8 +15,8 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.runtime.serialization.NavKeySerializer
 import androidx.savedstate.compose.serialization.serializers.MutableStateSerializer
-import kotlinx.serialization.Serializable
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
+import kotlinx.serialization.Serializable
 
 @Serializable
 sealed interface Route : NavKey {
@@ -28,14 +28,11 @@ sealed interface Route : NavKey {
 }
 
 @Composable
-fun rememberNavigationState(
-    startRoute: Route,
-    topLevelRoutes: Set<Route>
-): NavigationState {
-
+fun rememberNavigationState(startRoute: Route, topLevelRoutes: Set<Route>): NavigationState {
     val topLevelRoute = rememberSerializable(
-        startRoute, topLevelRoutes,
-        serializer = MutableStateSerializer(NavKeySerializer())
+        startRoute,
+        topLevelRoutes,
+        serializer = MutableStateSerializer(NavKeySerializer()),
     ) {
         mutableStateOf(startRoute)
     }
@@ -46,7 +43,7 @@ fun rememberNavigationState(
         NavigationState(
             startRoute = startRoute,
             topLevelRoute = topLevelRoute,
-            backStacks = backStacks
+            backStacks = backStacks,
         )
     }
 }
@@ -54,7 +51,7 @@ fun rememberNavigationState(
 class NavigationState(
     val startRoute: Route,
     topLevelRoute: MutableState<Route>,
-    val backStacks: Map<Route, NavBackStack<out NavKey>>
+    val backStacks: Map<Route, NavBackStack<out NavKey>>,
 ) {
     var topLevelRoute: Route by topLevelRoute
     val stacksInUse: List<Route>
@@ -66,9 +63,7 @@ class NavigationState(
 }
 
 @Composable
-fun NavigationState.toEntries(
-    entryProvider: (Route) -> NavEntry<out Route>
-): List<NavEntry<out Route>> {
+fun NavigationState.toEntries(entryProvider: (Route) -> NavEntry<out Route>): List<NavEntry<out Route>> {
     val saveableStateHolderDecorator = rememberSaveableStateHolderNavEntryDecorator<NavKey>()
     val decorators = remember(saveableStateHolderDecorator) {
         listOf(saveableStateHolderDecorator)
@@ -79,7 +74,7 @@ fun NavigationState.toEntries(
         rememberDecoratedNavEntries(
             backStack = stack as NavBackStack<NavKey>,
             entryDecorators = decorators,
-            entryProvider = entryProvider as (NavKey) -> NavEntry<NavKey>
+            entryProvider = entryProvider as (NavKey) -> NavEntry<NavKey>,
         )
     }
 

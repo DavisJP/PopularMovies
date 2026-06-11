@@ -98,24 +98,25 @@ class MovieDetailsViewModelTest {
     }
 
     @Test
-    fun `setFavorite deletes movie and emits toast when already favorite`() = runTest(coroutinesTestRule.testDispatcher) {
-        viewModel.toastMessageEvents.test {
-            viewModel.setFavorite(movieDetailsObservable, isFavorite = true)
+    fun `setFavorite deletes movie and emits toast when already favorite`() =
+        runTest(coroutinesTestRule.testDispatcher) {
+            viewModel.toastMessageEvents.test {
+                viewModel.setFavorite(movieDetailsObservable, isFavorite = true)
 
-            verify(repository).deleteMovieDb(
-                MovieDetails(
-                    movieid = movieDetailsObservable.id,
-                    title = movieDetailsObservable.title,
-                    backdropPath = movieDetailsObservable.backdropPath,
-                    posterPath = movieDetailsObservable.posterPath,
-                    overview = movieDetailsObservable.overview,
-                    releaseDate = movieDetailsObservable.releaseDate,
-                    voteAverage = movieDetailsObservable.voteAverage,
+                verify(repository).deleteMovieDb(
+                    MovieDetails(
+                        movieid = movieDetailsObservable.id,
+                        title = movieDetailsObservable.title,
+                        backdropPath = movieDetailsObservable.backdropPath,
+                        posterPath = movieDetailsObservable.posterPath,
+                        overview = movieDetailsObservable.overview,
+                        releaseDate = movieDetailsObservable.releaseDate,
+                        voteAverage = movieDetailsObservable.voteAverage,
+                    ),
                 )
-            )
-            assertEquals(R.string.movie_deleted_msg, awaitItem())
+                assertEquals(R.string.movie_deleted_msg, awaitItem())
+            }
         }
-    }
 
     @Test
     fun `setFavorite inserts movie and emits toast when not favorite`() = runTest(coroutinesTestRule.testDispatcher) {
@@ -131,14 +132,14 @@ class MovieDetailsViewModelTest {
                     overview = movieDetailsObservable.overview,
                     releaseDate = movieDetailsObservable.releaseDate,
                     voteAverage = movieDetailsObservable.voteAverage,
-                )
+                ),
             )
             assertEquals(R.string.movie_added_msg, awaitItem())
         }
     }
 
     class MainDispatcherRule(
-        val testDispatcher: TestDispatcher = UnconfinedTestDispatcher()
+        val testDispatcher: TestDispatcher = UnconfinedTestDispatcher(),
     ) : TestWatcher() {
         override fun starting(description: Description) {
             Dispatchers.setMain(testDispatcher)

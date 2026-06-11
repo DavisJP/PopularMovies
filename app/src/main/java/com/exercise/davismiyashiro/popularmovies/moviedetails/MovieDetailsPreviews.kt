@@ -1,30 +1,30 @@
 package com.exercise.davismiyashiro.popularmovies.moviedetails
 
 import androidx.compose.runtime.Composable
-import com.exercise.davismiyashiro.popularmovies.ui.theme.PopularMoviesTheme
 import androidx.compose.ui.tooling.preview.Preview
 import coil3.annotation.ExperimentalCoilApi
 import com.exercise.davismiyashiro.popularmovies.R
 import com.exercise.davismiyashiro.popularmovies.data.Review
 import com.exercise.davismiyashiro.popularmovies.data.Trailer
+import com.exercise.davismiyashiro.popularmovies.ui.theme.PopularMoviesTheme
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 
 @OptIn(ExperimentalCoilApi::class)
 @Preview(showBackground = true)
 @Composable
-fun ImagePlaceholderPreview() {
+private fun ImagePlaceholderPreview() {
     PopularMoviesTheme {
         ImagePlaceholder(
             model = R.drawable.header,
-            contentDescription = "Sample Image Preview"
+            contentDescription = "Sample Image Preview",
         )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun TrailerItemPreview() {
+private fun TrailerItemPreview() {
     PopularMoviesTheme {
         val sampleTrailer = Trailer(
             id = "1",
@@ -34,29 +34,29 @@ fun TrailerItemPreview() {
             size = 1080,
             type = "Trailer",
             iso6391 = "iso6391",
-            iso31661 = "iso6391"
+            iso31661 = "iso6391",
         )
-        TrailerItem(trailer = sampleTrailer, onClick = {})
+        TrailerItem(trailer = sampleTrailer, onClick = { _ -> })
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun ReviewItemPreview() {
+private fun ReviewItemPreview() {
     PopularMoviesTheme {
         val sampleReview = Review(
             id = "1",
             author = "John Doe",
             content = "This is a great movie! ".repeat(10),
-            url = ""
+            url = "",
         )
-        ReviewItem(review = sampleReview, onClick = {})
+        ReviewItem(review = sampleReview, onClick = { _ -> })
     }
 }
 
 @Preview(showBackground = true, name = "MovieDetailsContent - Populated")
 @Composable
-fun MovieDetailsContentPopulatedPreview() {
+private fun MovieDetailsContentPopulatedPreview() {
     val sampleMovieDetails = MovieDetailsObservable(
         id = 1,
         title = "Awesome Movie Title",
@@ -64,7 +64,7 @@ fun MovieDetailsContentPopulatedPreview() {
         overview = "This is a really awesome movie that you should definitely watch. ".repeat(5),
         releaseDate = "2024-01-01",
         voteAverage = 8.5,
-        backdropPath = "/backdrop.jpg"
+        backdropPath = "/backdrop.jpg",
     )
     val sampleTrailers = listOf(
         Trailer(
@@ -75,7 +75,7 @@ fun MovieDetailsContentPopulatedPreview() {
             type = "Trailer",
             size = 1080,
             iso6391 = "iso6391",
-            iso31661 = "iso6391"
+            iso31661 = "iso6391",
         ),
         Trailer(
             id = "2",
@@ -85,23 +85,25 @@ fun MovieDetailsContentPopulatedPreview() {
             type = "Trailer",
             size = 1080,
             iso6391 = "iso6391",
-            iso31661 = "iso6391"
-        )
+            iso31661 = "iso6391",
+        ),
     ).toImmutableList()
+
     val sampleReviews = listOf(
         Review(
             id = "1",
             author = "Jane Critic",
             content = "A cinematic masterpiece! ".repeat(3),
-            url = ""
+            url = "",
         ),
         Review(
             id = "2",
             author = "Bob Reviewer",
             content = "Simply stunning visuals and compelling story. ".repeat(3),
-            url = ""
-        )
+            url = "",
+        ),
     ).toImmutableList()
+
     PopularMoviesTheme {
         MovieDetailsContent(
             movieDetails = sampleMovieDetails,
@@ -109,15 +111,15 @@ fun MovieDetailsContentPopulatedPreview() {
             reviews = sampleReviews,
             isFavorite = true,
             onFavoriteToggle = {},
-            onTrailerClick = {},
-            onReviewClick = {}
+            onTrailerClick = { _ -> },
+            onReviewClick = { _ -> },
         )
     }
 }
 
 @Preview(showBackground = true, name = "MovieDetailsContent - Empty")
 @Composable
-fun MovieDetailsContentEmptyPreview() {
+private fun MovieDetailsContentEmptyPreview() {
     val sampleMovieDetails = MovieDetailsObservable(
         id = 1,
         title = "Awesome Movie Title",
@@ -125,7 +127,7 @@ fun MovieDetailsContentEmptyPreview() {
         overview = "This is a really awesome movie that you should definitely watch. ".repeat(5),
         releaseDate = "2024-01-01",
         voteAverage = 8.5,
-        backdropPath = "/backdrop.jpg"
+        backdropPath = "/backdrop.jpg",
     )
     PopularMoviesTheme {
         MovieDetailsContent(
@@ -134,8 +136,8 @@ fun MovieDetailsContentEmptyPreview() {
             reviews = persistentListOf(),
             isFavorite = false,
             onFavoriteToggle = {},
-            onTrailerClick = {},
-            onReviewClick = {}
+            onTrailerClick = { _ -> },
+            onReviewClick = { _ -> },
         )
     }
 }

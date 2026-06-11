@@ -7,9 +7,8 @@ import dagger.hilt.testing.TestInstallIn
 @Module
 @TestInstallIn(
     components = [SingletonComponent::class],
-    replaces = [NetworkModule::class]
+    replaces = [NetworkModule::class],
 )
-
 class MockNetworkModule : NetworkModule() {
 
     override fun baseUrl(): String {
