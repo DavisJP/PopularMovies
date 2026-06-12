@@ -70,6 +70,7 @@ import com.exercise.davismiyashiro.popularmovies.Navigator
 import com.exercise.davismiyashiro.popularmovies.R
 import com.exercise.davismiyashiro.popularmovies.Route
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
+import kotlinx.collections.immutable.ImmutableList
 
 const val POPULARITY_DESC_PARAM = "popular"
 const val HIGHEST_RATED_PARAM = "top_rated"
@@ -88,11 +89,16 @@ fun movieListEntry(navigator: Navigator) = NavEntry(Route.MovieList) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MoviesScreen(viewModel: MoviesViewModel, onMovieClick: (MovieDetailsObservable) -> Unit) {
+fun MoviesScreen(
+    viewModel: MoviesViewModel,
+    onMovieClick: (MovieDetailsObservable) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val currentSortOption by viewModel.currentSortingOption.collectAsStateWithLifecycle()
     val currentState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
+        modifier = modifier,
         topBar = {
             MoviesTopAppBar(
                 currentSortOption = currentSortOption,
@@ -200,7 +206,7 @@ fun MoviesTopAppBar(currentSortOption: String, onSortChange: (String) -> Unit, m
 
 @Composable
 fun MovieListGrid(
-    movies: List<MovieDetailsObservable>,
+    movies: ImmutableList<MovieDetailsObservable>,
     onMovieClick: (MovieDetailsObservable) -> Unit,
     modifier: Modifier = Modifier,
 ) {

@@ -12,6 +12,7 @@ import com.exercise.davismiyashiro.popularmovies.moviedetails.movieDetailsEntry
 import com.exercise.davismiyashiro.popularmovies.movies.movieListEntry
 import com.exercise.davismiyashiro.popularmovies.ui.theme.PopularMoviesTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.collections.immutable.persistentSetOf
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -30,7 +31,7 @@ class MainActivity : ComponentActivity() {
 fun MainScreen() {
     val navigationState = rememberNavigationState(
         startRoute = Route.MovieList,
-        topLevelRoutes = setOf(Route.MovieList),
+        topLevelRoutes = persistentSetOf(Route.MovieList),
     )
     val navigator = remember { Navigator(navigationState) }
 

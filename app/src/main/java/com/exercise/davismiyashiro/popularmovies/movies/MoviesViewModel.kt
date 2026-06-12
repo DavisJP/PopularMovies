@@ -110,7 +110,7 @@ class MoviesViewModel @Inject constructor(
         }
     }
 
-    private fun convertMovieDetailsToUImodel(movies: List<MovieDetails>): List<MovieDetailsObservable> {
+    private fun convertMovieDetailsToUImodel(movies: List<MovieDetails>): ImmutableList<MovieDetailsObservable> {
         if (movies.isNotEmpty()) {
             val movieDetailsObservableList = ArrayList<MovieDetailsObservable>()
             for ((movieId, title, backdropPath, posterPath, overview, releaseDate, voteAverage) in movies) {
@@ -126,9 +126,9 @@ class MoviesViewModel @Inject constructor(
                     ),
                 )
             }
-            return movieDetailsObservableList
+            return movieDetailsObservableList.toImmutableList()
         } else {
-            return emptyList()
+            return persistentListOf()
         }
     }
 }

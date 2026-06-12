@@ -16,6 +16,7 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.runtime.serialization.NavKeySerializer
 import androidx.savedstate.compose.serialization.serializers.MutableStateSerializer
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
+import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -28,7 +29,7 @@ sealed interface Route : NavKey {
 }
 
 @Composable
-fun rememberNavigationState(startRoute: Route, topLevelRoutes: Set<Route>): NavigationState {
+fun rememberNavigationState(startRoute: Route, topLevelRoutes: ImmutableSet<Route>): NavigationState {
     val topLevelRoute = rememberSerializable(
         startRoute,
         topLevelRoutes,
