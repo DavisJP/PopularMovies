@@ -74,6 +74,8 @@ import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObserv
 const val POPULARITY_DESC_PARAM = "popular"
 const val HIGHEST_RATED_PARAM = "top_rated"
 const val FAVORITES_PARAM = "favorites"
+private const val POSTER_ASPECT_RATIO = 2f / 3f
+private const val LOADING_INDICATOR_WIDTH_FRACTION = 0.8f
 
 fun movieListEntry(navigator: Navigator) = NavEntry(Route.MovieList) {
     MoviesScreen(
@@ -94,7 +96,7 @@ fun MoviesScreen(viewModel: MoviesViewModel, onMovieClick: (MovieDetailsObservab
         topBar = {
             MoviesTopAppBar(
                 currentSortOption = currentSortOption,
-                onSortChanged = viewModel::loadMovieListBySortingOption,
+                onSortChange = viewModel::loadMovieListBySortingOption,
             )
         },
     ) { paddingValues ->
@@ -144,7 +146,7 @@ fun MoviesScreen(viewModel: MoviesViewModel, onMovieClick: (MovieDetailsObservab
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MoviesTopAppBar(currentSortOption: String, onSortChanged: (String) -> Unit, modifier: Modifier = Modifier) {
+fun MoviesTopAppBar(currentSortOption: String, onSortChange: (String) -> Unit, modifier: Modifier = Modifier) {
     var menuExpanded by remember { mutableStateOf(false) }
 
     val titleResId = when (currentSortOption) {
@@ -172,21 +174,21 @@ fun MoviesTopAppBar(currentSortOption: String, onSortChanged: (String) -> Unit, 
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.popular)) },
                         onClick = {
-                            onSortChanged(POPULARITY_DESC_PARAM)
+                            onSortChange(POPULARITY_DESC_PARAM)
                             menuExpanded = false
                         },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.rating)) },
                         onClick = {
-                            onSortChanged(HIGHEST_RATED_PARAM)
+                            onSortChange(HIGHEST_RATED_PARAM)
                             menuExpanded = false
                         },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.favorites)) },
                         onClick = {
-                            onSortChanged(FAVORITES_PARAM)
+                            onSortChange(FAVORITES_PARAM)
                             menuExpanded = false
                         },
                     )
@@ -237,10 +239,10 @@ fun MovieGridItem(
             contentDescription = movie.title,
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(2f / 3f),
+                .aspectRatio(POSTER_ASPECT_RATIO),
             contentScale = ContentScale.Crop,
             loading = {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth(0.8f))
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth(LOADING_INDICATOR_WIDTH_FRACTION))
             },
             error = {
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {

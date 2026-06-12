@@ -79,7 +79,7 @@ private fun MovieListGridEmptyPreview() {
 @Composable
 private fun MoviesTopAppBarPopularPreview() {
     PopularMoviesTheme {
-        MoviesTopAppBar(currentSortOption = POPULARITY_DESC_PARAM, onSortChanged = {})
+        MoviesTopAppBar(currentSortOption = POPULARITY_DESC_PARAM, onSortChange = {})
     }
 }
 
@@ -87,7 +87,7 @@ private fun MoviesTopAppBarPopularPreview() {
 @Composable
 private fun MoviesTopAppBarHighestRatedPreview() {
     PopularMoviesTheme {
-        MoviesTopAppBar(currentSortOption = HIGHEST_RATED_PARAM, onSortChanged = {})
+        MoviesTopAppBar(currentSortOption = HIGHEST_RATED_PARAM, onSortChange = {})
     }
 }
 
@@ -95,7 +95,7 @@ private fun MoviesTopAppBarHighestRatedPreview() {
 @Composable
 private fun MoviesTopAppBarFavoritesPreview() {
     PopularMoviesTheme {
-        MoviesTopAppBar(currentSortOption = FAVORITES_PARAM, onSortChanged = {})
+        MoviesTopAppBar(currentSortOption = FAVORITES_PARAM, onSortChange = {})
     }
 }
 
@@ -106,7 +106,7 @@ private fun MoviesTopAppBarFavoritesPreview() {
 private fun MoviesScreenLoadingPreview() {
     PopularMoviesTheme {
         Scaffold(
-            topBar = { MoviesTopAppBar(currentSortOption = POPULARITY_DESC_PARAM, onSortChanged = {}) },
+            topBar = { MoviesTopAppBar(currentSortOption = POPULARITY_DESC_PARAM, onSortChange = {}) },
         ) { paddingValues ->
             Box(
                 modifier = Modifier
@@ -125,7 +125,7 @@ private fun MoviesScreenLoadingPreview() {
 private fun MoviesScreenErrorPreview() {
     PopularMoviesTheme {
         Scaffold(
-            topBar = { MoviesTopAppBar(currentSortOption = POPULARITY_DESC_PARAM, onSortChanged = {}) },
+            topBar = { MoviesTopAppBar(currentSortOption = POPULARITY_DESC_PARAM, onSortChange = {}) },
         ) { paddingValues ->
             Box(
                 modifier = Modifier
@@ -149,7 +149,7 @@ private fun MoviesScreenErrorPreview() {
 private fun MoviesScreenContentLoadedPreview() {
     PopularMoviesTheme {
         Scaffold(
-            topBar = { MoviesTopAppBar(currentSortOption = POPULARITY_DESC_PARAM, onSortChanged = {}) },
+            topBar = { MoviesTopAppBar(currentSortOption = POPULARITY_DESC_PARAM, onSortChange = {}) },
         ) { paddingValues ->
             Box(
                 modifier = Modifier

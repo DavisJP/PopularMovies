@@ -35,7 +35,7 @@ class MovieListScreenTest {
             PopularMoviesTheme(dynamicColor = false) {
                 MoviesTopAppBar(
                     currentSortOption = POPULARITY_DESC_PARAM,
-                    onSortChanged = { selectedSort = it },
+                    onSortChange = { selectedSort = it },
                 )
             }
         }
@@ -113,7 +113,7 @@ class MovieListScreenTest {
             PopularMoviesTheme(dynamicColor = false) {
                 MoviesTopAppBar(
                     currentSortOption = FAVORITES_PARAM,
-                    onSortChanged = {},
+                    onSortChange = {},
                 )
             }
         }
