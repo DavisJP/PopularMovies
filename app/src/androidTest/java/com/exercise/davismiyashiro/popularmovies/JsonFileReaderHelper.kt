@@ -25,7 +25,6 @@
 package com.exercise.davismiyashiro.popularmovies
 
 import android.content.Context
-
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -53,7 +52,7 @@ object JsonFileReaderHelper {
         val stream = context.resources.assets.open(filePath)
 
         val ret = convertStreamToString(stream)
-        //Make sure you close all streams.
+        // Make sure you close all streams.
         stream.close()
         return ret
     }

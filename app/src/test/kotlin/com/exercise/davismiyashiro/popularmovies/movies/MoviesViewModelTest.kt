@@ -39,13 +39,14 @@ class MoviesViewModelTest {
 
     val fakeMovies = listOf(
         MovieDetails(
-            movieid = 1, title = "Fake",
+            movieid = 1,
+            title = "Fake",
             backdropPath = "Fake",
             posterPath = "Fake",
             overview = "Fake",
             releaseDate = "Fake",
-            voteAverage = 0.1
-        )
+            voteAverage = 0.1,
+        ),
     )
 
     @Before
@@ -77,7 +78,7 @@ class MoviesViewModelTest {
     @Test
     fun load_popular_movies_calls_remote_error() = runTest(testDispatcher) {
         Mockito.`when`(repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM)).thenReturn(
-            MovieDbApiClient.Result.Error(okio.IOException("Error loading popular movies"))
+            MovieDbApiClient.Result.Error(okio.IOException("Error loading popular movies")),
         )
 
         moviesViewModel = MoviesViewModel(repository)
@@ -88,8 +89,9 @@ class MoviesViewModelTest {
             TestCase.assertTrue(errorState is MovieListState.Error)
             Assert.assertEquals(
                 MovieListState.Error(
-                    message = "Error loading popular movies"
-                ), moviesViewModel.uiState.value
+                    message = "Error loading popular movies",
+                ),
+                moviesViewModel.uiState.value,
             )
 
             Mockito.verify(repository, Mockito.times(1))
@@ -144,7 +146,7 @@ class MoviesViewModelTest {
 
     @ExperimentalCoroutinesApi
     class MainDispatcherRule(
-        private val dispatcher: TestDispatcher = StandardTestDispatcher()
+        private val dispatcher: TestDispatcher = StandardTestDispatcher(),
     ) : TestWatcher() {
         override fun starting(description: Description) {
             Dispatchers.setMain(dispatcher)

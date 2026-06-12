@@ -4,14 +4,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.exercise.davismiyashiro.popularmovies.ui.theme.PopularMoviesTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import com.exercise.davismiyashiro.popularmovies.moviedetails.movieDetailsEntry
 import com.exercise.davismiyashiro.popularmovies.movies.movieListEntry
+import com.exercise.davismiyashiro.popularmovies.ui.theme.PopularMoviesTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.collections.immutable.persistentSetOf
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -30,7 +31,7 @@ class MainActivity : ComponentActivity() {
 fun MainScreen() {
     val navigationState = rememberNavigationState(
         startRoute = Route.MovieList,
-        topLevelRoutes = setOf(Route.MovieList)
+        topLevelRoutes = persistentSetOf(Route.MovieList),
     )
     val navigator = remember { Navigator(navigationState) }
 
@@ -44,6 +45,6 @@ fun MainScreen() {
     @Suppress("UNCHECKED_CAST")
     NavDisplay(
         entries = navigationState.toEntries(entryProvider) as List<NavEntry<Route>>,
-        onBack = { navigator.goBack() }
+        onBack = { navigator.goBack() },
     )
 }

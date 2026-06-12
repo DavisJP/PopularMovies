@@ -70,17 +70,20 @@ import com.exercise.davismiyashiro.popularmovies.Navigator
 import com.exercise.davismiyashiro.popularmovies.R
 import com.exercise.davismiyashiro.popularmovies.Route
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
+import kotlinx.collections.immutable.ImmutableList
 
 const val POPULARITY_DESC_PARAM = "popular"
 const val HIGHEST_RATED_PARAM = "top_rated"
 const val FAVORITES_PARAM = "favorites"
+private const val POSTER_ASPECT_RATIO = 2f / 3f
+private const val LOADING_INDICATOR_WIDTH_FRACTION = 0.8f
 
 fun movieListEntry(navigator: Navigator) = NavEntry(Route.MovieList) {
     MoviesScreen(
         viewModel = hiltViewModel(),
         onMovieClick = { movie ->
             navigator.navigate(Route.MovieDetails(movie))
-        }
+        },
     )
 }
 
@@ -88,23 +91,25 @@ fun movieListEntry(navigator: Navigator) = NavEntry(Route.MovieList) {
 @Composable
 fun MoviesScreen(
     viewModel: MoviesViewModel,
-    onMovieClick: (MovieDetailsObservable) -> Unit
+    onMovieClick: (MovieDetailsObservable) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val currentSortOption by viewModel.currentSortingOption.collectAsStateWithLifecycle()
     val currentState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
+        modifier = modifier,
         topBar = {
             MoviesTopAppBar(
                 currentSortOption = currentSortOption,
-                onSortChanged = viewModel::loadMovieListBySortingOption
+                onSortChange = viewModel::loadMovieListBySortingOption,
             )
-        }
+        },
     ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(paddingValues),
         ) {
             val state = currentState
             when (state) {
@@ -116,7 +121,7 @@ fun MoviesScreen(
                     if (!state.movieList.isEmpty()) {
                         MovieListGrid(
                             movies = state.movieList,
-                            onMovieClick = onMovieClick
+                            onMovieClick = onMovieClick,
                         )
                     } else {
                         Text(
@@ -125,7 +130,7 @@ fun MoviesScreen(
                                 .align(Alignment.Center)
                                 .padding(16.dp),
                             textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.bodyLarge
+                            style = MaterialTheme.typography.bodyLarge,
                         )
                     }
                 }
@@ -137,7 +142,7 @@ fun MoviesScreen(
                             .align(Alignment.Center)
                             .padding(16.dp),
                         textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.bodyLarge
+                        style = MaterialTheme.typography.bodyLarge,
                     )
                 }
             }
@@ -147,11 +152,7 @@ fun MoviesScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MoviesTopAppBar(
-    currentSortOption: String,
-    onSortChanged: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
+fun MoviesTopAppBar(currentSortOption: String, onSortChange: (String) -> Unit, modifier: Modifier = Modifier) {
     var menuExpanded by remember { mutableStateOf(false) }
 
     val titleResId = when (currentSortOption) {
@@ -169,45 +170,45 @@ fun MoviesTopAppBar(
                 IconButton(onClick = { menuExpanded = true }) {
                     Icon(
                         Icons.Filled.MoreVert,
-                        contentDescription = stringResource(R.string.action_settings)
+                        contentDescription = stringResource(R.string.action_settings),
                     )
                 }
                 DropdownMenu(
                     expanded = menuExpanded,
-                    onDismissRequest = { menuExpanded = false }
+                    onDismissRequest = { menuExpanded = false },
                 ) {
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.popular)) },
                         onClick = {
-                            onSortChanged(POPULARITY_DESC_PARAM)
+                            onSortChange(POPULARITY_DESC_PARAM)
                             menuExpanded = false
-                        }
+                        },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.rating)) },
                         onClick = {
-                            onSortChanged(HIGHEST_RATED_PARAM)
+                            onSortChange(HIGHEST_RATED_PARAM)
                             menuExpanded = false
-                        }
+                        },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.favorites)) },
                         onClick = {
-                            onSortChanged(FAVORITES_PARAM)
+                            onSortChange(FAVORITES_PARAM)
                             menuExpanded = false
-                        }
+                        },
                     )
                 }
             }
-        }
+        },
     )
 }
 
 @Composable
 fun MovieListGrid(
-    movies: List<MovieDetailsObservable>,
+    movies: ImmutableList<MovieDetailsObservable>,
     onMovieClick: (MovieDetailsObservable) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 180.dp),
@@ -215,9 +216,13 @@ fun MovieListGrid(
             .fillMaxSize()
             .padding(4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        items(movies, key = { movie -> movie.id }) { movie ->
+        items(
+            items = movies,
+            key = { movie -> movie.id },
+            contentType = { "movie" },
+        ) { movie ->
             MovieGridItem(movie = movie, onMovieClick = onMovieClick)
         }
     }
@@ -227,34 +232,33 @@ fun MovieListGrid(
 fun MovieGridItem(
     movie: MovieDetailsObservable,
     onMovieClick: (MovieDetailsObservable) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-
     Card(
         modifier = modifier
             .fillMaxWidth()
             .clickable { onMovieClick(movie) },
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         SubcomposeAsyncImage(
             model = movie.posterPath,
             contentDescription = movie.title,
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(2f / 3f),
+                .aspectRatio(POSTER_ASPECT_RATIO),
             contentScale = ContentScale.Crop,
             loading = {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth(0.8f))
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth(LOADING_INDICATOR_WIDTH_FRACTION))
             },
             error = {
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                     Icon(
                         imageVector = Icons.Filled.Warning,
                         contentDescription = "Error loading image",
-                        modifier = Modifier.size(48.dp)
+                        modifier = Modifier.size(48.dp),
                     )
                 }
-            }
+            },
         )
     }
 }

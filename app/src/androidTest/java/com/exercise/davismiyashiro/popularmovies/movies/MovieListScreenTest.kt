@@ -1,8 +1,8 @@
 package com.exercise.davismiyashiro.popularmovies.movies
 
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -35,7 +35,7 @@ class MovieListScreenTest {
             PopularMoviesTheme(dynamicColor = false) {
                 MoviesTopAppBar(
                     currentSortOption = POPULARITY_DESC_PARAM,
-                    onSortChanged = { selectedSort = it }
+                    onSortChange = { selectedSort = it },
                 )
             }
         }
@@ -57,7 +57,7 @@ class MovieListScreenTest {
                 MovieGridItem(
                     movie = movie,
                     onMovieClick = { clickedMovie = it },
-                    modifier = Modifier.testTag("movie_grid_item")
+                    modifier = Modifier.testTag("movie_grid_item"),
                 )
             }
         }
@@ -71,7 +71,7 @@ class MovieListScreenTest {
     fun movieGridItem_displaysPosterImage_whenPosterLoads() {
         val movie = sampleMovieDetailsObservable(
             title = "The First Movie",
-            posterPath = resourcePosterUri()
+            posterPath = resourcePosterUri(),
         )
 
         composeTestRule.setContent {
@@ -79,7 +79,7 @@ class MovieListScreenTest {
                 MovieGridItem(
                     movie = movie,
                     onMovieClick = {},
-                    modifier = Modifier.testTag("movie_grid_item")
+                    modifier = Modifier.testTag("movie_grid_item"),
                 )
             }
         }
@@ -91,14 +91,14 @@ class MovieListScreenTest {
     @Test
     fun movieGridItem_showsErrorIcon_whenPosterLoadFails() {
         val movie = sampleMovieDetailsObservable(
-            posterPath = "https://example.invalid/poster.jpg"
+            posterPath = "https://example.invalid/poster.jpg",
         )
 
         composeTestRule.setContent {
             PopularMoviesTheme(dynamicColor = false) {
                 MovieGridItem(
                     movie = movie,
-                    onMovieClick = {}
+                    onMovieClick = {},
                 )
             }
         }
@@ -113,7 +113,7 @@ class MovieListScreenTest {
             PopularMoviesTheme(dynamicColor = false) {
                 MoviesTopAppBar(
                     currentSortOption = FAVORITES_PARAM,
-                    onSortChanged = {}
+                    onSortChange = {},
                 )
             }
         }
@@ -124,7 +124,7 @@ class MovieListScreenTest {
     private fun sampleMovieDetailsObservable(
         id: Int = 123,
         title: String = "Interstellar",
-        posterPath: String = "https://example.com/poster.jpg"
+        posterPath: String = "https://example.com/poster.jpg",
     ) = MovieDetailsObservable(
         id = id,
         title = title,
@@ -132,7 +132,7 @@ class MovieListScreenTest {
         posterPath = posterPath,
         overview = "A test overview",
         releaseDate = "2014-11-07",
-        voteAverage = 8.6
+        voteAverage = 8.6,
     )
 
     private fun resourcePosterUri(): String {

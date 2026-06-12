@@ -15,8 +15,8 @@ class MockServerDispatcher {
                         MockResponse().setResponseCode(200).setBody(
                             JsonFileReaderHelper.getStringFromFile(
                                 InstrumentationRegistry.getInstrumentation().context,
-                                map[popularMoviesPath]!!
-                            )
+                                map[popularMoviesPath]!!,
+                            ),
                         )
                     } else {
                         responseNotFound()
@@ -31,7 +31,7 @@ class MockServerDispatcher {
     private fun responseNotFound() = MockResponse().setResponseCode(404).setBody(
         JsonFileReaderHelper.getStringFromFile(
             InstrumentationRegistry.getInstrumentation().context,
-            "not_foundJSON.json"
-        )
+            "not_foundJSON.json",
+        ),
     )
 }

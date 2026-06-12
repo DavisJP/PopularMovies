@@ -31,11 +31,15 @@ import com.exercise.davismiyashiro.popularmovies.data.Repository
 import com.exercise.davismiyashiro.popularmovies.moviedetails.IMG_BASE_URL
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
@@ -61,7 +65,7 @@ class MoviesViewModel @Inject constructor(
     val uiState: StateFlow<MovieListState> = combine(
         _currentSortingOption,
         repository.getFavoriteMoviesIds()
-            .distinctUntilChanged()
+            .distinctUntilChanged(),
     ) { sortingOption, _ ->
         sortingOption
     }.flatMapLatest { sortingOption ->
@@ -69,7 +73,7 @@ class MoviesViewModel @Inject constructor(
             FAVORITES_PARAM -> repository.loadMoviesFromDb()
                 .map { movieDetails ->
                     MovieListState.Success(
-                        convertMovieDetailsToUImodel(movieDetails)
+                        convertMovieDetailsToUImodel(movieDetails),
                     )
                 }
 
@@ -80,22 +84,24 @@ class MoviesViewModel @Inject constructor(
                         result.fold(
                             ex = { exception ->
                                 MovieListState.Error(
-                                    message = exception.message.toString()
+                                    message = exception.message.toString(),
                                 )
                             },
                             success = { movieList ->
                                 MovieListState.Success(
-                                    movieList = convertMovieDetailsToUImodel(movieList)
+                                    movieList = convertMovieDetailsToUImodel(movieList),
                                 )
-                            }
-                        )
+                            },
+                        ),
                     )
                 }
         }
+    }.catch { exception ->
+        emit(MovieListState.Error(message = exception.message ?: "An unexpected error occurred"))
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = MovieListState.Loading
+        initialValue = MovieListState.Loading,
     )
 
     fun loadMovieListBySortingOption(sortingOption: String = POPULARITY_DESC_PARAM) {
@@ -104,7 +110,7 @@ class MoviesViewModel @Inject constructor(
         }
     }
 
-    private fun convertMovieDetailsToUImodel(movies: List<MovieDetails>): List<MovieDetailsObservable> {
+    private fun convertMovieDetailsToUImodel(movies: List<MovieDetails>): ImmutableList<MovieDetailsObservable> {
         if (movies.isNotEmpty()) {
             val movieDetailsObservableList = ArrayList<MovieDetailsObservable>()
             for ((movieId, title, backdropPath, posterPath, overview, releaseDate, voteAverage) in movies) {
@@ -116,13 +122,13 @@ class MoviesViewModel @Inject constructor(
                         IMG_BASE_URL + posterPath,
                         overview,
                         releaseDate,
-                        voteAverage
-                    )
+                        voteAverage,
+                    ),
                 )
             }
-            return movieDetailsObservableList
+            return movieDetailsObservableList.toImmutableList()
         } else {
-            return emptyList()
+            return persistentListOf()
         }
     }
 }

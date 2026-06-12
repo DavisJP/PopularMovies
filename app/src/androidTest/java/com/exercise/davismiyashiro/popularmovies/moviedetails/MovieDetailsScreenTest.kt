@@ -40,7 +40,7 @@ class MovieDetailsScreenTest {
                     isFavorite = false,
                     onFavoriteToggle = {},
                     onTrailerClick = {},
-                    onReviewClick = {}
+                    onReviewClick = {},
                 )
             }
         }
@@ -72,7 +72,7 @@ class MovieDetailsScreenTest {
                     isFavorite = false,
                     onFavoriteToggle = { favoriteToggleCount++ },
                     onTrailerClick = {},
-                    onReviewClick = {}
+                    onReviewClick = {},
                 )
             }
         }
@@ -97,7 +97,7 @@ class MovieDetailsScreenTest {
                     isFavorite = false,
                     onFavoriteToggle = {},
                     onTrailerClick = { openedTrailerKey = it.key },
-                    onReviewClick = {}
+                    onReviewClick = {},
                 )
             }
         }
@@ -114,7 +114,7 @@ class MovieDetailsScreenTest {
         posterPath = "https://example.com/poster.jpg",
         overview = "A linguist works with the military to communicate with alien lifeforms.",
         releaseDate = "2016-11-11",
-        voteAverage = 8.1
+        voteAverage = 8.1,
     )
 
     private fun sampleTrailer() = Trailer(
@@ -125,13 +125,13 @@ class MovieDetailsScreenTest {
         name = "Official Trailer",
         site = "YouTube",
         size = 1080,
-        type = "Trailer"
+        type = "Trailer",
     )
 
     private fun sampleReview() = Review(
         id = "review-id",
         author = "A Reviewer",
         content = "A detailed review for the movie.",
-        url = "https://example.com/review"
+        url = "https://example.com/review",
     )
 }

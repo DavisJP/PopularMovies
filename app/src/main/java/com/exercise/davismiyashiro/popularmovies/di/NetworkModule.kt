@@ -3,8 +3,6 @@ package com.exercise.davismiyashiro.popularmovies.di
 import android.content.Context
 import androidx.room.Room
 import com.exercise.davismiyashiro.popularmovies.BuildConfig
-import com.exercise.davismiyashiro.popularmovies.data.MovieRepository
-import com.exercise.davismiyashiro.popularmovies.data.Repository
 import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDao
 import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDb
 import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb
@@ -64,9 +62,7 @@ open class NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(
-        client: OkHttpClient,
-    ): Retrofit {
+    fun provideRetrofit(client: OkHttpClient): Retrofit {
         return Retrofit.Builder()
             .baseUrl(baseUrl())
             .addConverterFactory(MoshiConverterFactory.create())
@@ -86,7 +82,7 @@ open class NetworkModule {
         return Room.databaseBuilder(
             appContext,
             MoviesDb::class.java,
-            DATABASE_NAME
+            DATABASE_NAME,
         ).build()
     }
 

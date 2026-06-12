@@ -44,7 +44,7 @@ import javax.inject.Inject
 
 class MovieRepository @Inject constructor(
     private val theMovieDbLazy: Lazy<TheMovieDb>,
-    private val moviesDao: MoviesDao
+    private val moviesDao: MoviesDao,
 ) :
     Repository {
 
@@ -52,10 +52,12 @@ class MovieRepository @Inject constructor(
         theMovieDbLazy.get()
     }
 
-    override suspend fun loadMoviesFromNetwork(sortingOption: String): MovieDbApiClient.Result<Exception, List<MovieDetails>> {
+    override suspend fun loadMoviesFromNetwork(
+        sortingOption: String,
+    ): MovieDbApiClient.Result<Exception, List<MovieDetails>> {
         val moviesResponse = apiCall(
             call = { theMovieDb.getPopular(sortingOption) },
-            errorMessage = "Error Fetching Movies"
+            errorMessage = "Error Fetching Movies",
         )
 
         return moviesResponse.map { moviesResponse ->
@@ -71,13 +73,12 @@ class MovieRepository @Inject constructor(
         return moviesDao.getMovieById(movieId)
     }
 
-    override fun getFavoriteMoviesIds(): Flow<Set<Int>> =
-        moviesDao.getFavoriteMoviesIds().map { it.toSet() }
+    override fun getFavoriteMoviesIds(): Flow<Set<Int>> = moviesDao.getFavoriteMoviesIds().map { it.toSet() }
 
     override suspend fun findTrailersByMovieId(movieId: Int): List<Trailer> {
         val trailersResponse = apiCall(
             call = { theMovieDb.getTrailers(movieId.toString()) },
-            errorMessage = "Error Fetching Trailers"
+            errorMessage = "Error Fetching Trailers",
         )
 
         return trailersResponse.fold(
@@ -87,15 +88,14 @@ class MovieRepository @Inject constructor(
             ex = {
                 Timber.e(it)
                 emptyList()
-            }
+            },
         )
     }
 
     override suspend fun findReviewsByMovieId(movieId: Int): List<Review> {
-
         val reviewsResponse = apiCall(
             call = { theMovieDb.getReviews(movieId.toString()) },
-            errorMessage = "Error Fetching Reviews"
+            errorMessage = "Error Fetching Reviews",
         )
 
         return reviewsResponse.fold(
@@ -105,7 +105,7 @@ class MovieRepository @Inject constructor(
             ex = {
                 Timber.e(it)
                 emptyList()
-            }
+            },
         )
     }
 
@@ -119,20 +119,28 @@ class MovieRepository @Inject constructor(
 
     private suspend fun <T : Any> apiCall(
         call: suspend () -> Response<T>,
-        errorMessage: String
+        errorMessage: String,
     ): MovieDbApiClient.Result<Exception, T> {
         try {
             val response = call()
-            return if (response.isSuccessful)
+            return if (response.isSuccessful) {
                 response.body()?.let { body ->
                     MovieDbApiClient.Result.Success(body)
                 } ?: MovieDbApiClient.Result.Error(ApiException(errorMessage))
-            else {
+            } else {
                 when (response.code()) {
-                    401 -> MovieDbApiClient.Result.Error(ApiException(errorMessage.plus("onRequestUnauthenticated: ${response.message()}")))
-                    in 400..499 -> MovieDbApiClient.Result.Error(ApiException(errorMessage.plus("onRequestClientError: ${response.message()}")))
-                    in 500..599 -> MovieDbApiClient.Result.Error(ApiException(errorMessage.plus("onRequestServerError: ${response.message()}")))
-                    else -> MovieDbApiClient.Result.Error(ApiException(errorMessage.plus("UnknownError: ${response.code()} ${response.message()}")))
+                    401 -> MovieDbApiClient.Result.Error(
+                        ApiException(errorMessage.plus("onRequestUnauthenticated: ${response.message()}")),
+                    )
+                    in 400..499 -> MovieDbApiClient.Result.Error(
+                        ApiException(errorMessage.plus("onRequestClientError: ${response.message()}")),
+                    )
+                    in 500..599 -> MovieDbApiClient.Result.Error(
+                        ApiException(errorMessage.plus("onRequestServerError: ${response.message()}")),
+                    )
+                    else -> MovieDbApiClient.Result.Error(
+                        ApiException(errorMessage.plus("UnknownError: ${response.code()} ${response.message()}")),
+                    )
                 }
             }
         } catch (e: IOException) {

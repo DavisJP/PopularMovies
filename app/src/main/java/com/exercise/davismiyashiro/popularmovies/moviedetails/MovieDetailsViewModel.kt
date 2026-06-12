@@ -32,14 +32,14 @@ import com.exercise.davismiyashiro.popularmovies.data.Repository
 import com.exercise.davismiyashiro.popularmovies.data.Review
 import com.exercise.davismiyashiro.popularmovies.data.Trailer
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -49,13 +49,13 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MovieDetailsViewModel @Inject constructor(
-    val repository: Repository
+    val repository: Repository,
 ) :
     ViewModel() {
 
     private val _toastMessageEvents = MutableSharedFlow<Int>(
         extraBufferCapacity = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
     val toastMessageEvents: SharedFlow<Int> = _toastMessageEvents.asSharedFlow()
 
@@ -89,8 +89,8 @@ class MovieDetailsViewModel @Inject constructor(
                 movieDetailsObservable.posterPath,
                 movieDetailsObservable.overview,
                 movieDetailsObservable.releaseDate,
-                movieDetailsObservable.voteAverage
-            )
+                movieDetailsObservable.voteAverage,
+            ),
         )
     }
 
@@ -103,8 +103,8 @@ class MovieDetailsViewModel @Inject constructor(
                 movieDetailsObservable.posterPath,
                 movieDetailsObservable.overview,
                 movieDetailsObservable.releaseDate,
-                movieDetailsObservable.voteAverage
-            )
+                movieDetailsObservable.voteAverage,
+            ),
         )
     }
 }

@@ -27,20 +27,27 @@ package com.exercise.davismiyashiro.popularmovies.moviedetails
 import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -52,15 +59,11 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -89,7 +92,7 @@ fun movieDetailsEntry(key: Route.MovieDetails) = NavEntry(key) {
             } else {
                 Toast.makeText(context, R.string.no_app_to_open_youtube, Toast.LENGTH_SHORT).show()
             }
-        }
+        },
     )
 }
 
@@ -98,7 +101,8 @@ fun movieDetailsEntry(key: Route.MovieDetails) = NavEntry(key) {
 fun MovieDetailsScreen(
     movieDetails: MovieDetailsObservable,
     viewModel: MovieDetailsViewModel,
-    onOpenTrailer: (String) -> Unit
+    onOpenTrailer: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val reviews by produceState(initialValue = persistentListOf(), movieDetails.id, viewModel) {
         value = viewModel.reviews(movieDetails.id)
@@ -106,7 +110,8 @@ fun MovieDetailsScreen(
     val trailers by produceState(initialValue = persistentListOf(), movieDetails.id, viewModel) {
         value = viewModel.trailers(movieDetails.id)
     }
-    val isFavoriteFlow = remember(movieDetails.id, viewModel) { viewModel.isFavorite(movieDetails.id) }
+    val isFavoriteFlow =
+        remember(movieDetails.id, viewModel) { viewModel.isFavorite(movieDetails.id) }
     val isFavorite by isFavoriteFlow.collectAsStateWithLifecycle(initialValue = false)
     val context = LocalContext.current
 
@@ -117,210 +122,118 @@ fun MovieDetailsScreen(
     }
 
     Scaffold(
+        modifier = modifier,
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        movieDetails.title
+                        movieDetails.title,
                     )
-                }
+                },
             )
-        }
+        },
     ) { paddingValues ->
         MovieDetailsContent(
-            modifier = Modifier.padding(paddingValues),
             movieDetails = movieDetails,
             trailers = trailers,
             reviews = reviews,
             isFavorite = isFavorite,
             onFavoriteToggle = { viewModel.setFavorite(movieDetails, isFavorite) },
             onTrailerClick = { trailer -> onOpenTrailer(trailer.key) },
-            onReviewClick = { /* Handle review click if needed in the future */ }
+            onReviewClick = { /* Handle review click if needed in the future */ },
+            modifier = Modifier.padding(paddingValues),
         )
     }
 }
 
 @Composable
 fun MovieDetailsContent(
-    modifier: Modifier = Modifier,
     movieDetails: MovieDetailsObservable,
     trailers: ImmutableList<Trailer>,
     reviews: ImmutableList<Review>,
     isFavorite: Boolean,
     onFavoriteToggle: () -> Unit,
     onTrailerClick: (Trailer) -> Unit,
-    onReviewClick: (Review) -> Unit
+    onReviewClick: (Review) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     LazyColumn(
         modifier = modifier
-            .fillMaxSize()
+            .fillMaxSize(),
     ) {
-        // Movie Poster and Basic Info
         item {
-            ConstraintLayout(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
-            ) {
-                val (
-                    backdropRef, posterRef, titleRef, favoriteRef,
-                    releaseDateRef,
-                    voteAverageRef,
-                ) = createRefs()
-
-                val leftGuideline = createGuidelineFromStart(16.dp)
-                val rightGuideline = createGuidelineFromEnd(16.dp)
-
-                // Backdrop Image
-                val backdropModel =
-                    if (LocalInspectionMode.current) {
-                        R.drawable.header
-                    } else {
-                        movieDetails.backdropPath
-                    }
-                ImagePlaceholder(
-                    model = backdropModel,
-                    contentDescription = "Backdrop",
-                    modifier = Modifier
-                        .constrainAs(backdropRef) {
-                            top.linkTo(parent.top)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                            width = Dimension.fillToConstraints
-                        }
-                        .aspectRatio(16f / 9f)
-                )
-
-                // Poster Image
-                val posterModel =
-                    if (LocalInspectionMode.current) {
-                        R.drawable.poster
-                    } else {
-                        movieDetails.posterPath
-                    }
-                ImagePlaceholder(
-                    model = posterModel,
-                    contentDescription = stringResource(R.string.movie_poster_description),
-                    modifier = Modifier
-                        .constrainAs(posterRef) {
-                            top.linkTo(backdropRef.bottom)
-                            bottom.linkTo(backdropRef.bottom)
-                            start.linkTo(leftGuideline)
-                            width = Dimension.value(100.dp)
-                            height = Dimension.value(150.dp)
-                        }
-                )
-
-                // Movie Title
-                Text(
-                    text = movieDetails.title,
-                    style = MaterialTheme.typography.headlineSmall,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.constrainAs(titleRef) {
-                        top.linkTo(backdropRef.bottom, margin = 8.dp) // Below backdrop
-                        start.linkTo(posterRef.end, margin = 16.dp) // To the right of the poster
-                        end.linkTo(favoriteRef.start, margin = 8.dp)
-                        width = Dimension.fillToConstraints
-                    }
-                )
-
-                // Favorite Toggle Button
-                IconToggleButton(
-                    checked = isFavorite,
-                    onCheckedChange = { onFavoriteToggle() },
-                    modifier = Modifier.constrainAs(favoriteRef) {
-                        top.linkTo(titleRef.top)
-                        end.linkTo(rightGuideline)
-                    }
-                ) {
-                    Icon(
-                        imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                        contentDescription = stringResource(R.string.mark_as_favorite),
-                        tint = if (isFavorite) MaterialTheme.colorScheme.primary else Color.Gray
-                    )
-                }
-
-                // Release Date & Average Rating
-                if (movieDetails.releaseDate.isNotEmpty()) {
-                    Text(
-                        text = stringResource(
-                            R.string.release_date,
-                            movieDetails.releaseDate
-                        ),
-                        style = MaterialTheme.typography.labelMedium,
-                        modifier = Modifier.constrainAs(releaseDateRef) {
-                            top.linkTo(titleRef.bottom, margin = 8.dp)
-                            start.linkTo(titleRef.start) // Align with title's start
-                        }
-                    )
-                    Text(
-                        text = stringResource(R.string.average_rating, movieDetails.voteAverage),
-                        style = MaterialTheme.typography.labelMedium,
-                        modifier = Modifier.constrainAs(voteAverageRef) {
-                            top.linkTo(releaseDateRef.bottom, margin = 8.dp)
-                            start.linkTo(titleRef.start)
-                        }
-                    )
-                }
-            }
+            MovieDetailsHeader(
+                movieDetails = movieDetails,
+                isFavorite = isFavorite,
+                onFavoriteToggle = onFavoriteToggle,
+            )
         }
 
-        // Trailers
-        if (trailers.isNotEmpty()) {
-            item {
-                Text(
-                    text = stringResource(R.string.trailers),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 16.dp,
-                        bottom = 8.dp
-                    )
-                )
-            }
-            items(
-                items = trailers,
-                key = { trailer -> trailer.id }
-            ) { trailer ->
-                TrailerItem(trailer = trailer, onClick = { onTrailerClick(trailer) })
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    thickness = DividerDefaults.Thickness,
-                    color = DividerDefaults.color
-                )
-            }
-        }
-
-        // Reviews
-        if (reviews.isNotEmpty()) {
-            item {
-                Text(
-                    text = stringResource(R.string.reviews),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 16.dp,
-                        bottom = 8.dp
-                    )
-                )
-            }
-            items(
-                items = reviews,
-                key = { review -> review.id }
-            ) { review ->
-                ReviewItem(review = review, onClick = { onReviewClick(review) })
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    thickness = DividerDefaults.Thickness,
-                    color = DividerDefaults.color
-                )
-            }
-        }
+        trailerItems(trailers = trailers, onTrailerClick = onTrailerClick)
+        reviewItems(reviews = reviews, onReviewClick = onReviewClick)
         item { Spacer(modifier = Modifier.height(16.dp)) }
     }
+}
+
+private fun LazyListScope.trailerItems(
+    trailers: ImmutableList<Trailer>,
+    onTrailerClick: (Trailer) -> Unit,
+) {
+    if (trailers.isEmpty()) return
+
+    item {
+        SectionTitle(text = stringResource(R.string.trailers))
+    }
+    items(
+        items = trailers,
+        key = { trailer -> trailer.id },
+        contentType = { "trailer" },
+    ) { trailer ->
+        TrailerItem(trailer = trailer, onClick = onTrailerClick)
+        SectionDivider()
+    }
+}
+
+private fun LazyListScope.reviewItems(
+    reviews: ImmutableList<Review>,
+    onReviewClick: (Review) -> Unit,
+) {
+    if (reviews.isEmpty()) return
+
+    item {
+        SectionTitle(text = stringResource(R.string.reviews))
+    }
+    items(
+        items = reviews,
+        key = { review -> review.id },
+        contentType = { "review" },
+    ) { review ->
+        ReviewItem(review = review, onClick = onReviewClick)
+        SectionDivider()
+    }
+}
+
+@Composable
+private fun SectionTitle(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleMedium,
+        modifier = modifier.padding(
+            start = 16.dp,
+            end = 16.dp,
+            top = 16.dp,
+            bottom = 8.dp,
+        ),
+    )
+}
+
+@Composable
+private fun SectionDivider(modifier: Modifier = Modifier) {
+    HorizontalDivider(
+        modifier = modifier.padding(horizontal = 16.dp),
+        thickness = DividerDefaults.Thickness,
+        color = DividerDefaults.color,
+    )
 }
 
 @Composable
@@ -340,27 +253,27 @@ fun ImagePlaceholder(model: Any, contentDescription: String?, modifier: Modifier
                 Icon(
                     imageVector = Icons.Filled.Warning,
                     contentDescription = "Error loading image",
-                    modifier = Modifier.size(48.dp)
+                    modifier = Modifier.size(48.dp),
                 )
             }
-        }
+        },
     )
 }
 
 @Composable
-fun TrailerItem(trailer: Trailer, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun TrailerItem(trailer: Trailer, onClick: (Trailer) -> Unit, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable { onClick(trailer) }
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
             Icons.Filled.PlayArrow,
             contentDescription = stringResource(R.string.play_trailer_desc),
             modifier = Modifier.size(36.dp),
-            tint = MaterialTheme.colorScheme.primary
+            tint = MaterialTheme.colorScheme.primary,
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(trailer.name, style = MaterialTheme.typography.bodyLarge)
@@ -368,24 +281,24 @@ fun TrailerItem(trailer: Trailer, onClick: () -> Unit, modifier: Modifier = Modi
 }
 
 @Composable
-fun ReviewItem(review: Review, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun ReviewItem(review: Review, onClick: (Review) -> Unit, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .clickable { onClick(review) }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         Text(
             review.author,
             style = MaterialTheme.typography.titleSmall,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             review.content,
             style = MaterialTheme.typography.bodyMedium,
             maxLines = 5,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
