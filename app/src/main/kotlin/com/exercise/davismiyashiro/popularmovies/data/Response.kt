@@ -24,17 +24,17 @@
 
 package com.exercise.davismiyashiro.popularmovies.data
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * Created by Davis Miyashiro on 05/02/2017.
  */
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class Response<T>(
-    @field:Json(name = "page") var page: Int = 0,
-    @field:Json(name = "results") var results: T,
-    @field:Json(name = "total_results") var totalResults: Int = 0,
-    @field:Json(name = "total_pages") var totalPages: Int = 0,
+    @SerialName("page") var page: Int = 0,
+    @SerialName("results") var results: T,
+    @SerialName("total_results") var totalResults: Int = 0,
+    @SerialName("total_pages") var totalPages: Int = 0,
 )

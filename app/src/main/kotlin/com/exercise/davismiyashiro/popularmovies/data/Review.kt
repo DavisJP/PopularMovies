@@ -25,18 +25,18 @@
 package com.exercise.davismiyashiro.popularmovies.data
 
 import androidx.compose.runtime.Immutable
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * Created by Davis Miyashiro on 26/02/2017.
  */
 
 @Immutable
-@JsonClass(generateAdapter = true)
+@Serializable
 data class Review(
-    @field:Json(name = "id") val id: String,
-    @field:Json(name = "author") val author: String,
-    @field:Json(name = "content") val content: String,
-    @field:Json(name = "url") val url: String,
+    @SerialName("id") val id: String,
+    @SerialName("author") val author: String,
+    @SerialName("content") val content: String,
+    @SerialName("url") val url: String,
 )

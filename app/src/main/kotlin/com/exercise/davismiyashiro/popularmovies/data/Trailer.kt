@@ -25,22 +25,22 @@
 package com.exercise.davismiyashiro.popularmovies.data
 
 import androidx.compose.runtime.Immutable
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * Created by Davis Miyashiro on 19/02/2017.
  */
 
 @Immutable
-@JsonClass(generateAdapter = true)
+@Serializable
 data class Trailer(
-    @field:Json(name = "id") val id: String,
-    @field:Json(name = "iso_639_1") val iso6391: String,
-    @field:Json(name = "iso_3166_1") val iso31661: String,
-    @field:Json(name = "key") val key: String,
-    @field:Json(name = "name") val name: String,
-    @field:Json(name = "site") val site: String,
-    @field:Json(name = "size") val size: Int,
-    @field:Json(name = "type") val type: String,
+    @SerialName("id") val id: String,
+    @SerialName("iso_639_1") val iso6391: String,
+    @SerialName("iso_3166_1") val iso31661: String,
+    @SerialName("key") val key: String,
+    @SerialName("name") val name: String,
+    @SerialName("site") val site: String,
+    @SerialName("size") val size: Int,
+    @SerialName("type") val type: String,
 )

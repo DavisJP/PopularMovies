@@ -105,10 +105,7 @@ dependencies {
     implementation(libs.okhttp)
 
     implementation(libs.retrofit)
-    implementation(libs.retrofit.converter.moshi)
-    implementation(libs.moshi.kotlin)
-    ksp(libs.moshi.kotlin.codegen)
-
+    implementation(libs.retrofit.converter.kotlinx.serialization)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
 
