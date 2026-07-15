@@ -69,7 +69,7 @@ import coil3.compose.SubcomposeAsyncImage
 import com.exercise.davismiyashiro.popularmovies.Navigator
 import com.exercise.davismiyashiro.popularmovies.R
 import com.exercise.davismiyashiro.popularmovies.Route
-import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
+import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsUI
 import kotlinx.collections.immutable.ImmutableList
 
 const val POPULARITY_DESC_PARAM = "popular"
@@ -91,7 +91,7 @@ fun movieListEntry(navigator: Navigator) = NavEntry(Route.MovieList) {
 @Composable
 fun MoviesScreen(
     viewModel: MoviesViewModel,
-    onMovieClick: (MovieDetailsObservable) -> Unit,
+    onMovieClick: (MovieDetailsUI) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val currentSortOption by viewModel.currentSortingOption.collectAsStateWithLifecycle()
@@ -206,8 +206,8 @@ fun MoviesTopAppBar(currentSortOption: String, onSortChange: (String) -> Unit, m
 
 @Composable
 fun MovieListGrid(
-    movies: ImmutableList<MovieDetailsObservable>,
-    onMovieClick: (MovieDetailsObservable) -> Unit,
+    movies: ImmutableList<MovieDetailsUI>,
+    onMovieClick: (MovieDetailsUI) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyVerticalGrid(
@@ -230,8 +230,8 @@ fun MovieListGrid(
 
 @Composable
 fun MovieGridItem(
-    movie: MovieDetailsObservable,
-    onMovieClick: (MovieDetailsObservable) -> Unit,
+    movie: MovieDetailsUI,
+    onMovieClick: (MovieDetailsUI) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Card(

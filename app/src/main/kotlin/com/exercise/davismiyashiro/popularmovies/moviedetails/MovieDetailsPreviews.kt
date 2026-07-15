@@ -57,7 +57,7 @@ private fun ReviewItemPreview() {
 @Preview(showBackground = true, name = "MovieDetailsContent - Populated")
 @Composable
 private fun MovieDetailsContentPopulatedPreview() {
-    val sampleMovieDetails = MovieDetailsObservable(
+    val sampleMovieDetails = MovieDetailsUI(
         id = 1,
         title = "Awesome Movie Title",
         posterPath = "/poster.jpg",
@@ -120,7 +120,7 @@ private fun MovieDetailsContentPopulatedPreview() {
 @Preview(showBackground = true, name = "MovieDetailsContent - Empty")
 @Composable
 private fun MovieDetailsContentEmptyPreview() {
-    val sampleMovieDetails = MovieDetailsObservable(
+    val sampleMovieDetails = MovieDetailsUI(
         id = 1,
         title = "Awesome Movie Title",
         posterPath = "/poster.jpg",

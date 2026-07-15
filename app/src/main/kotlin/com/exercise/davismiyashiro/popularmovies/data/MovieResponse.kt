@@ -32,7 +32,7 @@ import kotlinx.serialization.Serializable
  */
 
 @Serializable
-data class Response<T>(
+data class MovieResponse<T>(
     @SerialName("page") var page: Int = 0,
     @SerialName("results") var results: T,
     @SerialName("total_results") var totalResults: Int = 0,

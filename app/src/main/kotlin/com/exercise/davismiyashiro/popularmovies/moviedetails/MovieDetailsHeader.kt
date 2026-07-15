@@ -30,7 +30,7 @@ private val posterHeight = 150.dp
 
 @Composable
 internal fun MovieDetailsHeader(
-    movieDetails: MovieDetailsObservable,
+    movieDetails: MovieDetailsUI,
     isFavorite: Boolean,
     onFavoriteToggle: () -> Unit,
     modifier: Modifier = Modifier,
@@ -80,7 +80,7 @@ internal fun MovieDetailsHeader(
 
 @Composable
 private fun ConstraintLayoutScope.HeaderImages(
-    movieDetails: MovieDetailsObservable,
+    movieDetails: MovieDetailsUI,
     backdropRef: ConstrainedLayoutReference,
     posterRef: ConstrainedLayoutReference,
     leftGuideline: ConstraintLayoutBaseScope.VerticalAnchor,
@@ -118,7 +118,7 @@ private fun ConstraintLayoutScope.HeaderImages(
 
 @Composable
 private fun ConstraintLayoutScope.MovieTitle(
-    movieDetails: MovieDetailsObservable,
+    movieDetails: MovieDetailsUI,
     backdropRef: ConstrainedLayoutReference,
     posterRef: ConstrainedLayoutReference,
     favoriteRef: ConstrainedLayoutReference,
@@ -164,7 +164,7 @@ private fun ConstraintLayoutScope.FavoriteButton(
 
 @Composable
 private fun ConstraintLayoutScope.ReleaseDateAndRating(
-    movieDetails: MovieDetailsObservable,
+    movieDetails: MovieDetailsUI,
     titleRef: ConstrainedLayoutReference,
     releaseDateRef: ConstrainedLayoutReference,
     voteAverageRef: ConstrainedLayoutReference,

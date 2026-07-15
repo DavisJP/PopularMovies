@@ -24,8 +24,6 @@
 
 package com.exercise.davismiyashiro.popularmovies.moviedetails
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import javax.annotation.concurrent.Immutable
 
@@ -35,8 +33,7 @@ import javax.annotation.concurrent.Immutable
  */
 @Serializable
 @Immutable
-@Parcelize
-data class MovieDetailsObservable(
+data class MovieDetailsUI(
     val id: Int,
     val title: String,
     val backdropPath: String,
@@ -44,4 +41,4 @@ data class MovieDetailsObservable(
     val overview: String,
     val releaseDate: String,
     val voteAverage: Double,
-) : Parcelable
+)

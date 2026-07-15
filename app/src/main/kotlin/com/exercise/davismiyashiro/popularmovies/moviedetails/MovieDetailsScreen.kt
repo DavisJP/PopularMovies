@@ -99,7 +99,7 @@ fun movieDetailsEntry(key: Route.MovieDetails) = NavEntry(key) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MovieDetailsScreen(
-    movieDetails: MovieDetailsObservable,
+    movieDetails: MovieDetailsUI,
     viewModel: MovieDetailsViewModel,
     onOpenTrailer: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -148,7 +148,7 @@ fun MovieDetailsScreen(
 
 @Composable
 fun MovieDetailsContent(
-    movieDetails: MovieDetailsObservable,
+    movieDetails: MovieDetailsUI,
     trailers: ImmutableList<Trailer>,
     reviews: ImmutableList<Review>,
     isFavorite: Boolean,

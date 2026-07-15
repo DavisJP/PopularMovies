@@ -13,7 +13,7 @@ import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.exercise.davismiyashiro.popularmovies.R
-import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
+import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsUI
 import com.exercise.davismiyashiro.popularmovies.ui.theme.PopularMoviesTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -49,7 +49,7 @@ class MovieListScreenTest {
 
     @Test
     fun movieGridItem_callsOnMovieClick_whenItemTapped() {
-        var clickedMovie: MovieDetailsObservable? = null
+        var clickedMovie: MovieDetailsUI? = null
         val movie = sampleMovieDetailsObservable()
 
         composeTestRule.setContent {
@@ -125,7 +125,7 @@ class MovieListScreenTest {
         id: Int = 123,
         title: String = "Interstellar",
         posterPath: String = "https://example.com/poster.jpg",
-    ) = MovieDetailsObservable(
+    ) = MovieDetailsUI(
         id = id,
         title = title,
         backdropPath = "https://example.com/backdrop.jpg",

@@ -29,7 +29,7 @@ import androidx.lifecycle.viewModelScope
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
 import com.exercise.davismiyashiro.popularmovies.data.Repository
 import com.exercise.davismiyashiro.popularmovies.moviedetails.IMG_BASE_URL
-import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
+import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsUI
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -110,12 +110,12 @@ class MoviesViewModel @Inject constructor(
         }
     }
 
-    private fun convertMovieDetailsToUImodel(movies: List<MovieDetails>): ImmutableList<MovieDetailsObservable> {
+    private fun convertMovieDetailsToUImodel(movies: List<MovieDetails>): ImmutableList<MovieDetailsUI> {
         if (movies.isNotEmpty()) {
-            val movieDetailsObservableList = ArrayList<MovieDetailsObservable>()
+            val movieDetailsUIList = ArrayList<MovieDetailsUI>()
             for ((movieId, title, backdropPath, posterPath, overview, releaseDate, voteAverage) in movies) {
-                movieDetailsObservableList.add(
-                    MovieDetailsObservable(
+                movieDetailsUIList.add(
+                    MovieDetailsUI(
                         movieId,
                         title,
                         IMG_BASE_URL + backdropPath,
@@ -126,7 +126,7 @@ class MoviesViewModel @Inject constructor(
                     ),
                 )
             }
-            return movieDetailsObservableList.toImmutableList()
+            return movieDetailsUIList.toImmutableList()
         } else {
             return persistentListOf()
         }

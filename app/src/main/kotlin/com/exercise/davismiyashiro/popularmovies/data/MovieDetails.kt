@@ -24,18 +24,15 @@
 
 package com.exercise.davismiyashiro.popularmovies.data
 
-import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.exercise.davismiyashiro.popularmovies.data.local.TABLE_NAME
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.parcelize.Parcelize
 
 /**
  * Created by Davis Miyashiro on 05/02/2017.
  */
-@Parcelize
 @Serializable
 @Entity(tableName = TABLE_NAME)
 data class MovieDetails(
@@ -46,4 +43,4 @@ data class MovieDetails(
     @SerialName("overview") var overview: String,
     @SerialName("release_date") var releaseDate: String,
     @SerialName("vote_average") var voteAverage: Double,
-) : Parcelable
+)

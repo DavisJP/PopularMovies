@@ -68,42 +68,42 @@ class MovieDetailsViewModel @Inject constructor(
     fun isFavorite(movieId: Int): Flow<Boolean> =
         repository.getMovieFromDb(movieId).map { movieDetails -> movieDetails != null }
 
-    fun setFavorite(movieDetailsObservable: MovieDetailsObservable, isFavorite: Boolean) {
+    fun setFavorite(movieDetailsUI: MovieDetailsUI, isFavorite: Boolean) {
         viewModelScope.launch {
             if (isFavorite) {
-                deleteMovie(movieDetailsObservable)
+                deleteMovie(movieDetailsUI)
                 _toastMessageEvents.emit(R.string.movie_deleted_msg)
             } else {
-                insertMovie(movieDetailsObservable)
+                insertMovie(movieDetailsUI)
                 _toastMessageEvents.emit(R.string.movie_added_msg)
             }
         }
     }
 
-    private suspend fun insertMovie(movieDetailsObservable: MovieDetailsObservable) {
+    private suspend fun insertMovie(movieDetailsUI: MovieDetailsUI) {
         repository.insertMovieDb(
             MovieDetails(
-                movieDetailsObservable.id,
-                movieDetailsObservable.title,
-                movieDetailsObservable.backdropPath,
-                movieDetailsObservable.posterPath,
-                movieDetailsObservable.overview,
-                movieDetailsObservable.releaseDate,
-                movieDetailsObservable.voteAverage,
+                movieDetailsUI.id,
+                movieDetailsUI.title,
+                movieDetailsUI.backdropPath,
+                movieDetailsUI.posterPath,
+                movieDetailsUI.overview,
+                movieDetailsUI.releaseDate,
+                movieDetailsUI.voteAverage,
             ),
         )
     }
 
-    private suspend fun deleteMovie(movieDetailsObservable: MovieDetailsObservable) {
+    private suspend fun deleteMovie(movieDetailsUI: MovieDetailsUI) {
         repository.deleteMovieDb(
             MovieDetails(
-                movieDetailsObservable.id,
-                movieDetailsObservable.title,
-                movieDetailsObservable.backdropPath,
-                movieDetailsObservable.posterPath,
-                movieDetailsObservable.overview,
-                movieDetailsObservable.releaseDate,
-                movieDetailsObservable.voteAverage,
+                movieDetailsUI.id,
+                movieDetailsUI.title,
+                movieDetailsUI.backdropPath,
+                movieDetailsUI.posterPath,
+                movieDetailsUI.overview,
+                movieDetailsUI.releaseDate,
+                movieDetailsUI.voteAverage,
             ),
         )
     }

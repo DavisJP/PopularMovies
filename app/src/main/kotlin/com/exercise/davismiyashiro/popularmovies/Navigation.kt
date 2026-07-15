@@ -15,7 +15,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.runtime.serialization.NavKeySerializer
 import androidx.savedstate.compose.serialization.serializers.MutableStateSerializer
-import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
+import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsUI
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.serialization.Serializable
 
@@ -25,7 +25,7 @@ sealed interface Route : NavKey {
     data object MovieList : Route
 
     @Serializable
-    data class MovieDetails(val movie: MovieDetailsObservable) : Route
+    data class MovieDetails(val movie: MovieDetailsUI) : Route
 }
 
 @Composable

@@ -107,7 +107,7 @@ class MovieDetailsScreenTest {
         assertEquals(trailer.key, openedTrailerKey)
     }
 
-    private fun sampleMovieDetailsObservable() = MovieDetailsObservable(
+    private fun sampleMovieDetailsObservable() = MovieDetailsUI(
         id = 42,
         title = "Arrival",
         backdropPath = "https://example.com/backdrop.jpg",

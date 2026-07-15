@@ -15,13 +15,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.exercise.davismiyashiro.popularmovies.R
-import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsObservable
+import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsUI
 import com.exercise.davismiyashiro.popularmovies.ui.theme.PopularMoviesTheme
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 
 // Sample Data for Previews
-private val sampleMovie1 = MovieDetailsObservable(
+private val sampleMovie1 = MovieDetailsUI(
     id = 1,
     title = "Popular Movie Title 1",
     posterPath = "/sRLC052ieEzkQs9dEtPMfAMPzt.jpg", // Example valid path
@@ -31,7 +31,7 @@ private val sampleMovie1 = MovieDetailsObservable(
     voteAverage = 8.5,
 )
 
-private val sampleMovie2 = MovieDetailsObservable(
+private val sampleMovie2 = MovieDetailsUI(
     id = 2,
     title = "Top Rated Action Packed Adventure II",
     posterPath = "/v7UF7Y22nKwpsM4XW7gW7W7SLN.jpg", // Example valid path

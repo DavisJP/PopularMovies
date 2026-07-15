@@ -39,7 +39,7 @@ class MovieDetailsViewModelTest {
     private lateinit var repository: Repository
 
     private val movieId = 123
-    private val movieDetailsObservable = MovieDetailsObservable(
+    private val movieDetailsUI = MovieDetailsUI(
         id = movieId,
         title = "Test Movie",
         backdropPath = "/backdrop.jpg",
@@ -101,17 +101,17 @@ class MovieDetailsViewModelTest {
     fun `setFavorite deletes movie and emits toast when already favorite`() =
         runTest(coroutinesTestRule.testDispatcher) {
             viewModel.toastMessageEvents.test {
-                viewModel.setFavorite(movieDetailsObservable, isFavorite = true)
+                viewModel.setFavorite(movieDetailsUI, isFavorite = true)
 
                 verify(repository).deleteMovieDb(
                     MovieDetails(
-                        movieid = movieDetailsObservable.id,
-                        title = movieDetailsObservable.title,
-                        backdropPath = movieDetailsObservable.backdropPath,
-                        posterPath = movieDetailsObservable.posterPath,
-                        overview = movieDetailsObservable.overview,
-                        releaseDate = movieDetailsObservable.releaseDate,
-                        voteAverage = movieDetailsObservable.voteAverage,
+                        movieid = movieDetailsUI.id,
+                        title = movieDetailsUI.title,
+                        backdropPath = movieDetailsUI.backdropPath,
+                        posterPath = movieDetailsUI.posterPath,
+                        overview = movieDetailsUI.overview,
+                        releaseDate = movieDetailsUI.releaseDate,
+                        voteAverage = movieDetailsUI.voteAverage,
                     ),
                 )
                 assertEquals(R.string.movie_deleted_msg, awaitItem())
@@ -121,17 +121,17 @@ class MovieDetailsViewModelTest {
     @Test
     fun `setFavorite inserts movie and emits toast when not favorite`() = runTest(coroutinesTestRule.testDispatcher) {
         viewModel.toastMessageEvents.test {
-            viewModel.setFavorite(movieDetailsObservable, isFavorite = false)
+            viewModel.setFavorite(movieDetailsUI, isFavorite = false)
 
             verify(repository).insertMovieDb(
                 MovieDetails(
-                    movieid = movieDetailsObservable.id,
-                    title = movieDetailsObservable.title,
-                    backdropPath = movieDetailsObservable.backdropPath,
-                    posterPath = movieDetailsObservable.posterPath,
-                    overview = movieDetailsObservable.overview,
-                    releaseDate = movieDetailsObservable.releaseDate,
-                    voteAverage = movieDetailsObservable.voteAverage,
+                    movieid = movieDetailsUI.id,
+                    title = movieDetailsUI.title,
+                    backdropPath = movieDetailsUI.backdropPath,
+                    posterPath = movieDetailsUI.posterPath,
+                    overview = movieDetailsUI.overview,
+                    releaseDate = movieDetailsUI.releaseDate,
+                    voteAverage = movieDetailsUI.voteAverage,
                 ),
             )
             assertEquals(R.string.movie_added_msg, awaitItem())
