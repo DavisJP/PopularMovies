@@ -4,6 +4,11 @@ import app.cash.turbine.test
 import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
 import com.exercise.davismiyashiro.popularmovies.data.MovieRepository
 import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import junit.framework.TestCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -19,12 +24,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.junit.MockitoJUnitRunner
 
-@RunWith(MockitoJUnitRunner::class)
 @OptIn(ExperimentalCoroutinesApi::class)
 class MoviesViewModelTest {
 
@@ -34,8 +34,7 @@ class MoviesViewModelTest {
     lateinit var moviesViewModel: MoviesViewModel
     private lateinit var testDispatcher: TestDispatcher
 
-    @Mock
-    private lateinit var repository: MovieRepository
+    private val repository: MovieRepository = mockk()
 
     val fakeMovies = listOf(
         MovieDetails(
@@ -52,14 +51,14 @@ class MoviesViewModelTest {
     @Before
     fun setup() {
         testDispatcher = StandardTestDispatcher()
-        Mockito.`when`(repository.getFavoriteMoviesIds()).thenReturn(flowOf(emptySet()))
+        every { repository.getFavoriteMoviesIds() } returns flowOf(emptySet())
     }
 
     @Test
     fun load_popular_movies_calls_remote_success() = runTest {
-        Mockito.`when`(repository.getFavoriteMoviesIds()).thenReturn(flowOf(emptySet()))
-        Mockito.`when`(repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM))
-            .thenReturn(MovieDbApiClient.Result.Success(fakeMovies))
+        every { repository.getFavoriteMoviesIds() } returns flowOf(emptySet())
+        coEvery { repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM) } returns
+            MovieDbApiClient.Result.Success(fakeMovies)
 
         moviesViewModel = MoviesViewModel(repository)
 
@@ -69,17 +68,16 @@ class MoviesViewModelTest {
             TestCase.assertTrue(successState is MovieListState.Success)
             TestCase.assertEquals(1, (successState as MovieListState.Success).movieList.size)
 
-            Mockito.verify(repository).loadMoviesFromNetwork(POPULARITY_DESC_PARAM)
-            Mockito.verify(repository, Mockito.never()).loadMoviesFromDb()
+            coVerify { repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM) }
+            verify(exactly = 0) { repository.loadMoviesFromDb() }
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
     fun load_popular_movies_calls_remote_error() = runTest(testDispatcher) {
-        Mockito.`when`(repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM)).thenReturn(
-            MovieDbApiClient.Result.Error(okio.IOException("Error loading popular movies")),
-        )
+        coEvery { repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM) } returns
+            MovieDbApiClient.Result.Error(okio.IOException("Error loading popular movies"))
 
         moviesViewModel = MoviesViewModel(repository)
 
@@ -94,18 +92,19 @@ class MoviesViewModelTest {
                 moviesViewModel.uiState.value,
             )
 
-            Mockito.verify(repository, Mockito.times(1))
-                .loadMoviesFromNetwork(POPULARITY_DESC_PARAM)
-            Mockito.verify(repository, Mockito.never()).loadMoviesFromDb()
+            coVerify(exactly = 1) {
+                repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM)
+            }
+            verify(exactly = 0) { repository.loadMoviesFromDb() }
         }
     }
 
     @Test
     fun load_favorite_movies_calls_db() = runTest(testDispatcher) {
         val response = listOf<MovieDetails>()
-        Mockito.`when`(repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM))
-            .thenReturn(MovieDbApiClient.Result.Success(fakeMovies))
-        Mockito.`when`(repository.loadMoviesFromDb()).thenReturn(flowOf(response))
+        coEvery { repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM) } returns
+            MovieDbApiClient.Result.Success(fakeMovies)
+        every { repository.loadMoviesFromDb() } returns flowOf(response)
         moviesViewModel = MoviesViewModel(repository)
 
         moviesViewModel.uiState.test {
@@ -113,21 +112,22 @@ class MoviesViewModelTest {
             val successState = awaitItem()
             TestCase.assertTrue(successState is MovieListState.Success)
             TestCase.assertEquals(1, (successState as MovieListState.Success).movieList.size)
-            Mockito.verify(repository, Mockito.times(1))
-                .loadMoviesFromNetwork(POPULARITY_DESC_PARAM)
+            coVerify(exactly = 1) {
+                repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM)
+            }
 
             moviesViewModel.loadMovieListBySortingOption(FAVORITES_PARAM)
 
             val dbSuccess = awaitItem()
             TestCase.assertTrue(dbSuccess is MovieListState.Success)
-            Mockito.verify(repository, Mockito.times(1)).loadMoviesFromDb()
+            verify(exactly = 1) { repository.loadMoviesFromDb() }
         }
     }
 
     @Test
     fun selecting_same_sort_option_does_not_reload_movies() = runTest(testDispatcher) {
-        Mockito.`when`(repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM))
-            .thenReturn(MovieDbApiClient.Result.Success(fakeMovies))
+        coEvery { repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM) } returns
+            MovieDbApiClient.Result.Success(fakeMovies)
 
         moviesViewModel = MoviesViewModel(repository)
 
@@ -138,8 +138,9 @@ class MoviesViewModelTest {
             moviesViewModel.loadMovieListBySortingOption(POPULARITY_DESC_PARAM)
 
             expectNoEvents()
-            Mockito.verify(repository, Mockito.times(1))
-                .loadMoviesFromNetwork(POPULARITY_DESC_PARAM)
+            coVerify(exactly = 1) {
+                repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM)
+            }
             cancelAndIgnoreRemainingEvents()
         }
     }
