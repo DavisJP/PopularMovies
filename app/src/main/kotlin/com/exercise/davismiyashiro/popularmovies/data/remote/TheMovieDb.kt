@@ -43,11 +43,11 @@ private const val API_MOVIE_ID_PARAM = "id"
 interface TheMovieDb {
 
     @GET("/3/movie/{sorting}")
-    suspend fun getPopular(@Path(API_SORTING_PARAM) sort: String): retrofit2.Response<Response<List<MovieDetails>>>
+    suspend fun getPopular(@Path(API_SORTING_PARAM) sort: String): Response<List<MovieDetails>>
 
     @GET("/3/movie/{id}/videos")
-    suspend fun getTrailers(@Path(API_MOVIE_ID_PARAM) movieId: String): retrofit2.Response<Response<List<Trailer>>>
+    suspend fun getTrailers(@Path(API_MOVIE_ID_PARAM) movieId: String): Response<List<Trailer>>
 
     @GET("/3/movie/{id}/reviews")
-    suspend fun getReviews(@Path(API_MOVIE_ID_PARAM) movieId: String): retrofit2.Response<Response<List<Review>>>
+    suspend fun getReviews(@Path(API_MOVIE_ID_PARAM) movieId: String): Response<List<Review>>
 }

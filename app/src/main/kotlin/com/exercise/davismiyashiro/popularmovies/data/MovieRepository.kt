@@ -33,7 +33,7 @@ import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb
 import dagger.Lazy
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import retrofit2.Response
+import retrofit2.HttpException
 import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
@@ -73,7 +73,8 @@ class MovieRepository @Inject constructor(
         return moviesDao.getMovieById(movieId)
     }
 
-    override fun getFavoriteMoviesIds(): Flow<Set<Int>> = moviesDao.getFavoriteMoviesIds().map { it.toSet() }
+    override fun getFavoriteMoviesIds(): Flow<Set<Int>> =
+        moviesDao.getFavoriteMoviesIds().map { it.toSet() }
 
     override suspend fun findTrailersByMovieId(movieId: Int): List<Trailer> {
         val trailersResponse = apiCall(
@@ -118,31 +119,31 @@ class MovieRepository @Inject constructor(
     }
 
     private suspend fun <T : Any> apiCall(
-        call: suspend () -> Response<T>,
+        call: suspend () -> T,
         errorMessage: String,
     ): MovieDbApiClient.Result<Exception, T> {
         try {
             val response = call()
-            return if (response.isSuccessful) {
-                response.body()?.let { body ->
-                    MovieDbApiClient.Result.Success(body)
-                } ?: MovieDbApiClient.Result.Error(ApiException(errorMessage))
-            } else {
-                when (response.code()) {
-                    401 -> MovieDbApiClient.Result.Error(
-                        ApiException(errorMessage.plus("onRequestUnauthenticated: ${response.message()}")),
-                    )
-                    in 400..499 -> MovieDbApiClient.Result.Error(
-                        ApiException(errorMessage.plus("onRequestClientError: ${response.message()}")),
-                    )
-                    in 500..599 -> MovieDbApiClient.Result.Error(
-                        ApiException(errorMessage.plus("onRequestServerError: ${response.message()}")),
-                    )
-                    else -> MovieDbApiClient.Result.Error(
-                        ApiException(errorMessage.plus("UnknownError: ${response.code()} ${response.message()}")),
-                    )
-                }
+            return MovieDbApiClient.Result.Success(response)
+        } catch (e: HttpException) {
+            val errorResult = when (e.code()) {
+                401 -> MovieDbApiClient.Result.Error(
+                    ApiException(errorMessage.plus("onRequestUnauthenticated: ${e.message}")),
+                )
+
+                in 400..499 -> MovieDbApiClient.Result.Error(
+                    ApiException(errorMessage.plus("onRequestClientError: ${e.message}")),
+                )
+
+                in 500..599 -> MovieDbApiClient.Result.Error(
+                    ApiException(errorMessage.plus("onRequestServerError: ${e.message}")),
+                )
+
+                else -> MovieDbApiClient.Result.Error(
+                    ApiException(errorMessage.plus("UnknownError: ${e.code()} ${e.message}")),
+                )
             }
+            return errorResult
         } catch (e: IOException) {
             return MovieDbApiClient.Result.Error(NetworkException(errorMessage, e))
         } catch (e: Exception) {

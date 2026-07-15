@@ -34,7 +34,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Warning
@@ -218,11 +218,11 @@ fun MovieListGrid(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        items(
+        itemsIndexed(
             items = movies,
-            key = { movie -> movie.id },
-            contentType = { "movie" },
-        ) { movie ->
+            key = { index, movie -> "${movie.id}_$index" },
+            contentType = { _, _ -> "movie" },
+        ) { _, movie ->
             MovieGridItem(movie = movie, onMovieClick = onMovieClick)
         }
     }
