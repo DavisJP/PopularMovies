@@ -6,6 +6,10 @@ import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
 import com.exercise.davismiyashiro.popularmovies.data.Repository
 import com.exercise.davismiyashiro.popularmovies.data.Review
 import com.exercise.davismiyashiro.popularmovies.data.Trailer
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -20,13 +24,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when`
-import org.mockito.junit.MockitoJUnitRunner
 
-@RunWith(MockitoJUnitRunner::class)
 @OptIn(ExperimentalCoroutinesApi::class)
 class MovieDetailsViewModelTest {
 
@@ -35,8 +33,7 @@ class MovieDetailsViewModelTest {
 
     private lateinit var viewModel: MovieDetailsViewModel
 
-    @Mock
-    private lateinit var repository: Repository
+    private val repository: Repository = mockk()
 
     private val movieId = 123
     private val movieDetailsUI = MovieDetailsUI(
@@ -57,29 +54,29 @@ class MovieDetailsViewModelTest {
     @Test
     fun `reviews returns list from repository`() = runTest(coroutinesTestRule.testDispatcher) {
         val reviews = listOf(Review("1", "Author", "Content", "url"))
-        `when`(repository.findReviewsByMovieId(movieId)).thenReturn(reviews)
+        coEvery { repository.findReviewsByMovieId(movieId) } returns reviews
 
         val result = viewModel.reviews(movieId)
 
         assertEquals(reviews, result)
-        verify(repository).findReviewsByMovieId(movieId)
+        coVerify { repository.findReviewsByMovieId(movieId) }
     }
 
     @Test
     fun `trailers returns list from repository`() = runTest(coroutinesTestRule.testDispatcher) {
         val trailers = listOf(Trailer("1", "en", "US", "Key", "Name", "Site", 1080, "Type"))
-        `when`(repository.findTrailersByMovieId(movieId)).thenReturn(trailers)
+        coEvery { repository.findTrailersByMovieId(movieId) } returns trailers
 
         val result = viewModel.trailers(movieId)
 
         assertEquals(trailers, result)
-        verify(repository).findTrailersByMovieId(movieId)
+        coVerify { repository.findTrailersByMovieId(movieId) }
     }
 
     @Test
     fun `isFavorite returns true when movie exists in db`() = runTest(coroutinesTestRule.testDispatcher) {
         val movieDetails = MovieDetails(movieId, "Title", "backdrop", "poster", "overview", "date", 8.5)
-        `when`(repository.getMovieFromDb(movieId)).thenReturn(flowOf(movieDetails))
+        every { repository.getMovieFromDb(movieId) } returns flowOf(movieDetails)
 
         viewModel.isFavorite(movieId).test {
             assertEquals(true, awaitItem())
@@ -89,7 +86,7 @@ class MovieDetailsViewModelTest {
 
     @Test
     fun `isFavorite returns false when movie does not exist in db`() = runTest(coroutinesTestRule.testDispatcher) {
-        `when`(repository.getMovieFromDb(movieId)).thenReturn(flowOf(null))
+        every { repository.getMovieFromDb(movieId) } returns flowOf(null)
 
         viewModel.isFavorite(movieId).test {
             assertEquals(false, awaitItem())
@@ -100,10 +97,11 @@ class MovieDetailsViewModelTest {
     @Test
     fun `setFavorite deletes movie and emits toast when already favorite`() =
         runTest(coroutinesTestRule.testDispatcher) {
+            coEvery { repository.deleteMovieDb(any()) } returns Unit
             viewModel.toastMessageEvents.test {
                 viewModel.setFavorite(movieDetailsUI, isFavorite = true)
 
-                verify(repository).deleteMovieDb(
+                coVerify { repository.deleteMovieDb(
                     MovieDetails(
                         movieid = movieDetailsUI.id,
                         title = movieDetailsUI.title,
@@ -113,17 +111,18 @@ class MovieDetailsViewModelTest {
                         releaseDate = movieDetailsUI.releaseDate,
                         voteAverage = movieDetailsUI.voteAverage,
                     ),
-                )
+                ) }
                 assertEquals(R.string.movie_deleted_msg, awaitItem())
             }
         }
 
     @Test
     fun `setFavorite inserts movie and emits toast when not favorite`() = runTest(coroutinesTestRule.testDispatcher) {
+        coEvery { repository.insertMovieDb(any()) } returns Unit
         viewModel.toastMessageEvents.test {
             viewModel.setFavorite(movieDetailsUI, isFavorite = false)
 
-            verify(repository).insertMovieDb(
+            coVerify { repository.insertMovieDb(
                 MovieDetails(
                     movieid = movieDetailsUI.id,
                     title = movieDetailsUI.title,
@@ -133,7 +132,7 @@ class MovieDetailsViewModelTest {
                     releaseDate = movieDetailsUI.releaseDate,
                     voteAverage = movieDetailsUI.voteAverage,
                 ),
-            )
+            ) }
             assertEquals(R.string.movie_added_msg, awaitItem())
         }
     }

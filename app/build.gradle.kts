@@ -84,6 +84,14 @@ android {
     namespace = "com.exercise.davismiyashiro.popularmovies"
 
 
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/LICENSE.md"
+            excludes += "META-INF/LICENSE-notice.md"
+        }
+    }
+
     testOptions {
         execution = "ANDROIDX_TEST_ORCHESTRATOR"
     }
@@ -150,14 +158,13 @@ dependencies {
     kspAndroidTest(libs.hilt.android.testing)
     kspAndroidTest(libs.hilt.compiler)
 
-    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.junit)
     testImplementation(libs.turbine)
 
     androidTestImplementation(libs.junit)
-    androidTestImplementation(libs.mockito.core)
-    androidTestImplementation(libs.mockito.android)
+    androidTestImplementation(libs.mockk.android)
     androidTestImplementation(libs.mockwebserver)
     androidTestImplementation(libs.androidx.test.core)
     androidTestImplementation(libs.androidx.test.ext.junit)
