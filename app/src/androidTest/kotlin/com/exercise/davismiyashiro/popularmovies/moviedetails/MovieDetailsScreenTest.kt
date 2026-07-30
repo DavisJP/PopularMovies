@@ -11,8 +11,8 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.exercise.davismiyashiro.popularmovies.data.Review
-import com.exercise.davismiyashiro.popularmovies.data.Trailer
+import com.exercise.davismiyashiro.popularmovies.domain.Review
+import com.exercise.davismiyashiro.popularmovies.domain.Trailer
 import com.exercise.davismiyashiro.popularmovies.ui.theme.PopularMoviesTheme
 import kotlinx.collections.immutable.persistentListOf
 import org.junit.Assert.assertEquals
@@ -119,8 +119,6 @@ class MovieDetailsScreenTest {
 
     private fun sampleTrailer() = Trailer(
         id = "trailer-id",
-        iso6391 = "en",
-        iso31661 = "US",
         key = "trailer-key",
         name = "Official Trailer",
         site = "YouTube",

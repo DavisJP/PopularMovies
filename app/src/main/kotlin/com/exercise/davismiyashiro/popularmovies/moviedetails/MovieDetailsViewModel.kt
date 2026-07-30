@@ -27,10 +27,10 @@ package com.exercise.davismiyashiro.popularmovies.moviedetails
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.exercise.davismiyashiro.popularmovies.R
-import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
-import com.exercise.davismiyashiro.popularmovies.data.Repository
-import com.exercise.davismiyashiro.popularmovies.data.Review
-import com.exercise.davismiyashiro.popularmovies.data.Trailer
+import com.exercise.davismiyashiro.popularmovies.domain.Repository
+import com.exercise.davismiyashiro.popularmovies.data.toDomain
+import com.exercise.davismiyashiro.popularmovies.domain.Review
+import com.exercise.davismiyashiro.popularmovies.domain.Trailer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -66,7 +66,7 @@ class MovieDetailsViewModel @Inject constructor(
         repository.findTrailersByMovieId(movieId).toImmutableList()
 
     fun isFavorite(movieId: Int): Flow<Boolean> =
-        repository.getMovieFromDb(movieId).map { movieDetails -> movieDetails != null }
+        repository.getMovieFromDb(movieId).map { movie -> movie != null }
 
     fun setFavorite(movieDetailsUI: MovieDetailsUI, isFavorite: Boolean) {
         viewModelScope.launch {
@@ -81,30 +81,10 @@ class MovieDetailsViewModel @Inject constructor(
     }
 
     private suspend fun insertMovie(movieDetailsUI: MovieDetailsUI) {
-        repository.insertMovieDb(
-            MovieDetails(
-                movieDetailsUI.id,
-                movieDetailsUI.title,
-                movieDetailsUI.backdropPath,
-                movieDetailsUI.posterPath,
-                movieDetailsUI.overview,
-                movieDetailsUI.releaseDate,
-                movieDetailsUI.voteAverage,
-            ),
-        )
+        repository.insertMovieDb(movieDetailsUI.toDomain())
     }
 
     private suspend fun deleteMovie(movieDetailsUI: MovieDetailsUI) {
-        repository.deleteMovieDb(
-            MovieDetails(
-                movieDetailsUI.id,
-                movieDetailsUI.title,
-                movieDetailsUI.backdropPath,
-                movieDetailsUI.posterPath,
-                movieDetailsUI.overview,
-                movieDetailsUI.releaseDate,
-                movieDetailsUI.voteAverage,
-            ),
-        )
+        repository.deleteMovieDb(movieDetailsUI.toDomain())
     }
 }

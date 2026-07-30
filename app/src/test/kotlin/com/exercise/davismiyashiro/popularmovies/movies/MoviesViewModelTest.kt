@@ -1,9 +1,9 @@
 package com.exercise.davismiyashiro.popularmovies.movies
 
 import app.cash.turbine.test
-import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
 import com.exercise.davismiyashiro.popularmovies.data.MovieRepository
-import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient
+import com.exercise.davismiyashiro.popularmovies.domain.Movie
+import com.exercise.davismiyashiro.popularmovies.domain.Result
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -37,8 +37,8 @@ class MoviesViewModelTest {
     private val repository: MovieRepository = mockk()
 
     val fakeMovies = listOf(
-        MovieDetails(
-            movieid = 1,
+        Movie(
+            id = 1,
             title = "Fake",
             backdropPath = "Fake",
             posterPath = "Fake",
@@ -58,7 +58,7 @@ class MoviesViewModelTest {
     fun load_popular_movies_calls_remote_success() = runTest {
         every { repository.getFavoriteMoviesIds() } returns flowOf(emptySet())
         coEvery { repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM) } returns
-            MovieDbApiClient.Result.Success(fakeMovies)
+            Result.Success(fakeMovies)
 
         moviesViewModel = MoviesViewModel(repository)
 
@@ -77,7 +77,7 @@ class MoviesViewModelTest {
     @Test
     fun load_popular_movies_calls_remote_error() = runTest(testDispatcher) {
         coEvery { repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM) } returns
-            MovieDbApiClient.Result.Error(okio.IOException("Error loading popular movies"))
+            Result.Error(okio.IOException("Error loading popular movies"))
 
         moviesViewModel = MoviesViewModel(repository)
 
@@ -101,9 +101,9 @@ class MoviesViewModelTest {
 
     @Test
     fun load_favorite_movies_calls_db() = runTest(testDispatcher) {
-        val response = listOf<MovieDetails>()
+        val response = listOf<Movie>()
         coEvery { repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM) } returns
-            MovieDbApiClient.Result.Success(fakeMovies)
+            Result.Success(fakeMovies)
         every { repository.loadMoviesFromDb() } returns flowOf(response)
         moviesViewModel = MoviesViewModel(repository)
 
@@ -127,7 +127,7 @@ class MoviesViewModelTest {
     @Test
     fun selecting_same_sort_option_does_not_reload_movies() = runTest(testDispatcher) {
         coEvery { repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM) } returns
-            MovieDbApiClient.Result.Success(fakeMovies)
+            Result.Success(fakeMovies)
 
         moviesViewModel = MoviesViewModel(repository)
 

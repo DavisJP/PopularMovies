@@ -1,7 +1,7 @@
 package com.exercise.davismiyashiro.popularmovies.di
 
 import com.exercise.davismiyashiro.popularmovies.data.MovieRepository
-import com.exercise.davismiyashiro.popularmovies.data.Repository
+import com.exercise.davismiyashiro.popularmovies.domain.Repository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
