@@ -111,8 +111,6 @@ dependencies {
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
 
-    implementation(libs.stetho)
-
     implementation(libs.okhttp.logging.interceptor)
     implementation(libs.okhttp)
 
