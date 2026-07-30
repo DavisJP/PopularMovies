@@ -24,14 +24,16 @@
 
 package com.exercise.davismiyashiro.popularmovies.data.local
 
-import androidx.room.Database
-import androidx.room.RoomDatabase
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-/**
- * Created by Davis Miyashiro.
- */
-@Database(entities = [MovieEntity::class], version = 1, exportSchema = false)
-abstract class MoviesDb : RoomDatabase() {
-
-    abstract fun moviesDao(): MoviesDao
-}
+@Entity(tableName = TABLE_NAME)
+data class MovieEntity(
+    @PrimaryKey val id: Int,
+    val title: String,
+    val backdropPath: String?,
+    val posterPath: String,
+    val overview: String,
+    val releaseDate: String,
+    val voteAverage: Double,
+)

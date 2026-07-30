@@ -26,13 +26,9 @@ package com.exercise.davismiyashiro.popularmovies.movies
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
-import com.exercise.davismiyashiro.popularmovies.data.Repository
-import com.exercise.davismiyashiro.popularmovies.moviedetails.IMG_BASE_URL
-import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsUI
+import com.exercise.davismiyashiro.popularmovies.domain.Repository
+import com.exercise.davismiyashiro.popularmovies.data.toUI
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -71,9 +67,9 @@ class MoviesViewModel @Inject constructor(
     }.flatMapLatest { sortingOption ->
         when (sortingOption) {
             FAVORITES_PARAM -> repository.loadMoviesFromDb()
-                .map { movieDetails ->
+                .map { movies ->
                     MovieListState.Success(
-                        convertMovieDetailsToUImodel(movieDetails),
+                        movies.map { it.toUI() }.toImmutableList(),
                     )
                 }
 
@@ -89,7 +85,7 @@ class MoviesViewModel @Inject constructor(
                             },
                             success = { movieList ->
                                 MovieListState.Success(
-                                    movieList = convertMovieDetailsToUImodel(movieList),
+                                    movieList = movieList.map { it.toUI() }.toImmutableList(),
                                 )
                             },
                         ),
@@ -107,28 +103,6 @@ class MoviesViewModel @Inject constructor(
     fun loadMovieListBySortingOption(sortingOption: String = POPULARITY_DESC_PARAM) {
         if (_currentSortingOption.value != sortingOption) {
             _currentSortingOption.value = sortingOption
-        }
-    }
-
-    private fun convertMovieDetailsToUImodel(movies: List<MovieDetails>): ImmutableList<MovieDetailsUI> {
-        if (movies.isNotEmpty()) {
-            val movieDetailsUIList = ArrayList<MovieDetailsUI>()
-            for ((movieId, title, backdropPath, posterPath, overview, releaseDate, voteAverage) in movies) {
-                movieDetailsUIList.add(
-                    MovieDetailsUI(
-                        movieId,
-                        title,
-                        IMG_BASE_URL + backdropPath,
-                        IMG_BASE_URL + posterPath,
-                        overview,
-                        releaseDate,
-                        voteAverage,
-                    ),
-                )
-            }
-            return movieDetailsUIList.toImmutableList()
-        } else {
-            return persistentListOf()
         }
     }
 }

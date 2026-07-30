@@ -30,7 +30,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -43,23 +42,23 @@ const val TABLE_NAME = "movies"
 interface MoviesDao {
 
     @Query("SELECT * FROM $TABLE_NAME")
-    fun getAllMovies(): Flow<List<MovieDetails>>
+    fun getAllMovies(): Flow<List<MovieEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(movie: MovieDetails)
+    suspend fun insert(movie: MovieEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMovies(movies: List<MovieDetails>)
+    suspend fun insertMovies(movies: List<MovieEntity>)
 
     @Update
-    suspend fun updateMovies(vararg movies: MovieDetails)
+    suspend fun updateMovies(vararg movies: MovieEntity)
 
     @Delete
-    suspend fun deleteMovies(vararg movies: MovieDetails)
+    suspend fun deleteMovies(vararg movies: MovieEntity)
 
-    @Query("SELECT * FROM $TABLE_NAME WHERE movieid = :id")
-    fun getMovieById(id: Int): Flow<MovieDetails?>
+    @Query("SELECT * FROM $TABLE_NAME WHERE id = :id")
+    fun getMovieById(id: Int): Flow<MovieEntity?>
 
-    @Query("SELECT movieid FROM $TABLE_NAME")
+    @Query("SELECT id FROM $TABLE_NAME")
     fun getFavoriteMoviesIds(): Flow<List<Int>>
 }

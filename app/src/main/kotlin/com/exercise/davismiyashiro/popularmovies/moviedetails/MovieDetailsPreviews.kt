@@ -4,8 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import coil3.annotation.ExperimentalCoilApi
 import com.exercise.davismiyashiro.popularmovies.R
-import com.exercise.davismiyashiro.popularmovies.data.Review
-import com.exercise.davismiyashiro.popularmovies.data.Trailer
+import com.exercise.davismiyashiro.popularmovies.domain.Review
+import com.exercise.davismiyashiro.popularmovies.domain.Trailer
 import com.exercise.davismiyashiro.popularmovies.ui.theme.PopularMoviesTheme
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -33,8 +33,6 @@ private fun TrailerItemPreview() {
             site = "YouTube",
             size = 1080,
             type = "Trailer",
-            iso6391 = "iso6391",
-            iso31661 = "iso6391",
         )
         TrailerItem(trailer = sampleTrailer, onClick = { _ -> })
     }
@@ -74,8 +72,6 @@ private fun MovieDetailsContentPopulatedPreview() {
             site = "YouTube",
             type = "Trailer",
             size = 1080,
-            iso6391 = "iso6391",
-            iso31661 = "iso6391",
         ),
         Trailer(
             id = "2",
@@ -84,8 +80,6 @@ private fun MovieDetailsContentPopulatedPreview() {
             site = "YouTube",
             type = "Trailer",
             size = 1080,
-            iso6391 = "iso6391",
-            iso31661 = "iso6391",
         ),
     ).toImmutableList()
 
@@ -105,14 +99,14 @@ private fun MovieDetailsContentPopulatedPreview() {
     ).toImmutableList()
 
     PopularMoviesTheme {
-        MovieDetailsContent(
+        MovieDetailsScreenContent(
             movieDetails = sampleMovieDetails,
             trailers = sampleTrailers,
             reviews = sampleReviews,
             isFavorite = true,
             onFavoriteToggle = {},
-            onTrailerClick = { _ -> },
-            onReviewClick = { _ -> },
+            onTrailerClick = {},
+            onReviewClick = {},
         )
     }
 }
@@ -130,14 +124,14 @@ private fun MovieDetailsContentEmptyPreview() {
         backdropPath = "/backdrop.jpg",
     )
     PopularMoviesTheme {
-        MovieDetailsContent(
+        MovieDetailsScreenContent(
             movieDetails = sampleMovieDetails,
             trailers = persistentListOf(),
             reviews = persistentListOf(),
             isFavorite = false,
             onFavoriteToggle = {},
-            onTrailerClick = { _ -> },
-            onReviewClick = { _ -> },
+            onTrailerClick = {},
+            onReviewClick = {},
         )
     }
 }

@@ -22,16 +22,14 @@
  * SOFTWARE.
  */
 
-package com.exercise.davismiyashiro.popularmovies.data.local
+package com.exercise.davismiyashiro.popularmovies.domain
 
-import androidx.room.Database
-import androidx.room.RoomDatabase
+import androidx.compose.runtime.Immutable
 
-/**
- * Created by Davis Miyashiro.
- */
-@Database(entities = [MovieEntity::class], version = 1, exportSchema = false)
-abstract class MoviesDb : RoomDatabase() {
-
-    abstract fun moviesDao(): MoviesDao
-}
+@Immutable
+data class Review(
+    val id: String,
+    val author: String,
+    val content: String,
+    val url: String,
+)

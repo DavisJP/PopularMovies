@@ -22,16 +22,24 @@
  * SOFTWARE.
  */
 
-package com.exercise.davismiyashiro.popularmovies.data.local
+package com.exercise.davismiyashiro.popularmovies.domain
 
-import androidx.room.Database
-import androidx.room.RoomDatabase
+import kotlinx.coroutines.flow.Flow
 
-/**
- * Created by Davis Miyashiro.
- */
-@Database(entities = [MovieEntity::class], version = 1, exportSchema = false)
-abstract class MoviesDb : RoomDatabase() {
+interface Repository {
+    suspend fun loadMoviesFromNetwork(sortingOption: String): Result<Exception, List<Movie>>
 
-    abstract fun moviesDao(): MoviesDao
+    fun loadMoviesFromDb(): Flow<List<Movie>>
+
+    fun getMovieFromDb(movieId: Int): Flow<Movie?>
+
+    fun getFavoriteMoviesIds(): Flow<Set<Int>>
+
+    suspend fun findTrailersByMovieId(movieId: Int): List<Trailer>
+
+    suspend fun findReviewsByMovieId(movieId: Int): List<Review>
+
+    suspend fun insertMovieDb(movie: Movie)
+
+    suspend fun deleteMovieDb(movie: Movie)
 }

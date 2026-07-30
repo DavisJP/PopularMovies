@@ -71,19 +71,17 @@ import androidx.navigation3.runtime.NavEntry
 import coil3.compose.SubcomposeAsyncImage
 import com.exercise.davismiyashiro.popularmovies.R
 import com.exercise.davismiyashiro.popularmovies.Route
-import com.exercise.davismiyashiro.popularmovies.data.Review
-import com.exercise.davismiyashiro.popularmovies.data.Trailer
+import com.exercise.davismiyashiro.popularmovies.domain.Review
+import com.exercise.davismiyashiro.popularmovies.domain.Trailer
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
 const val IMG_BASE_URL = "https://image.tmdb.org/t/p/w500"
 
 fun movieDetailsEntry(key: Route.MovieDetails) = NavEntry(key) {
-    val viewModel: MovieDetailsViewModel = hiltViewModel()
     val context = LocalContext.current
     MovieDetailsScreen(
         movieDetails = key.movie,
-        viewModel = viewModel,
         onOpenTrailer = { trailerKey ->
             val videoLink = "https://m.youtube.com/watch?v=$trailerKey".toUri()
             val intent = Intent(Intent.ACTION_VIEW, videoLink)
@@ -96,13 +94,12 @@ fun movieDetailsEntry(key: Route.MovieDetails) = NavEntry(key) {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MovieDetailsScreen(
     movieDetails: MovieDetailsUI,
-    viewModel: MovieDetailsViewModel,
     onOpenTrailer: (String) -> Unit,
     modifier: Modifier = Modifier,
+    viewModel: MovieDetailsViewModel = hiltViewModel(),
 ) {
     val reviews by produceState(initialValue = persistentListOf(), movieDetails.id, viewModel) {
         value = viewModel.reviews(movieDetails.id)
@@ -121,6 +118,30 @@ fun MovieDetailsScreen(
         }
     }
 
+    MovieDetailsScreenContent(
+        movieDetails = movieDetails,
+        trailers = trailers,
+        reviews = reviews,
+        isFavorite = isFavorite,
+        onFavoriteToggle = { viewModel.setFavorite(movieDetails, isFavorite) },
+        onTrailerClick = { trailer -> onOpenTrailer(trailer.key) },
+        onReviewClick = { /* Handle review click if needed in the future */ },
+        modifier = modifier,
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MovieDetailsScreenContent(
+    movieDetails: MovieDetailsUI,
+    trailers: ImmutableList<Trailer>,
+    reviews: ImmutableList<Review>,
+    isFavorite: Boolean,
+    onFavoriteToggle: () -> Unit,
+    onTrailerClick: (Trailer) -> Unit,
+    onReviewClick: (Review) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -133,21 +154,21 @@ fun MovieDetailsScreen(
             )
         },
     ) { paddingValues ->
-        MovieDetailsContent(
+        MovieDetailsList(
             movieDetails = movieDetails,
             trailers = trailers,
             reviews = reviews,
             isFavorite = isFavorite,
-            onFavoriteToggle = { viewModel.setFavorite(movieDetails, isFavorite) },
-            onTrailerClick = { trailer -> onOpenTrailer(trailer.key) },
-            onReviewClick = { /* Handle review click if needed in the future */ },
+            onFavoriteToggle = onFavoriteToggle,
+            onTrailerClick = onTrailerClick,
+            onReviewClick = onReviewClick,
             modifier = Modifier.padding(paddingValues),
         )
     }
 }
 
 @Composable
-fun MovieDetailsContent(
+fun MovieDetailsList(
     movieDetails: MovieDetailsUI,
     trailers: ImmutableList<Trailer>,
     reviews: ImmutableList<Review>,

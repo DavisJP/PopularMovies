@@ -80,29 +80,45 @@ private const val LOADING_INDICATOR_WIDTH_FRACTION = 0.8f
 
 fun movieListEntry(navigator: Navigator) = NavEntry(Route.MovieList) {
     MoviesScreen(
-        viewModel = hiltViewModel(),
         onMovieClick = { movie ->
             navigator.navigate(Route.MovieDetails(movie))
         },
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MoviesScreen(
-    viewModel: MoviesViewModel,
+    onMovieClick: (MovieDetailsUI) -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: MoviesViewModel = hiltViewModel(),
+) {
+    val currentSortOption by viewModel.currentSortingOption.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    MoviesContent(
+        uiState = uiState,
+        currentSortOption = currentSortOption,
+        onSortChange = viewModel::loadMovieListBySortingOption,
+        onMovieClick = onMovieClick,
+        modifier = modifier,
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MoviesContent(
+    uiState: MovieListState,
+    currentSortOption: String,
+    onSortChange: (String) -> Unit,
     onMovieClick: (MovieDetailsUI) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val currentSortOption by viewModel.currentSortingOption.collectAsStateWithLifecycle()
-    val currentState by viewModel.uiState.collectAsStateWithLifecycle()
-
     Scaffold(
         modifier = modifier,
         topBar = {
             MoviesTopAppBar(
                 currentSortOption = currentSortOption,
-                onSortChange = viewModel::loadMovieListBySortingOption,
+                onSortChange = onSortChange,
             )
         },
     ) { paddingValues ->
@@ -111,8 +127,7 @@ fun MoviesScreen(
                 .fillMaxSize()
                 .padding(paddingValues),
         ) {
-            val state = currentState
-            when (state) {
+            when (val state = uiState) {
                 is MovieListState.Loading -> {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }

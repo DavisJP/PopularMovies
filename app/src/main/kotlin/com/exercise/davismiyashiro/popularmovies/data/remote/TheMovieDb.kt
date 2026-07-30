@@ -24,10 +24,7 @@
 
 package com.exercise.davismiyashiro.popularmovies.data.remote
 
-import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
 import com.exercise.davismiyashiro.popularmovies.data.MovieResponse
-import com.exercise.davismiyashiro.popularmovies.data.Review
-import com.exercise.davismiyashiro.popularmovies.data.Trailer
 import retrofit2.http.GET
 import retrofit2.http.Path
 
@@ -43,11 +40,11 @@ private const val API_MOVIE_ID_PARAM = "id"
 interface TheMovieDb {
 
     @GET("/3/movie/{sorting}")
-    suspend fun getPopular(@Path(API_SORTING_PARAM) sort: String): MovieResponse<List<MovieDetails>>
+    suspend fun getPopular(@Path(API_SORTING_PARAM) sort: String): MovieResponse<List<MovieDTO>>
 
     @GET("/3/movie/{id}/videos")
-    suspend fun getTrailers(@Path(API_MOVIE_ID_PARAM) movieId: String): MovieResponse<List<Trailer>>
+    suspend fun getTrailers(@Path(API_MOVIE_ID_PARAM) movieId: String): MovieResponse<List<TrailerDTO>>
 
     @GET("/3/movie/{id}/reviews")
-    suspend fun getReviews(@Path(API_MOVIE_ID_PARAM) movieId: String): MovieResponse<List<Review>>
+    suspend fun getReviews(@Path(API_MOVIE_ID_PARAM) movieId: String): MovieResponse<List<ReviewDTO>>
 }

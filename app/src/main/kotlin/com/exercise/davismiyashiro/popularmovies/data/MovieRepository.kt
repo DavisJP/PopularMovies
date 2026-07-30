@@ -25,11 +25,15 @@
 package com.exercise.davismiyashiro.popularmovies.data
 
 import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDao
-import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient
-import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient.ApiException
-import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient.NetworkException
-import com.exercise.davismiyashiro.popularmovies.data.remote.MovieDbApiClient.UnexpectedApiException
 import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb
+import com.exercise.davismiyashiro.popularmovies.domain.ApiException
+import com.exercise.davismiyashiro.popularmovies.domain.Movie
+import com.exercise.davismiyashiro.popularmovies.domain.NetworkException
+import com.exercise.davismiyashiro.popularmovies.domain.Repository
+import com.exercise.davismiyashiro.popularmovies.domain.Result
+import com.exercise.davismiyashiro.popularmovies.domain.Review
+import com.exercise.davismiyashiro.popularmovies.domain.Trailer
+import com.exercise.davismiyashiro.popularmovies.domain.UnexpectedApiException
 import dagger.Lazy
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -54,23 +58,25 @@ class MovieRepository @Inject constructor(
 
     override suspend fun loadMoviesFromNetwork(
         sortingOption: String,
-    ): MovieDbApiClient.Result<Exception, List<MovieDetails>> {
+    ): Result<Exception, List<Movie>> {
         val moviesResponse = apiCall(
             call = { theMovieDb.getPopular(sortingOption) },
             errorMessage = "Error Fetching Movies",
         )
 
-        return moviesResponse.map { moviesResponse ->
-            moviesResponse.results
+        return moviesResponse.map { response ->
+            response.results.map { it.toDomain() }
         }
     }
 
-    override fun loadMoviesFromDb(): Flow<List<MovieDetails>> {
-        return moviesDao.getAllMovies()
+    override fun loadMoviesFromDb(): Flow<List<Movie>> {
+        return moviesDao.getAllMovies().map { entities ->
+            entities.map { it.toDomain() }
+        }
     }
 
-    override fun getMovieFromDb(movieId: Int): Flow<MovieDetails?> {
-        return moviesDao.getMovieById(movieId)
+    override fun getMovieFromDb(movieId: Int): Flow<Movie?> {
+        return moviesDao.getMovieById(movieId).map { it?.toDomain() }
     }
 
     override fun getFavoriteMoviesIds(): Flow<Set<Int>> =
@@ -84,7 +90,7 @@ class MovieRepository @Inject constructor(
 
         return trailersResponse.fold(
             success = {
-                it.results
+                it.results.map { trailerDto -> trailerDto.toDomain() }
             },
             ex = {
                 Timber.e(it)
@@ -101,7 +107,7 @@ class MovieRepository @Inject constructor(
 
         return reviewsResponse.fold(
             success = {
-                it.results
+                it.results.map { reviewDto -> reviewDto.toDomain() }
             },
             ex = {
                 Timber.e(it)
@@ -110,44 +116,44 @@ class MovieRepository @Inject constructor(
         )
     }
 
-    override suspend fun insertMovieDb(movieDetails: MovieDetails) {
-        moviesDao.insert(movieDetails)
+    override suspend fun insertMovieDb(movie: Movie) {
+        moviesDao.insert(movie.toEntity())
     }
 
-    override suspend fun deleteMovieDb(movieDetails: MovieDetails) {
-        moviesDao.deleteMovies(movieDetails)
+    override suspend fun deleteMovieDb(movie: Movie) {
+        moviesDao.deleteMovies(movie.toEntity())
     }
 
     private suspend fun <T : Any> apiCall(
         call: suspend () -> T,
         errorMessage: String,
-    ): MovieDbApiClient.Result<Exception, T> {
+    ): Result<Exception, T> {
         try {
             val response = call()
-            return MovieDbApiClient.Result.Success(response)
+            return Result.Success(response)
         } catch (e: HttpException) {
             val errorResult = when (e.code()) {
-                401 -> MovieDbApiClient.Result.Error(
+                401 -> Result.Error(
                     ApiException(errorMessage.plus("onRequestUnauthenticated: ${e.message}")),
                 )
 
-                in 400..499 -> MovieDbApiClient.Result.Error(
+                in 400..499 -> Result.Error(
                     ApiException(errorMessage.plus("onRequestClientError: ${e.message}")),
                 )
 
-                in 500..599 -> MovieDbApiClient.Result.Error(
+                in 500..599 -> Result.Error(
                     ApiException(errorMessage.plus("onRequestServerError: ${e.message}")),
                 )
 
-                else -> MovieDbApiClient.Result.Error(
+                else -> Result.Error(
                     ApiException(errorMessage.plus("UnknownError: ${e.code()} ${e.message}")),
                 )
             }
             return errorResult
         } catch (e: IOException) {
-            return MovieDbApiClient.Result.Error(NetworkException(errorMessage, e))
+            return Result.Error(NetworkException(errorMessage, e))
         } catch (e: Exception) {
-            return MovieDbApiClient.Result.Error(UnexpectedApiException(errorMessage, e))
+            return Result.Error(UnexpectedApiException(errorMessage, e))
         }
     }
 }

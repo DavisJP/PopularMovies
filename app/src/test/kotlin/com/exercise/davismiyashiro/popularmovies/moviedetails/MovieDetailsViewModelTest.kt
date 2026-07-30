@@ -2,10 +2,10 @@ package com.exercise.davismiyashiro.popularmovies.moviedetails
 
 import app.cash.turbine.test
 import com.exercise.davismiyashiro.popularmovies.R
-import com.exercise.davismiyashiro.popularmovies.data.MovieDetails
-import com.exercise.davismiyashiro.popularmovies.data.Repository
-import com.exercise.davismiyashiro.popularmovies.data.Review
-import com.exercise.davismiyashiro.popularmovies.data.Trailer
+import com.exercise.davismiyashiro.popularmovies.domain.Repository
+import com.exercise.davismiyashiro.popularmovies.domain.Movie
+import com.exercise.davismiyashiro.popularmovies.domain.Review
+import com.exercise.davismiyashiro.popularmovies.domain.Trailer
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -46,6 +46,16 @@ class MovieDetailsViewModelTest {
         voteAverage = 8.5,
     )
 
+    private val movieDomain = Movie(
+        id = movieId,
+        title = "Test Movie",
+        backdropPath = "/backdrop.jpg",
+        posterPath = "/poster.jpg",
+        overview = "Test Overview",
+        releaseDate = "2023-01-01",
+        voteAverage = 8.5,
+    )
+
     @Before
     fun setup() {
         viewModel = MovieDetailsViewModel(repository)
@@ -64,7 +74,7 @@ class MovieDetailsViewModelTest {
 
     @Test
     fun `trailers returns list from repository`() = runTest(coroutinesTestRule.testDispatcher) {
-        val trailers = listOf(Trailer("1", "en", "US", "Key", "Name", "Site", 1080, "Type"))
+        val trailers = listOf(Trailer("1", "Key", "Name", "Site", 1080, "Type"))
         coEvery { repository.findTrailersByMovieId(movieId) } returns trailers
 
         val result = viewModel.trailers(movieId)
@@ -75,8 +85,7 @@ class MovieDetailsViewModelTest {
 
     @Test
     fun `isFavorite returns true when movie exists in db`() = runTest(coroutinesTestRule.testDispatcher) {
-        val movieDetails = MovieDetails(movieId, "Title", "backdrop", "poster", "overview", "date", 8.5)
-        every { repository.getMovieFromDb(movieId) } returns flowOf(movieDetails)
+        every { repository.getMovieFromDb(movieId) } returns flowOf(movieDomain)
 
         viewModel.isFavorite(movieId).test {
             assertEquals(true, awaitItem())
@@ -101,17 +110,7 @@ class MovieDetailsViewModelTest {
             viewModel.toastMessageEvents.test {
                 viewModel.setFavorite(movieDetailsUI, isFavorite = true)
 
-                coVerify { repository.deleteMovieDb(
-                    MovieDetails(
-                        movieid = movieDetailsUI.id,
-                        title = movieDetailsUI.title,
-                        backdropPath = movieDetailsUI.backdropPath,
-                        posterPath = movieDetailsUI.posterPath,
-                        overview = movieDetailsUI.overview,
-                        releaseDate = movieDetailsUI.releaseDate,
-                        voteAverage = movieDetailsUI.voteAverage,
-                    ),
-                ) }
+                coVerify { repository.deleteMovieDb(movieDomain) }
                 assertEquals(R.string.movie_deleted_msg, awaitItem())
             }
         }
@@ -122,17 +121,7 @@ class MovieDetailsViewModelTest {
         viewModel.toastMessageEvents.test {
             viewModel.setFavorite(movieDetailsUI, isFavorite = false)
 
-            coVerify { repository.insertMovieDb(
-                MovieDetails(
-                    movieid = movieDetailsUI.id,
-                    title = movieDetailsUI.title,
-                    backdropPath = movieDetailsUI.backdropPath,
-                    posterPath = movieDetailsUI.posterPath,
-                    overview = movieDetailsUI.overview,
-                    releaseDate = movieDetailsUI.releaseDate,
-                    voteAverage = movieDetailsUI.voteAverage,
-                ),
-            ) }
+            coVerify { repository.insertMovieDb(movieDomain) }
             assertEquals(R.string.movie_added_msg, awaitItem())
         }
     }
