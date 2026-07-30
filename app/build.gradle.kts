@@ -36,16 +36,15 @@ plugins {
 kotlin {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-        freeCompilerArgs.add("-XXLanguage:+PropertyParamAnnotationDefaultTargetMode")
     }
 }
 
 android {
-    compileSdk = 36
+    compileSdk = 37
     defaultConfig {
         applicationId = "com.exercise.davismiyashiro.popularmovies"
         minSdk = 23
-        targetSdk = 35
+        targetSdk = 37
         versionCode = 3
         versionName = "3.0"
         testInstrumentationRunner = "com.exercise.davismiyashiro.popularmovies.CustomTestRunner"
