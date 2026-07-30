@@ -105,14 +105,14 @@ private fun MovieDetailsContentPopulatedPreview() {
     ).toImmutableList()
 
     PopularMoviesTheme {
-        MovieDetailsContent(
+        MovieDetailsScreenContent(
             movieDetails = sampleMovieDetails,
             trailers = sampleTrailers,
             reviews = sampleReviews,
             isFavorite = true,
             onFavoriteToggle = {},
-            onTrailerClick = { _ -> },
-            onReviewClick = { _ -> },
+            onTrailerClick = {},
+            onReviewClick = {},
         )
     }
 }
@@ -130,14 +130,14 @@ private fun MovieDetailsContentEmptyPreview() {
         backdropPath = "/backdrop.jpg",
     )
     PopularMoviesTheme {
-        MovieDetailsContent(
+        MovieDetailsScreenContent(
             movieDetails = sampleMovieDetails,
             trailers = persistentListOf(),
             reviews = persistentListOf(),
             isFavorite = false,
             onFavoriteToggle = {},
-            onTrailerClick = { _ -> },
-            onReviewClick = { _ -> },
+            onTrailerClick = {},
+            onReviewClick = {},
         )
     }
 }

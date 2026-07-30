@@ -32,7 +32,7 @@ class MovieDetailsScreenTest {
 
         composeTestRule.setContent {
             PopularMoviesTheme(dynamicColor = false) {
-                MovieDetailsContent(
+                MovieDetailsList(
                     modifier = Modifier.testTag("movie_details_content"),
                     movieDetails = movie,
                     trailers = persistentListOf(sampleTrailer()),
@@ -65,7 +65,7 @@ class MovieDetailsScreenTest {
 
         composeTestRule.setContent {
             PopularMoviesTheme(dynamicColor = false) {
-                MovieDetailsContent(
+                MovieDetailsList(
                     movieDetails = sampleMovieDetailsObservable(),
                     trailers = persistentListOf(),
                     reviews = persistentListOf(),
@@ -89,7 +89,7 @@ class MovieDetailsScreenTest {
 
         composeTestRule.setContent {
             PopularMoviesTheme(dynamicColor = false) {
-                MovieDetailsContent(
+                MovieDetailsList(
                     modifier = Modifier.testTag("movie_details_content"),
                     movieDetails = sampleMovieDetailsObservable(),
                     trailers = persistentListOf(trailer),

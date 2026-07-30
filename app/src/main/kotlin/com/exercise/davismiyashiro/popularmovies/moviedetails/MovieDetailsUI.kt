@@ -24,8 +24,8 @@
 
 package com.exercise.davismiyashiro.popularmovies.moviedetails
 
+import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
-import javax.annotation.concurrent.Immutable
 
 /**
  *
