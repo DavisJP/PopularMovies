@@ -22,16 +22,19 @@
  * SOFTWARE.
  */
 
-package com.exercise.davismiyashiro.popularmovies.data.local
+package com.exercise.davismiyashiro.popularmovies.data.remote
 
-import androidx.room.Database
-import androidx.room.RoomDatabase
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-/**
- * Created by Davis Miyashiro.
- */
-@Database(entities = [MovieEntity::class], version = 1, exportSchema = false)
-abstract class MoviesDb : RoomDatabase() {
-
-    abstract fun moviesDao(): MoviesDao
-}
+@Serializable
+data class TrailerDTO(
+    @SerialName("id") val id: String,
+    @SerialName("iso_639_1") val iso6391: String,
+    @SerialName("iso_3166_1") val iso31661: String,
+    @SerialName("key") val key: String,
+    @SerialName("name") val name: String,
+    @SerialName("site") val site: String,
+    @SerialName("size") val size: Int,
+    @SerialName("type") val type: String,
+)

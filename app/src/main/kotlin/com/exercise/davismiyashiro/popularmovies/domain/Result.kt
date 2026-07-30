@@ -22,21 +22,34 @@
  * SOFTWARE.
  */
 
-package com.exercise.davismiyashiro.popularmovies.data
+package com.exercise.davismiyashiro.popularmovies.domain
 
-import androidx.compose.runtime.Immutable
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import java.io.IOException
 
 /**
- * Created by Davis Miyashiro on 26/02/2017.
+ * Created by Davis Miyashiro on 20/02/2017.
  */
 
-@Immutable
-@Serializable
-data class Review(
-    @SerialName("id") val id: String,
-    @SerialName("author") val author: String,
-    @SerialName("content") val content: String,
-    @SerialName("url") val url: String,
-)
+sealed class Result<out E, out S> {
+    data class Error(val exception: Exception) : Result<Exception, Nothing>()
+    data class Success<out S>(val data: S) : Result<Nothing, S>()
+
+    fun <T> fold(ex: (Exception) -> T, success: (S) -> T): T {
+        return when (this) {
+            is Error -> ex(exception)
+            is Success -> success(data)
+        }
+    }
+
+    inline fun <T> map(transform: (S) -> T): Result<E, T> {
+        return when (this) {
+            is Error -> this
+            is Success -> Success(transform(data))
+        }
+    }
+}
+
+class ApiException(message: String, cause: Throwable? = null) : RuntimeException(message, cause)
+class NetworkException(message: String, cause: Throwable? = null) : IOException(message, cause)
+class UnexpectedApiException(message: String, cause: Throwable? = null) :
+    RuntimeException(message, cause)

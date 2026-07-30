@@ -22,38 +22,16 @@
  * SOFTWARE.
  */
 
-package com.exercise.davismiyashiro.popularmovies.data.remote
+package com.exercise.davismiyashiro.popularmovies.domain
 
-import java.io.IOException
+import androidx.compose.runtime.Immutable
 
-/**
- * Retrofit client
- *
- * Created by Davis Miyashiro on 20/02/2017.
- */
-class MovieDbApiClient {
-
-    sealed class Result<out E, out S> {
-        data class Error(val exception: Exception) : Result<Exception, Nothing>()
-        data class Success<out S>(val data: S) : Result<Nothing, S>()
-
-        fun <T> fold(ex: (Exception) -> T, success: (S) -> T): T {
-            return when (this) {
-                is Error -> ex(exception)
-                is Success -> success(data)
-            }
-        }
-
-        inline fun <T> map(transform: (S) -> T): Result<E, T> {
-            return when (this) {
-                is Error -> this
-                is Success -> Success(transform(data))
-            }
-        }
-    }
-
-    class ApiException(message: String, cause: Throwable? = null) : RuntimeException(message, cause)
-    class NetworkException(message: String, cause: Throwable? = null) : IOException(message, cause)
-    class UnexpectedApiException(message: String, cause: Throwable? = null) :
-        RuntimeException(message, cause)
-}
+@Immutable
+data class Trailer(
+    val id: String,
+    val key: String,
+    val name: String,
+    val site: String,
+    val size: Int,
+    val type: String,
+)

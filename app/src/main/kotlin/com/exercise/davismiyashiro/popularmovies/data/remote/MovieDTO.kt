@@ -22,25 +22,18 @@
  * SOFTWARE.
  */
 
-package com.exercise.davismiyashiro.popularmovies.data
+package com.exercise.davismiyashiro.popularmovies.data.remote
 
-import androidx.compose.runtime.Immutable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-/**
- * Created by Davis Miyashiro on 19/02/2017.
- */
-
-@Immutable
 @Serializable
-data class Trailer(
-    @SerialName("id") val id: String,
-    @SerialName("iso_639_1") val iso6391: String,
-    @SerialName("iso_3166_1") val iso31661: String,
-    @SerialName("key") val key: String,
-    @SerialName("name") val name: String,
-    @SerialName("site") val site: String,
-    @SerialName("size") val size: Int,
-    @SerialName("type") val type: String,
+data class MovieDTO(
+    @SerialName("id") val id: Int,
+    @SerialName("title") val title: String,
+    @SerialName("backdrop_path") val backdropPath: String? = null,
+    @SerialName("poster_path") val posterPath: String,
+    @SerialName("overview") val overview: String,
+    @SerialName("release_date") val releaseDate: String,
+    @SerialName("vote_average") val voteAverage: Double,
 )
