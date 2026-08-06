@@ -27,7 +27,7 @@ package com.exercise.davismiyashiro.popularmovies.domain
 import kotlinx.coroutines.flow.Flow
 
 interface Repository {
-    suspend fun loadMoviesFromNetwork(sortingOption: String): Result<Exception, List<Movie>>
+    suspend fun loadMoviesFromNetwork(sortingOption: MovieSortOption): Result<Exception, List<Movie>>
 
     fun loadMoviesFromDb(): Flow<List<Movie>>
 

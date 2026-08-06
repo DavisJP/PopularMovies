@@ -69,12 +69,10 @@ import coil3.compose.SubcomposeAsyncImage
 import com.exercise.davismiyashiro.popularmovies.Navigator
 import com.exercise.davismiyashiro.popularmovies.R
 import com.exercise.davismiyashiro.popularmovies.Route
+import com.exercise.davismiyashiro.popularmovies.domain.MovieSortOption
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsUI
 import kotlinx.collections.immutable.ImmutableList
 
-const val POPULARITY_DESC_PARAM = "popular"
-const val HIGHEST_RATED_PARAM = "top_rated"
-const val FAVORITES_PARAM = "favorites"
 private const val POSTER_ASPECT_RATIO = 2f / 3f
 private const val LOADING_INDICATOR_WIDTH_FRACTION = 0.8f
 
@@ -108,8 +106,8 @@ fun MoviesScreen(
 @Composable
 fun MoviesContent(
     uiState: MovieListState,
-    currentSortOption: String,
-    onSortChange: (String) -> Unit,
+    currentSortOption: MovieSortOption,
+    onSortChange: (MovieSortOption) -> Unit,
     onMovieClick: (MovieDetailsUI) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -167,14 +165,17 @@ fun MoviesContent(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MoviesTopAppBar(currentSortOption: String, onSortChange: (String) -> Unit, modifier: Modifier = Modifier) {
+fun MoviesTopAppBar(
+    currentSortOption: MovieSortOption,
+    onSortChange: (MovieSortOption) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     var menuExpanded by remember { mutableStateOf(false) }
 
     val titleResId = when (currentSortOption) {
-        POPULARITY_DESC_PARAM -> R.string.popular_movies
-        HIGHEST_RATED_PARAM -> R.string.highest_rated_movies
-        FAVORITES_PARAM -> R.string.favorites
-        else -> R.string.app_name
+        MovieSortOption.POPULAR -> R.string.popular_movies
+        MovieSortOption.TOP_RATED -> R.string.highest_rated_movies
+        MovieSortOption.FAVORITES -> R.string.favorites
     }
 
     TopAppBar(
@@ -195,21 +196,21 @@ fun MoviesTopAppBar(currentSortOption: String, onSortChange: (String) -> Unit, m
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.popular)) },
                         onClick = {
-                            onSortChange(POPULARITY_DESC_PARAM)
+                            onSortChange(MovieSortOption.POPULAR)
                             menuExpanded = false
                         },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.rating)) },
                         onClick = {
-                            onSortChange(HIGHEST_RATED_PARAM)
+                            onSortChange(MovieSortOption.TOP_RATED)
                             menuExpanded = false
                         },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.favorites)) },
                         onClick = {
-                            onSortChange(FAVORITES_PARAM)
+                            onSortChange(MovieSortOption.FAVORITES)
                             menuExpanded = false
                         },
                     )

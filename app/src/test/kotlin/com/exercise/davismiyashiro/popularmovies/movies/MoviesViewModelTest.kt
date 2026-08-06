@@ -3,6 +3,7 @@ package com.exercise.davismiyashiro.popularmovies.movies
 import app.cash.turbine.test
 import com.exercise.davismiyashiro.popularmovies.data.MovieRepository
 import com.exercise.davismiyashiro.popularmovies.domain.Movie
+import com.exercise.davismiyashiro.popularmovies.domain.MovieSortOption
 import com.exercise.davismiyashiro.popularmovies.domain.Result
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -57,7 +58,7 @@ class MoviesViewModelTest {
     @Test
     fun load_popular_movies_calls_remote_success() = runTest {
         every { repository.getFavoriteMoviesIds() } returns flowOf(emptySet())
-        coEvery { repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM) } returns
+        coEvery { repository.loadMoviesFromNetwork(MovieSortOption.POPULAR) } returns
             Result.Success(fakeMovies)
 
         moviesViewModel = MoviesViewModel(repository)
@@ -68,7 +69,7 @@ class MoviesViewModelTest {
             TestCase.assertTrue(successState is MovieListState.Success)
             TestCase.assertEquals(1, (successState as MovieListState.Success).movieList.size)
 
-            coVerify { repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM) }
+            coVerify { repository.loadMoviesFromNetwork(MovieSortOption.POPULAR) }
             verify(exactly = 0) { repository.loadMoviesFromDb() }
             cancelAndIgnoreRemainingEvents()
         }
@@ -76,7 +77,7 @@ class MoviesViewModelTest {
 
     @Test
     fun load_popular_movies_calls_remote_error() = runTest(testDispatcher) {
-        coEvery { repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM) } returns
+        coEvery { repository.loadMoviesFromNetwork(MovieSortOption.POPULAR) } returns
             Result.Error(okio.IOException("Error loading popular movies"))
 
         moviesViewModel = MoviesViewModel(repository)
@@ -93,7 +94,7 @@ class MoviesViewModelTest {
             )
 
             coVerify(exactly = 1) {
-                repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM)
+                repository.loadMoviesFromNetwork(MovieSortOption.POPULAR)
             }
             verify(exactly = 0) { repository.loadMoviesFromDb() }
         }
@@ -102,7 +103,7 @@ class MoviesViewModelTest {
     @Test
     fun load_favorite_movies_calls_db() = runTest(testDispatcher) {
         val response = listOf<Movie>()
-        coEvery { repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM) } returns
+        coEvery { repository.loadMoviesFromNetwork(MovieSortOption.POPULAR) } returns
             Result.Success(fakeMovies)
         every { repository.loadMoviesFromDb() } returns flowOf(response)
         moviesViewModel = MoviesViewModel(repository)
@@ -113,10 +114,10 @@ class MoviesViewModelTest {
             TestCase.assertTrue(successState is MovieListState.Success)
             TestCase.assertEquals(1, (successState as MovieListState.Success).movieList.size)
             coVerify(exactly = 1) {
-                repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM)
+                repository.loadMoviesFromNetwork(MovieSortOption.POPULAR)
             }
 
-            moviesViewModel.loadMovieListBySortingOption(FAVORITES_PARAM)
+            moviesViewModel.loadMovieListBySortingOption(MovieSortOption.FAVORITES)
 
             val dbSuccess = awaitItem()
             TestCase.assertTrue(dbSuccess is MovieListState.Success)
@@ -126,7 +127,7 @@ class MoviesViewModelTest {
 
     @Test
     fun selecting_same_sort_option_does_not_reload_movies() = runTest(testDispatcher) {
-        coEvery { repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM) } returns
+        coEvery { repository.loadMoviesFromNetwork(MovieSortOption.POPULAR) } returns
             Result.Success(fakeMovies)
 
         moviesViewModel = MoviesViewModel(repository)
@@ -135,11 +136,11 @@ class MoviesViewModelTest {
             TestCase.assertEquals(MovieListState.Loading, awaitItem())
             awaitItem()
 
-            moviesViewModel.loadMovieListBySortingOption(POPULARITY_DESC_PARAM)
+            moviesViewModel.loadMovieListBySortingOption(MovieSortOption.POPULAR)
 
             expectNoEvents()
             coVerify(exactly = 1) {
-                repository.loadMoviesFromNetwork(POPULARITY_DESC_PARAM)
+                repository.loadMoviesFromNetwork(MovieSortOption.POPULAR)
             }
             cancelAndIgnoreRemainingEvents()
         }
