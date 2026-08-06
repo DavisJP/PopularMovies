@@ -22,35 +22,13 @@
  * SOFTWARE.
  */
 
-package com.exercise.davismiyashiro.popularmovies.data.remote
-
-import com.exercise.davismiyashiro.popularmovies.data.MovieResponse
-import retrofit2.http.GET
-import retrofit2.http.Path
+package com.exercise.davismiyashiro.popularmovies.domain
 
 /**
- * Retrofit interfaces
- *
- * Created by Davis Miyashiro on 20/02/2017.
+ * Sorting options for the movie list.
  */
-
-private const val API_SORTING_PARAM = "sorting"
-private const val API_MOVIE_ID_PARAM = "id"
-
-enum class PopularApiParam(val value: String) {
-    POPULAR("popular"),
-    TOP_RATED("top_rated"),
-    FAVORITES("favorites"),
-}
-
-interface TheMovieDb {
-
-    @GET("/3/movie/{sorting}")
-    suspend fun getPopular(@Path(API_SORTING_PARAM) sort: String): MovieResponse<List<MovieDTO>>
-
-    @GET("/3/movie/{id}/videos")
-    suspend fun getTrailers(@Path(API_MOVIE_ID_PARAM) movieId: String): MovieResponse<List<TrailerDTO>>
-
-    @GET("/3/movie/{id}/reviews")
-    suspend fun getReviews(@Path(API_MOVIE_ID_PARAM) movieId: String): MovieResponse<List<ReviewDTO>>
+enum class MovieSortOption {
+    POPULAR,
+    TOP_RATED,
+    FAVORITES
 }

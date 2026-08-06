@@ -25,9 +25,11 @@
 package com.exercise.davismiyashiro.popularmovies.data
 
 import com.exercise.davismiyashiro.popularmovies.data.local.MoviesDao
+import com.exercise.davismiyashiro.popularmovies.data.remote.PopularApiParam
 import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb
 import com.exercise.davismiyashiro.popularmovies.domain.ApiException
 import com.exercise.davismiyashiro.popularmovies.domain.Movie
+import com.exercise.davismiyashiro.popularmovies.domain.MovieSortOption
 import com.exercise.davismiyashiro.popularmovies.domain.NetworkException
 import com.exercise.davismiyashiro.popularmovies.domain.Repository
 import com.exercise.davismiyashiro.popularmovies.domain.Result
@@ -57,10 +59,15 @@ class MovieRepository @Inject constructor(
     }
 
     override suspend fun loadMoviesFromNetwork(
-        sortingOption: String,
+        sortingOption: MovieSortOption,
     ): Result<Exception, List<Movie>> {
+        val apiParam = when (sortingOption) {
+            MovieSortOption.POPULAR -> PopularApiParam.POPULAR
+            MovieSortOption.TOP_RATED -> PopularApiParam.TOP_RATED
+            MovieSortOption.FAVORITES -> PopularApiParam.FAVORITES
+        }
         val moviesResponse = apiCall(
-            call = { theMovieDb.getPopular(sortingOption) },
+            call = { theMovieDb.getPopular(apiParam.value) },
             errorMessage = "Error Fetching Movies",
         )
 

@@ -7,6 +7,7 @@ import com.exercise.davismiyashiro.popularmovies.data.remote.TheMovieDb
 import com.exercise.davismiyashiro.popularmovies.data.remote.TrailerDTO
 import com.exercise.davismiyashiro.popularmovies.domain.ApiException
 import com.exercise.davismiyashiro.popularmovies.domain.Movie
+import com.exercise.davismiyashiro.popularmovies.domain.MovieSortOption
 import com.exercise.davismiyashiro.popularmovies.domain.NetworkException
 import com.exercise.davismiyashiro.popularmovies.domain.Result
 import com.exercise.davismiyashiro.popularmovies.domain.Review
@@ -81,7 +82,7 @@ class MovieRepositoryTest {
         val moviesResponse = MovieResponse(results = listOf(movieDTO))
         coEvery { theMovieDb.getPopular(any()) } returns moviesResponse
 
-        val result = repository.loadMoviesFromNetwork("popular")
+        val result = repository.loadMoviesFromNetwork(MovieSortOption.POPULAR)
 
         assertTrue(result is Result.Success)
         assertEquals(listOf(movieDomain), (result as Result.Success).data)
@@ -91,7 +92,7 @@ class MovieRepositoryTest {
     fun `loadMoviesFromNetwork returns Error with NetworkException when IOException is thrown`() = runTest {
         coEvery { theMovieDb.getPopular(any()) } throws IOException("No internet")
 
-        val result = repository.loadMoviesFromNetwork("popular")
+        val result = repository.loadMoviesFromNetwork(MovieSortOption.POPULAR)
 
         assertTrue(result is Result.Error)
         assertTrue((result as Result.Error).exception is NetworkException)
@@ -102,7 +103,7 @@ class MovieRepositoryTest {
         val errorResponse = Response.error<MovieResponse<List<MovieDTO>>>(401, "".toResponseBody())
         coEvery { theMovieDb.getPopular(any()) } throws HttpException(errorResponse)
 
-        val result = repository.loadMoviesFromNetwork("popular")
+        val result = repository.loadMoviesFromNetwork(MovieSortOption.POPULAR)
 
         assertTrue(result is Result.Error)
         assertTrue((result as Result.Error).exception is ApiException)
@@ -113,7 +114,7 @@ class MovieRepositoryTest {
     fun `loadMoviesFromNetwork returns Error with UnexpectedApiException on unknown exception`() = runTest {
         coEvery { theMovieDb.getPopular(any()) } throws RuntimeException("Unexpected")
 
-        val result = repository.loadMoviesFromNetwork("popular")
+        val result = repository.loadMoviesFromNetwork(MovieSortOption.POPULAR)
 
         assertTrue(result is Result.Error)
         assertTrue((result as Result.Error).exception is UnexpectedApiException)

@@ -26,6 +26,7 @@ package com.exercise.davismiyashiro.popularmovies.movies
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.exercise.davismiyashiro.popularmovies.domain.MovieSortOption
 import com.exercise.davismiyashiro.popularmovies.domain.Repository
 import com.exercise.davismiyashiro.popularmovies.data.toUI
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -54,8 +55,8 @@ class MoviesViewModel @Inject constructor(
 ) :
     ViewModel() {
 
-    private val _currentSortingOption = MutableStateFlow(POPULARITY_DESC_PARAM)
-    val currentSortingOption: StateFlow<String> = _currentSortingOption.asStateFlow()
+    private val _currentSortingOption = MutableStateFlow(MovieSortOption.POPULAR)
+    val currentSortingOption: StateFlow<MovieSortOption> = _currentSortingOption.asStateFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<MovieListState> = combine(
@@ -66,7 +67,7 @@ class MoviesViewModel @Inject constructor(
         sortingOption
     }.flatMapLatest { sortingOption ->
         when (sortingOption) {
-            FAVORITES_PARAM -> repository.loadMoviesFromDb()
+            MovieSortOption.FAVORITES -> repository.loadMoviesFromDb()
                 .map { movies ->
                     MovieListState.Success(
                         movies.map { it.toUI() }.toImmutableList(),
@@ -100,7 +101,7 @@ class MoviesViewModel @Inject constructor(
         initialValue = MovieListState.Loading,
     )
 
-    fun loadMovieListBySortingOption(sortingOption: String = POPULARITY_DESC_PARAM) {
+    fun loadMovieListBySortingOption(sortingOption: MovieSortOption = MovieSortOption.POPULAR) {
         if (_currentSortingOption.value != sortingOption) {
             _currentSortingOption.value = sortingOption
         }

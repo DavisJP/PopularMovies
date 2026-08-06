@@ -15,6 +15,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.exercise.davismiyashiro.popularmovies.R
+import com.exercise.davismiyashiro.popularmovies.domain.MovieSortOption
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsUI
 import com.exercise.davismiyashiro.popularmovies.ui.theme.PopularMoviesTheme
 import kotlinx.collections.immutable.persistentListOf
@@ -79,7 +80,7 @@ private fun MovieListGridEmptyPreview() {
 @Composable
 private fun MoviesTopAppBarPopularPreview() {
     PopularMoviesTheme {
-        MoviesTopAppBar(currentSortOption = POPULARITY_DESC_PARAM, onSortChange = {})
+        MoviesTopAppBar(currentSortOption = MovieSortOption.POPULAR, onSortChange = {})
     }
 }
 
@@ -87,7 +88,7 @@ private fun MoviesTopAppBarPopularPreview() {
 @Composable
 private fun MoviesTopAppBarHighestRatedPreview() {
     PopularMoviesTheme {
-        MoviesTopAppBar(currentSortOption = HIGHEST_RATED_PARAM, onSortChange = {})
+        MoviesTopAppBar(currentSortOption = MovieSortOption.TOP_RATED, onSortChange = {})
     }
 }
 
@@ -95,7 +96,7 @@ private fun MoviesTopAppBarHighestRatedPreview() {
 @Composable
 private fun MoviesTopAppBarFavoritesPreview() {
     PopularMoviesTheme {
-        MoviesTopAppBar(currentSortOption = FAVORITES_PARAM, onSortChange = {})
+        MoviesTopAppBar(currentSortOption = MovieSortOption.FAVORITES, onSortChange = {})
     }
 }
 
@@ -106,7 +107,7 @@ private fun MoviesTopAppBarFavoritesPreview() {
 private fun MoviesScreenLoadingPreview() {
     PopularMoviesTheme {
         Scaffold(
-            topBar = { MoviesTopAppBar(currentSortOption = POPULARITY_DESC_PARAM, onSortChange = {}) },
+            topBar = { MoviesTopAppBar(currentSortOption = MovieSortOption.POPULAR, onSortChange = {}) },
         ) { paddingValues ->
             Box(
                 modifier = Modifier
@@ -125,7 +126,7 @@ private fun MoviesScreenLoadingPreview() {
 private fun MoviesScreenErrorPreview() {
     PopularMoviesTheme {
         Scaffold(
-            topBar = { MoviesTopAppBar(currentSortOption = POPULARITY_DESC_PARAM, onSortChange = {}) },
+            topBar = { MoviesTopAppBar(currentSortOption = MovieSortOption.POPULAR, onSortChange = {}) },
         ) { paddingValues ->
             Box(
                 modifier = Modifier
@@ -149,7 +150,7 @@ private fun MoviesScreenErrorPreview() {
 private fun MoviesScreenContentLoadedPreview() {
     PopularMoviesTheme {
         Scaffold(
-            topBar = { MoviesTopAppBar(currentSortOption = POPULARITY_DESC_PARAM, onSortChange = {}) },
+            topBar = { MoviesTopAppBar(currentSortOption = MovieSortOption.POPULAR, onSortChange = {}) },
         ) { paddingValues ->
             Box(
                 modifier = Modifier

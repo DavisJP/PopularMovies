@@ -13,6 +13,7 @@ import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.exercise.davismiyashiro.popularmovies.R
+import com.exercise.davismiyashiro.popularmovies.domain.MovieSortOption
 import com.exercise.davismiyashiro.popularmovies.moviedetails.MovieDetailsUI
 import com.exercise.davismiyashiro.popularmovies.ui.theme.PopularMoviesTheme
 import org.junit.Assert.assertEquals
@@ -29,12 +30,12 @@ class MovieListScreenTest {
 
     @Test
     fun moviesTopAppBar_callsOnSortChanged_whenHighestRatingsSelected() {
-        var selectedSort: String? = null
+        var selectedSort: MovieSortOption? = null
 
         composeTestRule.setContent {
             PopularMoviesTheme(dynamicColor = false) {
                 MoviesTopAppBar(
-                    currentSortOption = POPULARITY_DESC_PARAM,
+                    currentSortOption = MovieSortOption.POPULAR,
                     onSortChange = { selectedSort = it },
                 )
             }
@@ -44,7 +45,7 @@ class MovieListScreenTest {
         composeTestRule.onNodeWithContentDescription("Settings").performClick()
         composeTestRule.onNodeWithText("Highest Ratings").performClick()
 
-        assertEquals(HIGHEST_RATED_PARAM, selectedSort)
+        assertEquals(MovieSortOption.TOP_RATED, selectedSort)
     }
 
     @Test
@@ -112,7 +113,7 @@ class MovieListScreenTest {
         composeTestRule.setContent {
             PopularMoviesTheme(dynamicColor = false) {
                 MoviesTopAppBar(
-                    currentSortOption = FAVORITES_PARAM,
+                    currentSortOption = MovieSortOption.FAVORITES,
                     onSortChange = {},
                 )
             }
